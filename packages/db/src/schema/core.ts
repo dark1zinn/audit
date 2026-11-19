@@ -33,6 +33,7 @@ export const entityTypes = [
   "calendar",
   "event",
   "file",
+  "space",
 ] as const
 
 /**

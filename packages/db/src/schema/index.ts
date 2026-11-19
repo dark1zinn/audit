@@ -1,3 +1,4 @@
 export * from "./auth.ts"
 export * from "./core.ts"
 export * from "./work.ts"
+export * from "./docs.ts"

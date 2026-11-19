@@ -61,6 +61,8 @@ export const WorkspaceSettings = Schema.Struct({
   accentColor: Schema.String,
   defaultTheme: Schema.Literals(["light", "dark", "system"]),
   trailRetentionDays: Schema.Int.check(Schema.isBetween({ minimum: 30, maximum: 3650 })),
+  uploadLimitMb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 1024 })),
+  storageQuotaGb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 10_000 })),
 })
 export type WorkspaceSettings = typeof WorkspaceSettings.Type
 
@@ -73,6 +75,8 @@ export const defaultWorkspaceSettings: WorkspaceSettings = {
   accentColor: "#4f46e5",
   defaultTheme: "system",
   trailRetentionDays: 365,
+  uploadLimitMb: 50,
+  storageQuotaGb: 10,
 }
 
 /** Whether the workspace 2FA policy applies to someone with this role. */

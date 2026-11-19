@@ -25,6 +25,7 @@ export const notificationKinds = [
   "task_overdue",
   "task_assigned",
   "mention",
+  "doc_review_due",
 ] as const
 
 /** A board belongs to a project. Its access grants live in `container_access` like other containers. */

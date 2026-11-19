@@ -14,11 +14,19 @@ export const EntityType = Schema.Literals([
   "calendar",
   "event",
   "file",
+  "space",
 ])
 export type EntityType = typeof EntityType.Type
 
 /** Containers sit between a project and its items; grants on them flow down to the items. */
-export const ContainerType = Schema.Literals(["project", "board", "doc", "channel", "calendar"])
+export const ContainerType = Schema.Literals([
+  "project",
+  "board",
+  "doc",
+  "channel",
+  "calendar",
+  "space",
+])
 export type ContainerType = typeof ContainerType.Type
 
 export const ReferenceKind = Schema.Literals([

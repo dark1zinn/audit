@@ -6,7 +6,16 @@ import { Schema } from "effect"
 import { Rpc, RpcGroup } from "effect/rpc"
 import { Unauthorized } from "./errors.ts"
 import { RpcAuthentication } from "./http.ts"
-import { BoardId, ColumnId, EntityId, NotificationId, ProjectId, TaskId, UserId } from "./ids.ts"
+import {
+  BoardId,
+  ColumnId,
+  DocId,
+  EntityId,
+  NotificationId,
+  ProjectId,
+  TaskId,
+  UserId,
+} from "./ids.ts"
 import { ColumnCategory, ProjectVisibility } from "./projects/schema.ts"
 import { Priority } from "./tasks/schema.ts"
 
@@ -86,6 +95,33 @@ export const CommentChanged = Schema.TaggedStruct("CommentChanged", {
   taskId: TaskId,
 })
 
+/**
+ * Doc tree, content metadata, versions and doc comments. `docId` is the doc; `entityId` is the doc
+ * or the comment for comment kinds. Space docs have a `null` project.
+ */
+export const DocChanged = Schema.TaggedStruct("DocChanged", {
+  ...base,
+  kind: Schema.Literals([
+    "created",
+    "renamed",
+    "icon_changed",
+    "moved",
+    "deleted",
+    "restored",
+    "restricted",
+    "review_changed",
+    "verified",
+    "access_changed",
+    "edited",
+    "version_created",
+    "version_restored",
+    "comment_created",
+    "comment_updated",
+    "comment_deleted",
+  ]),
+  docId: DocId,
+})
+
 /** Sent to the recipient's `inbox` scope only. */
 export const NotificationChanged = Schema.TaggedStruct("NotificationChanged", {
   ...base,
@@ -105,6 +141,7 @@ export const DomainEvent = Schema.Union([
   TaskChanged,
   CommentChanged,
   NotificationChanged,
+  DocChanged,
 ])
 export type DomainEvent = typeof DomainEvent.Type
 

@@ -9,6 +9,7 @@ import {
   WorkspaceApi,
 } from "./identity/api.ts"
 import { BoardsApi, ProjectsApi } from "./projects/api.ts"
+import { DocsApi, EntitiesApi } from "./docs/api.ts"
 import { NotificationsApi, TasksApi } from "./tasks/api.ts"
 import { TrailApi } from "./trail/api.ts"
 
@@ -25,5 +26,7 @@ export const AuditApi = HttpApi.make("audit")
   .add(ProjectsApi)
   .add(BoardsApi)
   .add(TasksApi)
+  .add(DocsApi)
+  .add(EntitiesApi)
   .add(NotificationsApi)
   .annotateMerge(OpenApi.annotations({ title: "audit API", version: "1.0.0" }))
