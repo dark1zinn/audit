@@ -20,7 +20,8 @@
     "build:web": "bun run --cwd apps/web build",
     "i18n:extract": "bun run --cwd packages/i18n extract",
     "i18n:compile": "bun run --cwd packages/i18n compile",
-    "i18n:check": "bun run --cwd packages/i18n check"
+    "i18n:check": "bun run --cwd packages/i18n check",
+    "licenses": "bun scripts/check-licenses.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
