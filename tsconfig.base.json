@@ -19,7 +19,8 @@
       {
         "name": "@effect/language-service",
         "diagnosticSeverity": {
-          "schemaClassMissingBrand": "off"
+          "schemaClassMissingBrand": "off",
+          "unstableApiUsage": "off"
         }
       }
     ]
