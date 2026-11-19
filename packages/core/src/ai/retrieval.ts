@@ -84,21 +84,29 @@ const candidates = (query: string, scope: RetrievalScope) =>
     const authz = yield* Authz
     const visible = yield* authz.visible(sql`e.id`)
     const where = sql.join([sql`e.deleted_at is null`, scopeWhere(scope), visible], sql` and `)
-    const columns = sql`
+    const chunkColumns = sql`
       e.id as entity_id, e.type, e.title, c.chunk, c.text, e.project_id,
-      p.key as project_key, t.number as task_number, m.channel_id
+      p.key as project_key, t.number as task_number, m.channel_id`
+    const chunkJoins = sql`
       from embeddings c
       join entities e on e.id = c.entity_id
       left join projects p on p.id = e.project_id
       left join tasks t on t.id = e.id
       left join messages m on m.id = e.id`
-    const tsvector = sql`to_tsvector(audit_search_config(), c.text)`
     const tsquery = sql`plainto_tsquery(audit_search_config(), ${query})`
 
+    // Full-text picks visible entities through the indexed `entities.search` (GIN); their chunks
+    // are then mapped in by entity id.
     const fts = yield* db
-      .execute<CandidateRow>(sql`select ${columns}
-        where ${where} and ${tsvector} @@ ${tsquery}
-        order by ts_rank_cd(${tsvector}, ${tsquery}) desc, e.id, c.chunk
+      .execute<CandidateRow>(sql`with hits as (
+        select e.id, ts_rank_cd(e.search, ${tsquery}) as hit_rank
+        from entities e
+        where ${where} and e.search @@ ${tsquery}
+        order by hit_rank desc, e.id
+        limit ${POOL})
+        select ${chunkColumns} ${chunkJoins}
+        join hits h on h.id = c.entity_id
+        order by h.hit_rank desc, e.id, c.chunk
         limit ${POOL}`)
       .pipe(
         Effect.map((result) => result.rows),
@@ -115,7 +123,7 @@ const candidates = (query: string, scope: RetrievalScope) =>
     if (queryVector === undefined) return ftsOnly()
 
     const vectorRows = yield* db
-      .execute<CandidateRow>(sql`select ${columns}
+      .execute<CandidateRow>(sql`select ${chunkColumns} ${chunkJoins}
         where ${where} and c.vector is not null and c.model = ${embedded.model}
         order by c.vector <=> ${`[${queryVector.join(",")}]`}::halfvec, e.id, c.chunk
         limit ${POOL}`)

@@ -188,30 +188,53 @@ export const restoreVersion = (versionId: DocVersionId, restoredBy: UserId) =>
       .where(eq(docVersions.id, versionId))
       .pipe(Effect.orDie)
     if (row === undefined) return yield* new NotFound({ entity: "doc_version", id: versionId })
-    const docId = row.docId as DocId
+    yield* replaceDocState(
+      row.docId as DocId,
+      { ydoc: row.snapshot, content: row.content },
+      restoredBy,
+      { action: "doc.version_restored", details: { version: row.version }, versionKind: "restore" },
+    )
+  })
+
+/**
+ * The one path that replaces a doc's content: stores the Yjs state and its JSON, snapshots the
+ * result, records the trail entry, and emits one `restored` DocChanged so live sessions reload.
+ * Version restore and approved AI edits both write through here.
+ */
+export const replaceDocState = (
+  docId: DocId,
+  state: Pick<typeof docs.$inferInsert, "ydoc" | "content">,
+  editedBy: UserId,
+  change: {
+    readonly action: string
+    readonly details: Record<string, unknown>
+    readonly versionKind: "auto" | "restore"
+  },
+) =>
+  Effect.gen(function* () {
+    const db = yield* Db
     const doc = yield* loadDoc(docId)
-    const json = isJsonNode(row.content) ? row.content : EMPTY_DOC
+    const json = isJsonNode(state.content) ? state.content : EMPTY_DOC
     const text = jsonToText(json)
-    const now = new Date()
     yield* db
       .update(docs)
       .set({
-        ydoc: row.snapshot,
-        content: row.content,
+        ydoc: state.ydoc,
+        content: state.content,
         contentText: text,
-        lastEditedBy: restoredBy,
-        lastEditedAt: now,
+        lastEditedBy: editedBy,
+        lastEditedAt: new Date(),
       })
       .where(eq(docs.id, docId))
       .pipe(Effect.orDie)
     const version = yield* touchEntity(docId, { searchText: text })
-    yield* snapshotDoc(docId, "restore", null, restoredBy)
+    yield* snapshotDoc(docId, change.versionKind, null, editedBy)
     yield* record({
-      action: "doc.version_restored",
+      action: change.action,
       entityId: docId,
       entityType: "doc",
       projectId: doc.projectId,
-      details: { version: row.version },
+      details: change.details,
     })
     yield* emit({
       _tag: "DocChanged",
@@ -219,7 +242,7 @@ export const restoreVersion = (versionId: DocVersionId, restoredBy: UserId) =>
       docId,
       entityId: docId,
       projectId: doc.projectId,
-      actorId: restoredBy,
+      actorId: editedBy,
       version,
     } satisfies typeof DocChanged.Type)
   })

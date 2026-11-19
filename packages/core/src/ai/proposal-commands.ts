@@ -6,7 +6,7 @@
 import type { Conflict, Forbidden, NotFound, RateLimited, Unauthorized } from "@audit/domain/errors"
 import { ValidationError } from "@audit/domain/errors"
 import { Effect, Schema } from "effect"
-import { createDoc } from "../docs/commands.ts"
+import { applyDocEdit, createDoc } from "../docs/commands.ts"
 import { createEvent } from "../calendar/commands.ts"
 import { postMessage } from "../chat/commands.ts"
 import { createTask, linkTask, moveTask, updateTask } from "../tasks/commands.ts"
@@ -47,6 +47,7 @@ export const proposalCommands: ReadonlyArray<RunnableCommand> = [
   runnable("task.move", moveTask),
   runnable("task.link", linkTask),
   runnable("doc.create", createDoc),
+  runnable("doc.edit.apply", applyDocEdit),
   runnable("event.create", createEvent),
   runnable("message.post", postMessage),
 ]

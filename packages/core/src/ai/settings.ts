@@ -18,6 +18,9 @@ export const defaultFeatures: AiFeatureFlags = {
   calendar: false,
 }
 
+/** Days an AI conversation is kept after its last activity, unless the workspace changes it. */
+export const DEFAULT_CONVERSATION_RETENTION_DAYS = 90
+
 export const defaultAiSettings: AiSettings = {
   enabled: false,
   defaultProviderId: null,
@@ -25,6 +28,7 @@ export const defaultAiSettings: AiSettings = {
   allowedRoles: ["owner", "admin", "member"],
   monthlyTokenBudget: null,
   features: defaultFeatures,
+  conversationRetentionDays: DEFAULT_CONVERSATION_RETENTION_DAYS,
 }
 
 /** Reads the singleton; a workspace that never saved AI settings gets `defaultAiSettings`. */
@@ -38,6 +42,7 @@ export const readAiSettings = Effect.gen(function* () {
     embeddingProviderId: row.embeddingProviderId as AiProviderId | null,
     allowedRoles: row.allowedRoles as Array<WorkspaceRole>,
     monthlyTokenBudget: row.monthlyTokenBudget,
+    conversationRetentionDays: row.conversationRetentionDays,
     features: { ...defaultFeatures, ...(row.features as Partial<AiFeatureFlags>) },
   } satisfies AiSettings
 })
@@ -52,6 +57,7 @@ export const writeAiSettings = (input: AiSettingsInput) =>
       embeddingProviderId: input.embeddingProviderId,
       allowedRoles: [...input.allowedRoles],
       monthlyTokenBudget: input.monthlyTokenBudget,
+      conversationRetentionDays: input.conversationRetentionDays,
       features: { ...input.features },
     }
     yield* db

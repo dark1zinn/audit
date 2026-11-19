@@ -198,6 +198,17 @@ export const writeTools: ReadonlyArray<WriteTool> = [
     prepare: Commands.createDocRequest,
   }),
   writeTool({
+    name: "propose_doc_edit",
+    description:
+      "Propose replacing a document's content with the given Markdown. Shows a text diff; nothing changes until approved.",
+    input: Schema.Struct({
+      docId: DocId,
+      markdown: Schema.String.check(Schema.isMaxLength(2_000_000)),
+    }),
+    autoApprovable: false,
+    prepare: Commands.docEditRequest,
+  }),
+  writeTool({
     name: "create_event",
     description: "Propose creating a calendar event. Times are ISO 8601.",
     input: Schema.Struct({

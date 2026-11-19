@@ -43,7 +43,9 @@ import {
 } from "../projects/commands.ts"
 import { assertWritable } from "../projects/read.ts"
 import { emit, record } from "../trail.ts"
-import { importMarkdown, restoreVersion } from "./content.ts"
+import { importMarkdown, replaceDocState, restoreVersion } from "./content.ts"
+import { markdownToJson } from "@audit/editor/markdown"
+import { jsonToState } from "@audit/editor/ydoc"
 import { loadDoc, positionAmong, subtreeIds, toNode } from "./read.ts"
 import { selectVersions, snapshotDoc, toVersion } from "./versions.ts"
 import type { DocChanged } from "@audit/domain/events"
@@ -558,6 +560,33 @@ export const restoreDocVersion = Command.make("doc.version.restore", {
       if (row === undefined)
         return yield* new NotFound({ entity: "doc_version", id: input.versionId })
       yield* restoreVersion(input.versionId, userId)
+      return toNode(yield* loadDoc(input.docId))
+    }),
+})
+
+/**
+ * Replaces a doc's content with Markdown, the approved form of an AI-proposed edit. It writes
+ * through `replaceDocState`, the same path version restore uses.
+ */
+export const applyDocEdit = Command.make("doc.edit.apply", {
+  input: Schema.Struct({
+    docId: DocId,
+    markdown: Schema.String.check(Schema.isMaxLength(2_000_000)),
+  }),
+  output: DocNode,
+  authorize: onDoc("doc.update"),
+  run: (input) =>
+    Effect.gen(function* () {
+      const userId = yield* currentUser("doc.edit.apply")
+      const doc = yield* loadDoc(input.docId)
+      if (doc.projectId !== null) yield* assertWritable(doc.projectId)
+      const json = markdownToJson(input.markdown)
+      yield* replaceDocState(
+        input.docId,
+        { ydoc: jsonToState(json), content: json as Record<string, unknown> },
+        userId,
+        { action: "doc.ai_edit_applied", details: {}, versionKind: "auto" },
+      )
       return toNode(yield* loadDoc(input.docId))
     }),
 })

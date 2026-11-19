@@ -17,7 +17,7 @@ export const loadAiContext = (userId: UserId, feature: keyof AiFeatureFlags) =>
     const authz = yield* Authz
     const settings = yield* readAiSettings
     if (!settings.enabled) {
-      return yield* new Forbidden({ action: "ai.use", message: "AI is turned off" })
+      return yield* new AiUnavailable({ message: "AI is turned off" })
     }
     const role = yield* authz.workspaceRole(userId)
     if (role === null || !settings.allowedRoles.includes(role)) {

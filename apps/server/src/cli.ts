@@ -4,9 +4,10 @@
  */
 import { CurrentActor } from "@audit/domain/actor"
 import { verifyTrail } from "@audit/core/trail-queries"
+import { rotateSecrets } from "@audit/core/admin/secret-rotation"
 import { readAppConfig } from "@audit/platform/config"
 import { migrateDatabase } from "@audit/platform/database"
-import { Effect, Layer, ManagedRuntime } from "effect"
+import { Effect, Layer, ManagedRuntime, Redacted } from "effect"
 import { makeCoreLayer, startServer } from "./server.ts"
 import { seedDemo } from "./seed-demo.ts"
 
@@ -15,6 +16,7 @@ const usage = `Usage: audit <command>
 Commands:
   serve          Run migrations and start the server
   seed --demo    Fill an empty workspace with demo data (--force adds to a workspace with members)
+  rotate-secret --from <old>  Re-encrypt AI keys and the VAPID key from the previous AUDIT_SECRET_KEY
   trail verify   Re-check the audit log hash chain`
 
 const loadConfig = () => Effect.runPromise(readAppConfig)
@@ -73,6 +75,31 @@ const seed = async (force: boolean) => {
   }
 }
 
+const rotateSecret = async (from: string | undefined) => {
+  if (from === undefined || from.length === 0) {
+    console.error("rotate-secret needs --from <previous AUDIT_SECRET_KEY>")
+    process.exitCode = 1
+    return
+  }
+  const config = await loadConfig()
+  const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
+  try {
+    const result = await runtime.runPromise(
+      rotateSecrets(Redacted.make(from))
+        .execute({})
+        .pipe(Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" })),
+    )
+    console.log(
+      `Re-encrypted ${result.aiKeys} AI provider key(s); VAPID key ${result.vapid ? "re-encrypted" : "not set"}.`,
+    )
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exitCode = 1
+  } finally {
+    await runtime.dispose()
+  }
+}
+
 const [command, sub] = process.argv.slice(2)
 switch (command) {
   case "serve":
@@ -92,6 +119,11 @@ switch (command) {
     if (sub === "--demo") await seed(process.argv.includes("--force"))
     else console.log(usage)
     break
+  case "rotate-secret": {
+    const index = process.argv.indexOf("--from")
+    await rotateSecret(index === -1 ? undefined : process.argv[index + 1])
+    break
+  }
   default:
     console.log(usage)
     process.exit(command === undefined || command === "help" ? 0 : 1)

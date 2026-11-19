@@ -2,17 +2,17 @@
  * What each tool does, as typed calls. Reads use the same queries the UI uses. Writes build the
  * command input and a preview; `proposals` stores them.
  */
-import { boardColumns } from "@audit/db/schema"
-import { ValidationError } from "@audit/domain/errors"
-import type { CalendarId, ChannelId, ColumnId, DocId, TaskId, UserId } from "@audit/domain/ids"
-import { BoardId, EntityId } from "@audit/domain/ids"
+import { boardColumns, docs } from "@audit/db/schema"
+import { NotFound, ValidationError } from "@audit/domain/errors"
+import type { CalendarId, ChannelId, ColumnId, TaskId, UserId } from "@audit/domain/ids"
+import { BoardId, DocId, EntityId } from "@audit/domain/ids"
 import type { RelationKind } from "@audit/domain/tasks/schema"
 import { Db } from "@audit/platform/database"
 import { eq } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import { createEvent } from "../calendar/commands.ts"
 import { listEvents as listEventsQuery } from "../calendar/queries.ts"
-import { createDoc } from "../docs/commands.ts"
+import { applyDocEdit, createDoc } from "../docs/commands.ts"
 import { getDoc } from "../docs/queries.ts"
 import { postMessage } from "../chat/commands.ts"
 import { getMe } from "../identity/queries.ts"
@@ -21,6 +21,8 @@ import { createTask, linkTask, moveTask, updateTask } from "../tasks/commands.ts
 import { myTasks as myTasksQuery, taskDetail } from "../tasks/queries.ts"
 import type { ProposalDraft, ProposalPreview } from "./proposals.ts"
 import { richDocFromText } from "./text.ts"
+import { jsonToText } from "@audit/editor/text"
+import { markdownToJson } from "@audit/editor/markdown"
 
 // ---- read tools ----
 
@@ -182,6 +184,29 @@ export const createDocRequest = (input: { readonly parentId: string; readonly ti
       fields: [{ label: "Title", value: input.title }],
     },
     target: input.parentId,
+  })
+
+export const docEditRequest = (input: { readonly docId: string; readonly markdown: string }) =>
+  Effect.gen(function* () {
+    const docId = DocId.make(input.docId)
+    const db = yield* Db
+    const [row] = yield* db
+      .select({ text: docs.contentText })
+      .from(docs)
+      .where(eq(docs.id, docId))
+      .pipe(Effect.orDie)
+    if (row === undefined) return yield* new NotFound({ entity: "doc", id: docId })
+    return yield* request({
+      command: "doc.edit.apply",
+      schema: applyDocEdit.input,
+      input: { docId, markdown: input.markdown },
+      preview: {
+        summary: "Replace the document content",
+        fields: [],
+        diff: { before: row.text, after: jsonToText(markdownToJson(input.markdown)) },
+      },
+      target: input.docId,
+    })
   })
 
 export const createEventRequest = (input: {

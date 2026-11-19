@@ -1,17 +1,18 @@
 /**
  * One-shot AI actions from the editor, chat, board and calendar surfaces. Each runs a single model
  * turn over context read through the same queries the UI uses, as the AI actor acting for the
- * signed-in person. Nothing is written: results are text only, and no proposals are created.
+ * signed-in person. Editor, chat, calendar and column summaries are text only. Board triage and
+ * task breakdown store their suggestions as pending proposals; nothing is applied without approval.
  */
 import type { ProviderConfig } from "@audit/ai/provider"
-import type { AiActor } from "@audit/domain/actor"
+import type { Actor, AiActor } from "@audit/domain/actor"
 import { CurrentActor } from "@audit/domain/actor"
 import type { AiActionInput, AiActionResult } from "@audit/domain/ai/schema"
 import { AiUnavailable } from "@audit/domain/ai/errors"
 import { Forbidden, NotFound, ValidationError } from "@audit/domain/errors"
-import type { AiProviderId, UserId } from "@audit/domain/ids"
+import { AiProposalId, type AiProviderId, type UserId } from "@audit/domain/ids"
 import { BoardView } from "@audit/domain/tasks/schema"
-import { Effect } from "effect"
+import { Effect, Schema } from "effect"
 import * as LanguageModel from "effect/ai/LanguageModel"
 import { Authz } from "../authz.ts"
 import { calendarsVisibleTo, occurrencesIn } from "../calendar/queries.ts"
@@ -21,6 +22,9 @@ import { plainText } from "../notifications/notify.ts"
 import { boardView } from "../tasks/queries.ts"
 import { loadAiContext } from "./guard.ts"
 import { AiModels } from "./models.ts"
+import { type ProposalDraft, proposeChange } from "./proposals.ts"
+import { createConversation } from "./conversations.ts"
+import { createTaskRequest, moveTaskRequest } from "./tool-commands.ts"
 import type { AiSettings } from "@audit/domain/ai/schema"
 import { checkBudget, recordUsage } from "./usage.ts"
 
@@ -29,13 +33,16 @@ type ActionFeature = "editor" | "chat" | "board" | "calendar"
 type EditorInput = Extract<AiActionInput, { surface: "editor" }>
 type ChatInput = Extract<AiActionInput, { surface: "chat" }>
 type BoardInput = Extract<AiActionInput, { surface: "board" }>
+type BreakDownInput = Extract<BoardInput, { action: "break_down" }>
 type CalendarInput = Extract<AiActionInput, { surface: "calendar" }>
 
 type BoardViewValue = typeof BoardView.Type
 
+type UserActor = Extract<Actor, { _tag: "user" }>
 /** Everything a model call needs, resolved once by `runAiAction`. */
 interface ModelCall {
   readonly userId: UserId
+  readonly actor: UserActor
   readonly providerId: AiProviderId
   readonly config: ProviderConfig
   readonly settings: AiSettings
@@ -136,7 +143,7 @@ const boardTranscript = (view: BoardViewValue) => {
   const lines: Array<string> = []
   for (const column of view.columns) {
     const wip = column.overWipLimit ? " (over WIP limit)" : ""
-    lines.push(`## ${column.name}${wip}`)
+    lines.push(`## ${column.name} [column id ${column.id}]${wip}`)
     for (const card of column.tasks) {
       if (remaining === 0) break
       remaining -= 1
@@ -149,14 +156,116 @@ const boardTranscript = (view: BoardViewValue) => {
   return lines.join("\n")
 }
 
+const TRIAGE_TASK = `Triage this board: point out blocked, overdue, unassigned or misplaced work. Suggest a move only where a task clearly belongs in another column. Respond with JSON only: {"summary": string, "suggestions": [{"type": "move", "taskId": string, "columnId": string}]}. Use only the ids in brackets.`
+const BREAK_DOWN_TASK = `Break this task into two to eight concrete subtasks. Respond with JSON only: {"summary": string, "suggestions": [{"type": "subtask", "title": string, "description": string}]}. The summary is one sentence about the plan.`
+
+const Suggestion = Schema.Union([
+  Schema.Struct({ type: Schema.Literal("move"), taskId: Schema.String, columnId: Schema.String }),
+  Schema.Struct({
+    type: Schema.Literal("subtask"),
+    title: Schema.String,
+    description: Schema.optionalKey(Schema.String),
+  }),
+])
+const BoardSuggestions = Schema.Struct({
+  summary: Schema.String,
+  suggestions: Schema.Array(Suggestion),
+})
+
+/** Model output as JSON, tolerating a code fence. Unparseable output keeps its text, with no suggestions. */
+const parseSuggestions = (text: string) =>
+  Schema.decodeUnknownEffect(Schema.fromJsonString(BoardSuggestions))(
+    text
+      .trim()
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, ""),
+  ).pipe(Effect.orElseSucceed(() => ({ summary: text, suggestions: [] })))
+
+const cardsOf = (view: BoardViewValue) => view.columns.flatMap((column) => column.tasks)
+
+interface Suggested {
+  readonly tool: string
+  readonly draft: ProposalDraft
+}
+
+/** Stores each suggestion as a pending proposal in one new conversation. Nothing is applied. */
+const proposeAll = (actor: UserActor, title: string, items: ReadonlyArray<Suggested>) =>
+  Effect.gen(function* () {
+    const ids: Array<AiProposalId> = []
+    if (items.length === 0) return ids
+    const conversation = yield* createConversation.execute({ title })
+    for (const item of items) {
+      const outcome = yield* proposeChange.execute({
+        ...item.draft,
+        preview: { ...item.draft.preview, fields: [...item.draft.preview.fields] },
+        tool: item.tool,
+        autoApprovable: false,
+        conversationId: conversation.id,
+      })
+      const id = yield* Schema.decodeUnknownEffect(AiProposalId)(outcome.proposalId).pipe(
+        Effect.orDie,
+      )
+      ids.push(id)
+    }
+    return ids
+  }).pipe(Effect.provideService(CurrentActor, actor))
+
+const triageAction = (view: BoardViewValue, call: ModelCall) =>
+  Effect.gen(function* () {
+    const raw =
+      (yield* complete(call, system(call.locale, TRIAGE_TASK), boardTranscript(view))) ?? ""
+    const reply = yield* parseSuggestions(raw)
+    const items: Array<Suggested> = []
+    for (const suggestion of reply.suggestions) {
+      if (suggestion.type !== "move") continue
+      const card = cardsOf(view).find((candidate) => candidate.id === suggestion.taskId)
+      const column = view.columns.find((candidate) => candidate.id === suggestion.columnId)
+      if (card === undefined || column === undefined) continue
+      const draft = yield* moveTaskRequest({ taskId: card.id, columnId: column.id })
+      items.push({ tool: "move_task", draft })
+    }
+    const proposals = yield* proposeAll(call.actor, "Board triage", items)
+    const result: AiActionResult = { text: reply.summary, proposals }
+    return result
+  })
+
+const breakDownAction = (input: BreakDownInput, view: BoardViewValue, call: ModelCall) =>
+  Effect.gen(function* () {
+    const parent = cardsOf(view).find((card) => card.id === input.taskId)
+    if (parent === undefined) {
+      return yield* new NotFound({ entity: "task", id: input.taskId })
+    }
+    const task = `${parent.key} ${parent.title} (priority ${parent.priority})`
+    const raw = (yield* complete(call, system(call.locale, BREAK_DOWN_TASK), task)) ?? ""
+    const reply = yield* parseSuggestions(raw)
+    const items: Array<Suggested> = []
+    for (const suggestion of reply.suggestions) {
+      if (suggestion.type !== "subtask" || suggestion.title.trim().length === 0) continue
+      const draft = yield* createTaskRequest({
+        columnId: parent.columnId,
+        title: suggestion.title.trim(),
+        ...(suggestion.description === undefined ? {} : { description: suggestion.description }),
+      })
+      items.push({ tool: "create_task", draft })
+    }
+    const proposals = yield* proposeAll(call.actor, "Break down task", items)
+    const result: AiActionResult = { text: reply.summary, proposals }
+    return result
+  })
+
 const boardAction = (input: BoardInput, call: ModelCall) =>
   Effect.gen(function* () {
     const view = yield* boardView(input.boardId, {})
-    const task =
-      input.action === "triage"
-        ? "Triage this board: point out blocked, overdue, unassigned or misplaced work and suggest the next moves. You cannot change tasks here, so say what should change and why."
-        : "Summarize each column: what it holds, what is blocked or overdue, and any WIP-limit problem."
-    const text = yield* complete(call, system(call.locale, task), boardTranscript(view))
+    if (input.action === "break_down") return yield* breakDownAction(input, view, call)
+    if (input.action === "triage") return yield* triageAction(view, call)
+    const text = yield* complete(
+      call,
+      system(
+        call.locale,
+        "Summarize each column: what it holds, what is blocked or overdue, and any WIP-limit problem.",
+      ),
+      boardTranscript(view),
+    )
     const result: AiActionResult = { text, proposals: [] }
     return result
   })
@@ -241,6 +350,7 @@ export const runAiAction = (input: AiActionInput) =>
     const locale = yield* recipientLocale(userId)
     const call: ModelCall = {
       userId,
+      actor,
       providerId: loaded.providerId,
       config: loaded.config,
       settings: loaded.settings,

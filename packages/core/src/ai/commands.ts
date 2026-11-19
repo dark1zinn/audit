@@ -103,6 +103,7 @@ export const updateSettings = Command.make("ai.updateSettings", {
           features: input.features,
           allowedRoles: input.allowedRoles,
           monthlyTokenBudget: input.monthlyTokenBudget,
+          conversationRetentionDays: input.conversationRetentionDays,
           defaultProviderId: input.defaultProviderId,
           embeddingProviderId: input.embeddingProviderId,
         },

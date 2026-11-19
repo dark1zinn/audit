@@ -8,10 +8,8 @@ import { defineJob } from "@audit/platform/jobs"
 import { sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import * as Command from "../command.ts"
+import { readAiSettings } from "./settings.ts"
 import { record } from "../trail.ts"
-
-/** Days an AI conversation is kept after its last activity. */
-export const AI_CONVERSATION_RETENTION_DAYS = 90
 
 export const aiRetentionJob = defineJob("ai.retention", Schema.Struct({}))
 
@@ -21,11 +19,12 @@ export const purgeAiConversations = Command.make("ai.retention.purge", {
   authorize: () => Effect.void,
   run: () =>
     Effect.gen(function* () {
+      const settings = yield* readAiSettings
       const db = yield* Db
       const removed = yield* db
         .execute<{ id: string }>(sql`
           delete from ai_conversations
-          where updated_at < now() - make_interval(days => ${AI_CONVERSATION_RETENTION_DAYS})
+          where updated_at < now() - make_interval(days => ${settings.conversationRetentionDays})
           returning id`)
         .pipe(
           Effect.map((result) => result.rows.length),
