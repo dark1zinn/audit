@@ -1,0 +1,3 @@
+@import "@audit/ui/styles.css";
+@source "../../../packages/ui/src";
+@source "../../../packages/i18n/src";

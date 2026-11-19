@@ -1,0 +1,26 @@
+{
+  "name": "@audit/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./detect": "./src/detect.ts",
+    "./catalogs": "./src/catalogs.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "extract": "bunx --bun lingui extract",
+    "compile": "bunx --bun lingui compile",
+    "check": "bunx --bun lingui check sync && bunx --bun lingui check missing --mode catalog"
+  },
+  "dependencies": {
+    "@lingui/core": "6.12.0",
+    "@lingui/react": "6.12.0"
+  },
+  "devDependencies": {
+    "@lingui/cli": "6.12.0",
+    "@lingui/format-po": "6.12.0"
+  }
+}

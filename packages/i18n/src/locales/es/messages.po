@@ -1,0 +1,819 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-11-19 11:25-0300\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: es\n"
+
+#. placeholder {0}: verify.data.checked
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "{0, plural, one {# event checked.} other {# events checked.}}"
+msgstr "{0, plural, one {# evento verificado.} other {# eventos verificados.}}"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "1 day"
+msgstr "1 día"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "1 week"
+msgstr "1 semana"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "3 days"
+msgstr "3 días"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "30 days"
+msgstr "30 días"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "6-digit code"
+msgstr "Código de 6 dígitos"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "A tamper-evident record of changes in this workspace."
+msgstr "Registro a prueba de manipulaciones de los cambios en este espacio de trabajo."
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Accent color"
+msgstr "Color de acento"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Account"
+msgstr "Cuenta"
+
+#: ../../apps/web/src/components/app-shell.tsx
+msgid "Account menu"
+msgstr "Menú de cuenta"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Action"
+msgstr "Acción"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Actions"
+msgstr "Acciones"
+
+#. placeholder {0}: member.displayName
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Actions for {0}"
+msgstr "Acciones para {0}"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Active"
+msgstr "Activo"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Active sessions"
+msgstr "Sesiones activas"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Actor"
+msgstr "Actor"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Add"
+msgstr "Añadir"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Add passkey"
+msgstr "Añadir clave de acceso"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Admin"
+msgstr "Administrador"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Anyone with the link"
+msgstr "Cualquiera con el enlace"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Appearance"
+msgstr "Apariencia"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/setup.tsx
+msgid "At least 10 characters."
+msgstr "Al menos 10 caracteres."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Audit log"
+msgstr "Registro de auditoría"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Audit log retention (days)"
+msgstr "Retención del registro de auditoría (días)"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Backup codes (shown once; store them safely)"
+msgstr "Códigos de respaldo (se muestran una vez; guárdalos en un lugar seguro)"
+
+#. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Broken at sequence {0}."
+msgstr "Roto en la secuencia {0}."
+
+#: ../../apps/web/src/components/feedback.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+#: ../../apps/web/src/routes/login.tsx
+msgid "Cannot reach the server. Check your connection."
+msgstr "No se puede conectar con el servidor. Revisa tu conexión."
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Chain broken"
+msgstr "Cadena rota"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Chain intact"
+msgstr "Cadena íntegra"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Changes"
+msgstr "Cambios"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Changing these affects new sessions and the look of the app for everyone."
+msgstr "Estos cambios afectan a las nuevas sesiones y al aspecto de la app para todos."
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "Check the highlighted fields and try again."
+msgstr "Revisa los campos marcados e inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Choose a person"
+msgstr "Elige una persona"
+
+#: ../ui/src/components/ui/dialog.tsx
+msgid "Close"
+msgstr "Cerrar"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Code"
+msgstr "Código"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Comfortable"
+msgstr "Cómoda"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Compact"
+msgstr "Compacta"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Confirm"
+msgstr "Confirmar"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Copied"
+msgstr "Copiado"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Copy"
+msgstr "Copiar"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+msgid "Create account and join"
+msgstr "Crear cuenta y unirse"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Create invite"
+msgstr "Crear invitación"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Create password reset link"
+msgstr "Crear enlace para restablecer la contraseña"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Create team"
+msgstr "Crear equipo"
+
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Create workspace"
+msgstr "Crear espacio de trabajo"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+msgid "Create your account to join the workspace."
+msgstr "Crea tu cuenta para unirte al espacio de trabajo."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Current password"
+msgstr "Contraseña actual"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Dark"
+msgstr "Oscuro"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Deactivate"
+msgstr "Desactivar"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Deactivated"
+msgstr "Desactivado"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Default language"
+msgstr "Idioma predeterminado"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Default theme"
+msgstr "Tema predeterminado"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Defaults and policies for everyone in the workspace."
+msgstr "Valores predeterminados y políticas para todo el espacio de trabajo."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Density"
+msgstr "Densidad"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Devices currently signed in to your account."
+msgstr "Dispositivos con sesión iniciada en tu cuenta."
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Dismiss"
+msgstr "Descartar"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Display name"
+msgstr "Nombre para mostrar"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/login.tsx
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Email"
+msgstr "Correo electrónico"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Email (optional)"
+msgstr "Correo electrónico (opcional)"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Enabled"
+msgstr "Activada"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Enter the 6-digit code from your authenticator app, or a backup code."
+msgstr "Introduce el código de 6 dígitos de tu app de autenticación o un código de respaldo."
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Entity"
+msgstr "Entidad"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Expired"
+msgstr "Caducada"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Expires"
+msgstr "Caduca"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Expires in"
+msgstr "Caduca en"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Filter"
+msgstr "Filtrar"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "for example member.role.changed"
+msgstr "por ejemplo member.role.changed"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "General"
+msgstr "General"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Generate new backup codes"
+msgstr "Generar nuevos códigos de respaldo"
+
+#: ../../apps/web/src/routes/__root.tsx
+msgid "Go home"
+msgstr "Ir al inicio"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Groups of members used for access and notifications."
+msgstr "Grupos de miembros usados para accesos y notificaciones."
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Guest"
+msgstr "Invitado"
+
+#: ../../apps/web/src/components/app-shell.tsx
+msgid "Home"
+msgstr "Inicio"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "How you appear in the workspace."
+msgstr "Cómo apareces en el espacio de trabajo."
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Idle timeout (days)"
+msgstr "Tiempo de inactividad (días)"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Invite"
+msgstr "Invitación"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Invite link"
+msgstr "Enlace de invitación"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Invite people with a one-time link."
+msgstr "Invita a personas con un enlace de un solo uso."
+
+#: ../../apps/web/src/routes/join.$token.tsx
+msgid "Invite unavailable"
+msgstr "Invitación no disponible"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Invites"
+msgstr "Invitaciones"
+
+#. placeholder {0}: invite.workspaceName
+#: ../../apps/web/src/routes/join.$token.tsx
+msgid "Join {0}"
+msgstr "Unirse a {0}"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+msgid "Join workspace"
+msgstr "Unirse al espacio de trabajo"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Language"
+msgstr "Idioma"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Lead"
+msgstr "Responsable"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Leave the email empty to create a link anyone with it can use."
+msgstr "Deja el correo vacío para crear un enlace que cualquiera pueda usar."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Light"
+msgstr "Claro"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Load more"
+msgstr "Cargar más"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Lowercase letters, digits and dashes."
+msgstr "Letras minúsculas, dígitos y guiones."
+
+#: ../../apps/web/src/components/app-shell.tsx
+msgid "Main"
+msgstr "Principal"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Manage who belongs to this team."
+msgstr "Gestiona quién pertenece a este equipo."
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Maximum uses"
+msgstr "Usos máximos"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Member"
+msgstr "Miembro"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Members"
+msgstr "Miembros"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Members can invite others"
+msgstr "Los miembros pueden invitar a otros"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Name"
+msgstr "Nombre"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Name (optional)"
+msgstr "Nombre (opcional)"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "New invite"
+msgstr "Nueva invitación"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "New team"
+msgstr "Nuevo equipo"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "No events match."
+msgstr "Ningún evento coincide."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "No passkeys yet."
+msgstr "Aún no hay claves de acceso."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Not enabled"
+msgstr "No activada"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Note (optional)"
+msgstr "Nota (opcional)"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Off"
+msgstr "Desactivado"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "On"
+msgstr "Activado"
+
+#: ../../apps/web/src/routes/_app.index.tsx
+msgid "Open profile"
+msgstr "Abrir perfil"
+
+#: ../../apps/web/src/routes/_app.index.tsx
+msgid "Open security"
+msgstr "Abrir seguridad"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Optional"
+msgstr "Opcional"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "or"
+msgstr "o"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Other sessions signed out"
+msgstr "Otras sesiones cerradas"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Owner"
+msgstr "Propietario"
+
+#: ../../apps/web/src/routes/__root.tsx
+msgid "Page not found"
+msgstr "Página no encontrada"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Passkey added"
+msgstr "Clave de acceso añadida"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Passkeys"
+msgstr "Claves de acceso"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/login.tsx
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Password"
+msgstr "Contraseña"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Password reset link (share it privately)"
+msgstr "Enlace para restablecer la contraseña (compártelo en privado)"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "People in this workspace and their access."
+msgstr "Personas de este espacio de trabajo y sus accesos."
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Person"
+msgstr "Persona"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Profile"
+msgstr "Perfil"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Profile saved"
+msgstr "Perfil guardado"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Project teams"
+msgstr "Equipos de proyecto"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Protect your account and manage sign-ins."
+msgstr "Protege tu cuenta y gestiona los inicios de sesión."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "QR code for your authenticator app"
+msgstr "Código QR para tu app de autenticación"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Reactivate"
+msgstr "Reactivar"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Remove"
+msgstr "Quitar"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Required for admins"
+msgstr "Obligatoria para administradores"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Required for everyone"
+msgstr "Obligatoria para todos"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Reset two-factor"
+msgstr "Restablecer dos factores"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Revoke"
+msgstr "Revocar"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Revoked"
+msgstr "Revocada"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Role"
+msgstr "Rol"
+
+#. placeholder {0}: member.displayName
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Role for {0}"
+msgstr "Rol de {0}"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Save profile"
+msgstr "Guardar perfil"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Save settings"
+msgstr "Guardar configuración"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Scan the code with your authenticator app, or enter this key:"
+msgstr "Escanea el código con tu app de autenticación o introduce esta clave:"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.index.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Security"
+msgstr "Seguridad"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Select a team."
+msgstr "Selecciona un equipo."
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Seq"
+msgstr "Sec"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Session length (days)"
+msgstr "Duración de la sesión (días)"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Set up two-factor"
+msgstr "Configurar dos factores"
+
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Set up your workspace"
+msgstr "Configura tu espacio de trabajo"
+
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Setup token"
+msgstr "Token de configuración"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Sign in to your workspace."
+msgstr "Inicia sesión en tu espacio de trabajo."
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Sign in with a passkey"
+msgstr "Iniciar sesión con clave de acceso"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Sign in with your device, without a password."
+msgstr "Inicia sesión con tu dispositivo, sin contraseña."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Sign out"
+msgstr "Cerrar sesión"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Sign out everywhere"
+msgstr "Cerrar sesión en todas partes"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Sign out other sessions"
+msgstr "Cerrar otras sesiones"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Sign-in failed. Check your details and try again."
+msgstr "El inicio de sesión falló. Revisa tus datos e inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Slug"
+msgstr "Slug"
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "Something went wrong. Try again."
+msgstr "Algo salió mal. Inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Status"
+msgstr "Estado"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Stored on this device only."
+msgstr "Guardado solo en este dispositivo."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "System"
+msgstr "Sistema"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Team role"
+msgstr "Rol en el equipo"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Teams"
+msgstr "Equipos"
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "That conflicts with the current data. Refresh and try again."
+msgstr "Hay un conflicto con los datos actuales. Actualiza e inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "That did not work. Check your password or code and try again."
+msgstr "No funcionó. Revisa tu contraseña o código e inténtalo de nuevo."
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "That item no longer exists."
+msgstr "Este elemento ya no existe."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "The passkey could not be added."
+msgstr "No se pudo añadir la clave de acceso."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "The passkey could not be removed."
+msgstr "No se pudo quitar la clave de acceso."
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Theme"
+msgstr "Tema"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "This device"
+msgstr "Este dispositivo"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Time zone"
+msgstr "Zona horaria"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Title"
+msgstr "Cargo"
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "Too many attempts. Wait a moment and try again."
+msgstr "Demasiados intentos. Espera un momento e inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Turn off two-factor"
+msgstr "Desactivar dos factores"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Two-factor"
+msgstr "Dos factores"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+#: ../../apps/web/src/routes/login.tsx
+msgid "Two-factor authentication"
+msgstr "Autenticación en dos pasos"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Two-factor authentication is off"
+msgstr "La autenticación en dos pasos está desactivada"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Two-factor authentication is on"
+msgstr "La autenticación en dos pasos está activada"
+
+#: ../../apps/web/src/routes/_app.index.tsx
+msgid "Two-factor authentication, passkeys and active sessions."
+msgstr "Autenticación en dos pasos, claves de acceso y sesiones activas."
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Two-factor policy"
+msgstr "Política de dos factores"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Unknown device"
+msgstr "Dispositivo desconocido"
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "Unnamed passkey"
+msgstr "Clave de acceso sin nombre"
+
+#: ../../apps/web/src/routes/_app.index.tsx
+msgid "Update your name, language, time zone and appearance."
+msgstr "Actualiza tu nombre, idioma, zona horaria y apariencia."
+
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Use the setup token printed by the server when it first started."
+msgstr "Usa el token de configuración que el servidor imprimió al iniciarse por primera vez."
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Used"
+msgstr "Usado"
+
+#: ../../apps/web/src/routes/_app.admin.invites.tsx
+msgid "Uses"
+msgstr "Usos"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Verify"
+msgstr "Verificar"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "Verify integrity"
+msgstr "Verificar integridad"
+
+#: ../../apps/web/src/routes/_app.admin.audit.tsx
+msgid "When"
+msgstr "Cuándo"
+
+#: ../../apps/web/src/routes/_app.settings.profile.tsx
+msgid "Workspace default"
+msgstr "Predeterminado del espacio de trabajo"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Workspace name"
+msgstr "Nombre del espacio de trabajo"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Workspace settings"
+msgstr "Configuración del espacio de trabajo"
+
+#: ../../apps/web/src/routes/_app.admin.workspace.tsx
+msgid "Workspace settings saved"
+msgstr "Configuración del espacio de trabajo guardada"
+
+#: ../../apps/web/src/routes/_app.admin.teams.tsx
+msgid "Workspace teams"
+msgstr "Equipos del espacio de trabajo"
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "You do not have permission to do that."
+msgstr "No tienes permiso para hacer eso."
+
+#: ../../apps/web/src/routes/_app.index.tsx
+msgid "Your account"
+msgstr "Tu cuenta"
+
+#: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/setup.tsx
+msgid "Your name"
+msgstr "Tu nombre"
+
+#: ../../apps/web/src/components/feedback.tsx
+msgid "Your session has ended. Sign in again."
+msgstr "Tu sesión ha terminado. Inicia sesión de nuevo."
