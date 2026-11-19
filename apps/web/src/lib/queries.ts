@@ -1,9 +1,13 @@
 import { queryOptions } from "@tanstack/react-query"
-import type { TeamId } from "@audit/domain/ids"
+import type { BoardId, ProjectId, TaskId, TeamId } from "@audit/domain/ids"
+import type { ListTasksQuery, CalendarQuery } from "@audit/domain/tasks/schema"
 import { callApi } from "./api.ts"
 import { errorKind } from "./errors.ts"
 
-/** Query keys. Realtime events invalidate these by prefix. */
+/**
+ * Query keys. Realtime events invalidate these by prefix (see `realtime.ts`): every project-scoped
+ * key starts with its feature name so a single prefix covers all of it.
+ */
 export const keys = {
   setup: ["setup"] as const,
   session: ["session"] as const,
@@ -12,8 +16,21 @@ export const keys = {
   invites: ["invites"] as const,
   teams: ["teams"] as const,
   team: (teamId: string) => ["teams", teamId, "members"] as const,
-  trail: (filter: string) => ["trail", filter] as const,
+  mine: ["mine"] as const,
   invitePreview: (token: string) => ["join", token] as const,
+  projects: ["projects"] as const,
+  adminProjects: ["admin", "projects"] as const,
+  project: (projectId: ProjectId) => ["project", projectId] as const,
+  access: (projectId: ProjectId) => ["access", projectId] as const,
+  boards: (projectId: ProjectId) => ["boards", projectId] as const,
+  board: (boardId: BoardId) => ["board", boardId] as const,
+  boardView: (boardId: BoardId, query: ListTasksQuery) =>
+    ["board", boardId, "view", query] as const,
+  labels: (projectId: ProjectId) => ["labels", projectId] as const,
+  tasks: (projectId: ProjectId, query: ListTasksQuery) => ["tasks", projectId, query] as const,
+  calendar: (projectId: ProjectId, query: CalendarQuery) => ["calendar", projectId, query] as const,
+  task: (taskId: TaskId) => ["task", taskId] as const,
+  savedFilters: (projectId: ProjectId) => ["saved-filters", projectId] as const,
 }
 
 /** The signed-in user, or `null` when there is no session. Never throws on 401. */
@@ -65,4 +82,80 @@ export const invitePreviewQuery = (token: string) =>
     queryKey: keys.invitePreview(token),
     queryFn: () => callApi((api) => api.join.preview({ params: { token } })),
     retry: false,
+  })
+
+// --- Projects ---------------------------------------------------------------
+
+/** Projects visible to the caller, for the sidebar and project lookups. */
+export const projectsQuery = queryOptions({
+  queryKey: keys.projects,
+  queryFn: () => callApi((api) => api.projects.list()),
+  staleTime: 30_000,
+})
+
+/** Every project including archived and deleted ones; admins only. */
+export const adminProjectsQuery = queryOptions({
+  queryKey: keys.adminProjects,
+  queryFn: () => callApi((api) => api.projects.adminList()),
+})
+
+export const projectQuery = (projectId: ProjectId) =>
+  queryOptions({
+    queryKey: keys.project(projectId),
+    queryFn: () => callApi((api) => api.projects.get({ params: { projectId } })),
+  })
+
+export const projectAccessQuery = (projectId: ProjectId) =>
+  queryOptions({
+    queryKey: keys.access(projectId),
+    queryFn: () => callApi((api) => api.projects.access({ params: { projectId } })),
+  })
+
+export const boardsQuery = (projectId: ProjectId) =>
+  queryOptions({
+    queryKey: keys.boards(projectId),
+    queryFn: () => callApi((api) => api.boards.list({ params: { projectId } })),
+  })
+
+export const labelsQuery = (projectId: ProjectId) =>
+  queryOptions({
+    queryKey: keys.labels(projectId),
+    queryFn: () => callApi((api) => api.boards.labels({ params: { projectId } })),
+  })
+
+export const savedFiltersQuery = (projectId: ProjectId) =>
+  queryOptions({
+    queryKey: keys.savedFilters(projectId),
+    queryFn: () => callApi((api) => api.tasks.savedFilters({ params: { projectId } })),
+  })
+
+// --- Tasks ------------------------------------------------------------------
+
+export const boardViewQuery = (boardId: BoardId, query: ListTasksQuery) =>
+  queryOptions({
+    queryKey: keys.boardView(boardId, query),
+    queryFn: () => callApi((api) => api.tasks.board({ params: { boardId }, query })),
+  })
+
+export const taskListQuery = (projectId: ProjectId, query: ListTasksQuery) =>
+  queryOptions({
+    queryKey: keys.tasks(projectId, query),
+    queryFn: () => callApi((api) => api.tasks.list({ params: { projectId }, query })),
+  })
+
+export const calendarQuery = (projectId: ProjectId, query: CalendarQuery) =>
+  queryOptions({
+    queryKey: keys.calendar(projectId, query),
+    queryFn: () => callApi((api) => api.tasks.calendar({ params: { projectId }, query })),
+  })
+
+export const myTasksQuery = queryOptions({
+  queryKey: keys.mine,
+  queryFn: () => callApi((api) => api.tasks.mine()),
+})
+
+export const taskDetailQuery = (taskId: TaskId) =>
+  queryOptions({
+    queryKey: keys.task(taskId),
+    queryFn: () => callApi((api) => api.tasks.get({ params: { taskId } })),
   })

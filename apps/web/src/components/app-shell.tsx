@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { isWorkspaceAdmin } from "@audit/domain/roles"
 import { Avatar, AvatarFallback } from "@audit/ui/components/ui/avatar.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -16,9 +16,12 @@ import {
 } from "@audit/ui/components/ui/dropdown-menu.tsx"
 import { Separator } from "@audit/ui/components/ui/separator.tsx"
 import { useTheme, type Density, type ThemeMode } from "@audit/ui/theme.tsx"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { authClient } from "../lib/auth.ts"
 import type { Me } from "@audit/domain/identity/schema"
+import { projectsQuery } from "../lib/queries.ts"
+import { ErrorMessage } from "./feedback.tsx"
+import { ProjectCreateDialog } from "./project-create-dialog.tsx"
 
 const navLinkClass =
   "flex items-center rounded-md px-3 py-2 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -32,6 +35,42 @@ function NavLink({ to, children }: { readonly to: string; readonly children: Rea
     >
       {children}
     </Link>
+  )
+}
+
+function ProjectsNav() {
+  const { t } = useLingui()
+  const projects = useQuery(projectsQuery)
+  const [creating, setCreating] = useState(false)
+
+  return (
+    <>
+      <Separator className="my-2" />
+      <span className="px-3 py-1 text-xs font-medium uppercase text-muted-foreground">
+        <Trans>Projects</Trans>
+      </span>
+      <nav aria-label={t`Projects`} className="flex flex-col gap-1">
+        {projects.data?.map((project) => (
+          <Link
+            key={project.id}
+            to="/p/$key/board"
+            params={{ key: project.key }}
+            className={navLinkClass}
+            activeProps={{ className: `${navLinkClass} bg-accent text-foreground` }}
+          >
+            <span className="w-12 shrink-0 font-mono text-xs text-muted-foreground">
+              {project.key}
+            </span>
+            <span className="truncate">{project.name}</span>
+          </Link>
+        ))}
+      </nav>
+      {projects.isError && <ErrorMessage error={projects.error} />}
+      <Button variant="outline" size="sm" className="mt-2 w-full" onClick={() => setCreating(true)}>
+        <Trans>New project</Trans>
+      </Button>
+      <ProjectCreateDialog open={creating} onOpenChange={setCreating} />
+    </>
   )
 }
 
@@ -136,6 +175,9 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
               <span className="px-3 py-1 text-xs font-medium uppercase text-muted-foreground">
                 <Trans>Admin</Trans>
               </span>
+              <NavLink to="/admin/projects">
+                <Trans>Projects</Trans>
+              </NavLink>
               <NavLink to="/admin/members">
                 <Trans>Members</Trans>
               </NavLink>
@@ -154,6 +196,7 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
             </>
           )}
         </nav>
+        <ProjectsNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b px-4 py-2 md:px-6">
