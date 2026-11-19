@@ -78,6 +78,9 @@
         "drizzle-orm": "1.0.0-rc.5",
         "effect": "4.1.4",
       },
+      "devDependencies": {
+        "@audit/testkit": "workspace:*",
+      },
     },
     "packages/db": {
       "name": "@audit/db",

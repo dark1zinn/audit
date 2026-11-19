@@ -154,8 +154,13 @@ export const pgBossLayer = (options: {
     }),
   )
 
+export interface RecordingJobs {
+  readonly enqueued: Array<{ readonly name: string; readonly data: unknown }>
+  readonly layer: Layer.Layer<Jobs>
+}
+
 /** In-memory jobs for tests: records what was enqueued, never runs it. */
-export const recordingJobs = () => {
+export const recordingJobs = (): RecordingJobs => {
   const enqueued: Array<{ readonly name: string; readonly data: unknown }> = []
   const layer = Layer.succeed(
     Jobs,
