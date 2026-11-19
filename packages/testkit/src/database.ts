@@ -1,7 +1,9 @@
 /**
  * A fresh, migrated database per test file, so suites run in parallel without sharing state.
  */
+import { AiModels } from "@audit/core/ai/models"
 import { Authz } from "@audit/core/authz"
+import { AiUnavailable } from "@audit/domain/ai/errors"
 import { EventBus } from "@audit/core/event-bus"
 import { type MailMessage, Mailer } from "@audit/core/notifications/mail"
 import { PasswordBreaches } from "@audit/core/admin/passwords"
@@ -15,6 +17,8 @@ import { APP_ROLE, databaseLayer, type Db, migrateDatabase } from "@audit/platfo
 import { type Jobs, type RecordingJobs, recordingJobs } from "@audit/platform/jobs"
 import type { SqlClient } from "effect/sql"
 import { SQL } from "bun"
+import * as EmbeddingModel from "effect/ai/EmbeddingModel"
+import * as LanguageModel from "effect/ai/LanguageModel"
 import { Effect, Layer, ManagedRuntime, Option, Redacted } from "effect"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -54,6 +58,9 @@ export type TestServices =
   | Mailer
   | PasswordBreaches
   | PushTransport
+  | AiModels
+
+const noModels = new AiUnavailable({ message: "No AI provider in tests" })
 
 export interface PushRequest {
   readonly url: string
@@ -118,6 +125,11 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
       isBreached: (password) => Effect.succeed(breachedPasswords.has(password)),
     }),
     PushTransport.live(vapidConfig, post).pipe(Layer.provide(Secrets.layer)),
+    // No provider is reachable from tests; AI tests provide fake models explicitly.
+    Layer.succeed(AiModels, {
+      language: () => Layer.effect(LanguageModel.LanguageModel, Effect.fail(noModels)),
+      embedding: () => Layer.effect(EmbeddingModel.EmbeddingModel, Effect.fail(noModels)),
+    }),
   ).pipe(Layer.provideMerge(base))
   const runtime = ManagedRuntime.make(layer.pipe(Layer.orDie))
 

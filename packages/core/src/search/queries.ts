@@ -13,6 +13,8 @@ import { type SQL, sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
+import { rrf } from "../ai/chunk.ts"
+import { semanticEntityIds } from "../ai/retrieval.ts"
 
 const MARK_START = "\u0001"
 const MARK_END = "\u0002"
@@ -85,22 +87,36 @@ interface Keyset {
 }
 
 interface CursorState {
-  readonly mode: "fts" | "trgm"
+  readonly mode: "fts" | "trgm" | "fused"
   readonly keyset: Keyset | null
+  readonly offset: number
 }
+
+/** Lexical candidates fed into the fused ranking. */
+const FUSED_POOL = 200
 
 const encodeCursor = (mode: "fts" | "trgm", keyset: Keyset) =>
   Buffer.from(JSON.stringify({ mode, ...keyset })).toString("base64url")
 
+/** Fused pages are addressed by offset: the merged order is recomputed on each page. */
+const encodeFusedCursor = (offset: number) =>
+  Buffer.from(JSON.stringify({ mode: "fused", offset })).toString("base64url")
+
 const decodeCursor = (cursor: string | undefined): CursorState => {
-  const start: CursorState = { mode: "fts", keyset: null }
+  const start: CursorState = { mode: "fts", keyset: null, offset: 0 }
   if (cursor === undefined) return start
   try {
     const raw = JSON.parse(Buffer.from(cursor, "base64url").toString()) as Record<string, unknown>
+    if (raw.mode === "fused" && typeof raw.offset === "number")
+      return { mode: "fused", keyset: null, offset: raw.offset }
     const { rank, updated, id } = raw
     if (typeof rank !== "string" || typeof updated !== "string" || typeof id !== "string")
       return start
-    return { mode: raw.mode === "trgm" ? "trgm" : "fts", keyset: { rank, updated, id } }
+    return {
+      mode: raw.mode === "trgm" ? "trgm" : "fts",
+      keyset: { rank, updated, id },
+      offset: 0,
+    }
   } catch {
     return start
   }
@@ -143,6 +159,7 @@ const searchEntities = (query: SearchQuery) =>
     const authz = yield* Authz
     const actor = yield* CurrentActor
     const visibleC = yield* authz.visible(sql`c.id`)
+    const visibleE = yield* authz.visible(sql`e.id`)
     const q = (query.q ?? "").trim()
     const limit = query.limit ?? 20
     const cursor = decodeCursor(query.cursor)
@@ -222,7 +239,64 @@ const searchEntities = (query: SearchQuery) =>
     const trgmSpec: MatchSpec = { match: sql`e.title % ${q}`, rank: sql`similarity(e.title, ${q})` }
     const need = limit + 1
 
-    let mode = cursor.mode
+    const snippet =
+      q === ""
+        ? sql`''`
+        : sql`ts_headline(audit_search_config(), m.title || ' ' || m.search_text, plainto_tsquery(audit_search_config(), ${q}), ${HEADLINE})`
+
+    /** Hit rows for `ids`, in the order given; ids that no longer resolve are dropped. */
+    const hydrate = (ids: ReadonlyArray<string>) =>
+      Effect.gen(function* () {
+        if (ids.length === 0) return []
+        const result = yield* db
+          .execute<HitRow>(sql`
+            select ${hitColumns(snippet)}
+            from entities m
+            ${hitJoins}
+            where m.id in (${sql.join(
+              ids.map((id) => sql`${id}`),
+              sql`, `,
+            )})`)
+          .pipe(Effect.orDie)
+        const byId = new Map(result.rows.map((row) => [row.id, row]))
+        return ids.flatMap((id) => {
+          const hit = byId.get(id)
+          return hit === undefined ? [] : [toHit(hit)]
+        })
+      })
+
+    /** The ids that pass the filters and are visible to the actor. */
+    const allowedIds = (ids: ReadonlyArray<string>) =>
+      Effect.gen(function* () {
+        if (ids.length === 0) return new Set<string>()
+        const result = yield* db
+          .execute<{ id: string }>(sql`
+            select e.id from entities e
+            where e.id in (${sql.join(
+              ids.map((id) => sql`${id}`),
+              sql`, `,
+            )}) and ${sql.join([...conditions, visibleE], sql` and `)}`)
+          .pipe(Effect.orDie)
+        return new Set(result.rows.map((row) => row.id))
+      })
+
+    let semanticIds: ReadonlyArray<string> = []
+    if (q !== "" && cursor.mode !== "trgm") semanticIds = yield* semanticEntityIds(q, {})
+
+    if (q !== "" && (cursor.mode === "fused" || semanticIds.length > 0)) {
+      // Lexical and semantic rankings fused by reciprocal rank; the page is cut from the fused list.
+      const lexical = yield* collect(ftsSpec, null, FUSED_POOL)
+      const fused = rrf([lexical.map((row) => row.id), [...semanticIds]]).map((item) => item.key)
+      const passing = yield* allowedIds(fused)
+      const ordered = fused.filter((id) => passing.has(id))
+      const start = cursor.offset
+      return {
+        hits: yield* hydrate(ordered.slice(start, start + limit)),
+        nextCursor: ordered.length > start + limit ? encodeFusedCursor(start + limit) : null,
+      } satisfies SearchResults
+    }
+
+    let mode: "fts" | "trgm" = cursor.mode === "trgm" ? "trgm" : "fts"
     let visibleRows: ReadonlyArray<WindowRow>
     if (q === "") {
       visibleRows = yield* collect({ match: sql`true`, rank: sql`0` }, cursor.keyset, need)
@@ -237,34 +311,7 @@ const searchEntities = (query: SearchQuery) =>
     }
 
     const pageRows = visibleRows.slice(0, limit)
-    const ids = pageRows.map((row) => row.id)
-    // Snippets are built only for the rows this page returns.
-    const snippet =
-      q === ""
-        ? sql`''`
-        : sql`ts_headline(audit_search_config(), m.title || ' ' || m.search_text, plainto_tsquery(audit_search_config(), ${q}), ${HEADLINE})`
-    const hydrated =
-      ids.length === 0
-        ? []
-        : yield* db
-            .execute<HitRow>(sql`
-              select ${hitColumns(snippet)}
-              from entities m
-              ${hitJoins}
-              where m.id in (${sql.join(
-                ids.map((id) => sql`${id}`),
-                sql`, `,
-              )})`)
-            .pipe(
-              Effect.map((result) => result.rows),
-              Effect.orDie,
-            )
-    const byId = new Map(hydrated.map((row) => [row.id, row]))
-    const hits = pageRows.flatMap((row) => {
-      const hit = byId.get(row.id)
-      return hit === undefined ? [] : [toHit(hit)]
-    })
-
+    const hits = yield* hydrate(pageRows.map((row) => row.id))
     const last = visibleRows[limit - 1]
     return {
       hits,

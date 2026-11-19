@@ -8,6 +8,32 @@ import { Db } from "@audit/platform/database"
 import { type SQL, desc, eq, sql } from "drizzle-orm"
 import { Effect } from "effect"
 
+/** Stores the given Yjs state and JSON content as the doc's next version. Returns its number. */
+export const insertVersion = (
+  docId: DocId,
+  state: { readonly snapshot: Uint8Array; readonly content: Record<string, unknown> },
+  kind: VersionKind,
+  label: string | null,
+  createdBy: UserId | null,
+) =>
+  Effect.gen(function* () {
+    const db = yield* Db
+    const [row] = yield* db
+      .insert(docVersions)
+      .values({
+        docId,
+        version: sql`(select coalesce(max(${docVersions.version}), 0) + 1 from ${docVersions} where ${docVersions.docId} = ${docId})`,
+        snapshot: state.snapshot,
+        content: state.content,
+        label,
+        kind,
+        createdBy,
+      })
+      .returning({ version: docVersions.version })
+      .pipe(Effect.orDie)
+    return row!.version
+  })
+
 /** Copies the doc's current Yjs state and JSON content into a new version row. Returns its number. */
 export const snapshotDoc = (
   docId: DocId,
@@ -22,20 +48,16 @@ export const snapshotDoc = (
       .from(docs)
       .where(eq(docs.id, docId))
       .pipe(Effect.orDie)
-    const [row] = yield* db
-      .insert(docVersions)
-      .values({
-        docId,
-        version: sql`(select coalesce(max(${docVersions.version}), 0) + 1 from ${docVersions} where ${docVersions.docId} = ${docId})`,
+    return yield* insertVersion(
+      docId,
+      {
         snapshot: doc?.ydoc ?? new Uint8Array(),
         content: doc?.content ?? { type: "doc", content: [] },
-        label,
-        kind,
-        createdBy,
-      })
-      .returning({ version: docVersions.version })
-      .pipe(Effect.orDie)
-    return row!.version
+      },
+      kind,
+      label,
+      createdBy,
+    )
   })
 
 /** Version rows matching `where`, newest first, with their JSON content. */
