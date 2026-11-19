@@ -1,5 +1,5 @@
 /**
- * Task, comment, relation, watch, saved-filter and notification writes. Every write runs through
+ * Task, comment, relation, watch and saved-filter writes. Every write runs through
  * `Command.make`: authorize first, then the transaction records the trail, emits events, syncs
  * references and enqueues jobs.
  */
@@ -8,7 +8,6 @@ import {
   comments,
   entities,
   labels,
-  notifications,
   projects,
   references,
   savedFilters,
@@ -26,7 +25,6 @@ import {
   CommentId,
   EntityId,
   LabelId,
-  NotificationId,
   ProjectId,
   TaskId,
   UserId,
@@ -69,7 +67,7 @@ import { record, emit, diff } from "../trail.ts"
 import { Jobs } from "@audit/platform/jobs"
 import { taskRows, toCards } from "./cards.ts"
 import { extractMentions } from "@audit/editor/mentions"
-import { notify, plainText, watch } from "./notify.ts"
+import { notify, notifyWatchers, plainText, watch } from "../notifications/notify.ts"
 import { completedAtFor } from "./state.ts"
 
 const invalid = (message: string, field?: string) =>
@@ -297,15 +295,28 @@ const addAssignees = (task: TaskState, userIds: ReadonlyArray<UserId>, actor: Us
     }
   })
 
-const removeAssignees = (taskId: TaskId, userIds: ReadonlyArray<UserId>) =>
+const removeAssignees = (task: TaskState, userIds: ReadonlyArray<UserId>, actor: UserId) =>
   userIds.length === 0
     ? Effect.void
     : Effect.gen(function* () {
         const db = yield* Db
         yield* db
           .delete(taskAssignees)
-          .where(and(eq(taskAssignees.taskId, taskId), inArray(taskAssignees.userId, [...userIds])))
+          .where(
+            and(eq(taskAssignees.taskId, task.id), inArray(taskAssignees.userId, [...userIds])),
+          )
           .pipe(Effect.orDie)
+        for (const userId of userIds) {
+          yield* notify({
+            userId,
+            kind: "task_unassigned",
+            entityId: task.id,
+            projectId: task.projectId,
+            actorId: actor,
+            payload: { taskKey: task.key, title: task.title },
+            groupKey: `unassigned:${task.id}:${userId}`,
+          })
+        }
       })
 
 /** Labels must belong to the task's project. */
@@ -479,24 +490,6 @@ const commentTarget = (commentId: CommentId) =>
     return { taskId: row.taskId as TaskId, authorId: row.authorId }
   })
 
-const notificationOwner = (notificationId: NotificationId) =>
-  Effect.gen(function* () {
-    const db = yield* Db
-    const userId = yield* currentUser("notification.update")
-    const [row] = yield* db
-      .select({
-        userId: notifications.userId,
-        entityId: notifications.entityId,
-      })
-      .from(notifications)
-      .where(eq(notifications.id, notificationId))
-      .pipe(Effect.orDie)
-    if (!row) return yield* new NotFound({ entity: "notification", id: notificationId })
-    if (row.userId !== userId)
-      return yield* new NotFound({ entity: "notification", id: notificationId })
-    return { userId, entityId: row.entityId as EntityId }
-  })
-
 // ---------------------------------------------------------------------------------------------
 // Tasks
 
@@ -643,8 +636,9 @@ export const updateTask = Command.make("task.update", {
         const current = yield* currentAssignees(input.taskId)
         const next = new Set(input.assignees)
         yield* removeAssignees(
-          input.taskId,
+          state,
           current.filter((id) => !next.has(id)),
+          userId,
         )
         yield* addAssignees(
           state,
@@ -688,6 +682,16 @@ export const updateTask = Command.make("task.update", {
         version,
         userId,
       )
+      if (input.title !== undefined || input.dueAt !== undefined) {
+        yield* notifyWatchers({
+          entityId: input.taskId,
+          projectId: state.projectId,
+          actorId: userId,
+          kind: "task_changed",
+          payload: { taskKey: state.key, title: nextTitle },
+          groupKey: `task_changed:${input.taskId}`,
+        })
+      }
       return yield* taskCard(input.taskId)
     }),
 })
@@ -804,7 +808,7 @@ export const bulkAssignTasks = Command.make("task.bulk_assign", {
         const state = yield* loadTaskState(taskId)
         yield* assertWritable(state.projectId)
         yield* addAssignees(state, input.add, userId)
-        yield* removeAssignees(taskId, input.remove)
+        yield* removeAssignees(state, input.remove, userId)
         const version = yield* touchEntity(taskId)
         yield* taskEvent("updated", state, version, userId)
       }
@@ -990,6 +994,14 @@ export const createComment = Command.make("comment.create", {
         })
         .pipe(Effect.orDie)
       yield* watch(input.taskId, userId)
+      yield* notifyWatchers({
+        entityId: input.taskId,
+        projectId: state.projectId,
+        actorId: userId,
+        kind: "comment_added",
+        payload: { taskKey: state.key, title: state.title },
+        groupKey: `comment:${input.taskId}`,
+      })
       yield* syncMentions(id, input.taskId, input.body, userId, { commentId: id })
       yield* record({
         action: "comment.created",
@@ -1168,74 +1180,3 @@ export const deleteSavedFilter = Command.make("saved_filter.delete", {
       yield* db.delete(savedFilters).where(eq(savedFilters.id, input.filterId)).pipe(Effect.orDie)
     }),
 })
-
-export const markNotificationRead = Command.make("notification.read", {
-  input: Schema.Struct({ notificationId: NotificationId }),
-  output: Schema.Void,
-  authorize: (input) =>
-    Effect.gen(function* () {
-      yield* notificationOwner(input.notificationId)
-    }),
-  run: (input) =>
-    Effect.gen(function* () {
-      const db = yield* Db
-      const owner = yield* notificationOwner(input.notificationId)
-      yield* db
-        .update(notifications)
-        .set({ readAt: new Date() })
-        .where(eq(notifications.id, input.notificationId))
-        .pipe(Effect.orDie)
-      yield* emit({
-        _tag: "NotificationChanged",
-        kind: "read",
-        entityId: owner.entityId,
-        projectId: yield* projectOfEntity(owner.entityId),
-        actorId: owner.userId,
-        version: 0,
-        userId: owner.userId,
-        notificationId: input.notificationId,
-      })
-    }),
-})
-
-export const archiveNotification = Command.make("notification.archive", {
-  input: Schema.Struct({ notificationId: NotificationId }),
-  output: Schema.Void,
-  authorize: (input) =>
-    Effect.gen(function* () {
-      yield* notificationOwner(input.notificationId)
-    }),
-  run: (input) =>
-    Effect.gen(function* () {
-      const db = yield* Db
-      const owner = yield* notificationOwner(input.notificationId)
-      yield* db
-        .update(notifications)
-        .set({ archivedAt: new Date() })
-        .where(eq(notifications.id, input.notificationId))
-        .pipe(Effect.orDie)
-      yield* emit({
-        _tag: "NotificationChanged",
-        kind: "archived",
-        entityId: owner.entityId,
-        projectId: yield* projectOfEntity(owner.entityId),
-        actorId: owner.userId,
-        version: 0,
-        userId: owner.userId,
-        notificationId: input.notificationId,
-      })
-    }),
-})
-
-/** Project of a task or other entity; notifications always point at a task. */
-const projectOfEntity = (entityId: EntityId) =>
-  Effect.gen(function* () {
-    const db = yield* Db
-    const [row] = yield* db
-      .select({ projectId: entities.projectId })
-      .from(entities)
-      .where(eq(entities.id, entityId))
-      .pipe(Effect.orDie)
-    if (!row?.projectId) return yield* new NotFound({ entity: "entity", id: entityId })
-    return row.projectId as ProjectId
-  })

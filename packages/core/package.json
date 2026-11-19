@@ -11,10 +11,13 @@
     "@audit/db": "workspace:*",
     "@audit/domain": "workspace:*",
     "@audit/editor": "workspace:*",
+    "@audit/i18n": "workspace:*",
     "@audit/platform": "workspace:*",
     "drizzle-orm": "1.0.0-rc.5",
     "effect": "4.1.4",
-    "file-type": "22.3.0"
+    "file-type": "22.3.0",
+    "nodemailer": "10.6.0",
+    "rrule-temporal": "2.3.0"
   },
   "devDependencies": {
     "@audit/testkit": "workspace:*"

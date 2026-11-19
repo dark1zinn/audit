@@ -3,7 +3,6 @@ import {
   comments,
   entities,
   labels,
-  notifications,
   references,
   savedFilters,
   taskAssignees,
@@ -17,14 +16,12 @@ import type {
   ColumnId,
   CommentId,
   EntityId,
-  NotificationId,
   ProjectId,
   TaskId,
   UserId,
 } from "@audit/domain/ids"
 import type {
   CalendarQuery,
-  Notification,
   Priority,
   RelationKind,
   SavedFilter,
@@ -402,28 +399,4 @@ export const savedFiltersOf = (projectId: ProjectId) =>
         Effect.orDie,
       ),
     )
-  })
-
-export const myNotifications = () =>
-  Effect.gen(function* () {
-    const db = yield* Db
-    const userId = yield* currentUser("notification.read")
-    const rows = yield* db
-      .select()
-      .from(notifications)
-      .where(and(eq(notifications.userId, userId), isNull(notifications.archivedAt)))
-      .orderBy(desc(notifications.createdAt))
-      .limit(100)
-      .pipe(Effect.orDie)
-    return rows.map((row): Notification => ({
-      id: row.id as NotificationId,
-      kind: row.kind,
-      entityId: row.entityId as EntityId,
-      actorId: row.actorId as UserId | null,
-      payload: row.payload,
-      groupKey: row.groupKey,
-      readAt: row.readAt,
-      archivedAt: row.archivedAt,
-      createdAt: row.createdAt,
-    }))
   })

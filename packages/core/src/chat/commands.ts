@@ -53,7 +53,7 @@ import { checkVersion, createEntity, lockEntity, touchEntity } from "../entities
 import { assertWritable } from "../projects/read.ts"
 import { syncReferences } from "../references.ts"
 import { createTask } from "../tasks/commands.ts"
-import { notify, plainText } from "../tasks/notify.ts"
+import { notify, plainText } from "../notifications/notify.ts"
 import { emit, record } from "../trail.ts"
 import {
   channelRow,

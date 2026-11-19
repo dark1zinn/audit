@@ -48,6 +48,7 @@ import * as Command from "../command.ts"
 import { checkVersion, createEntity, lockEntity, touchEntity } from "../entities.ts"
 import { diff, emit, record } from "../trail.ts"
 import { initialKeys, keyBetween, keysBetween } from "@audit/domain/ordering"
+import { insertProjectCalendar } from "../calendar/commands.ts"
 import { insertProjectChannel } from "../chat/commands.ts"
 import { assertWritable, projectRow, projectRowAny, projectDetail } from "./read.ts"
 import { boardColumnsWithCounts, loadBoard, boardRow } from "./board-read.ts"
@@ -370,6 +371,7 @@ export const createProject = Command.make("project.create", {
         .pipe(Effect.orDie)
 
       yield* insertProjectChannel(projectId, input.key, userId)
+      yield* insertProjectCalendar(projectId, input.name, userId)
       yield* authz.rebuild({ containerId: projectId })
       yield* record({
         action: "project.created",

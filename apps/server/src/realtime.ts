@@ -56,6 +56,8 @@ const inScope = (subscription: Subscription, event: DomainEvent): boolean => {
   if (event.entityId !== null && subscription.entityIds.has(event.entityId)) return true
   // Channel events are routed to every `channel:<id>` subscriber of their channel.
   if ("channelId" in event && subscription.entityIds.has(event.channelId)) return true
+  // Calendar and event events are routed to every `entity:<calendarId>` subscriber of the calendar.
+  if ("calendarId" in event && subscription.entityIds.has(event.calendarId)) return true
   // Comments are routed to the task they belong to, so `entity:<taskId>` sees them.
   return event._tag === "CommentChanged" && subscription.entityIds.has(event.taskId)
 }

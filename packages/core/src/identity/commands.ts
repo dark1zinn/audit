@@ -6,6 +6,7 @@ import {
   teamMembers,
   teams,
   twoFactor,
+  notificationPrefs,
   user,
   userProfiles,
   verification,
@@ -40,6 +41,8 @@ import { Db } from "@audit/platform/database"
 import { and, eq, inArray, sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import { Authz } from "../authz.ts"
+import { notify } from "../notifications/notify.ts"
+import { sendInviteEmail } from "../notifications/account-mail.ts"
 import * as Command from "../command.ts"
 import { diff, emit, record } from "../trail.ts"
 import { createAccount, normalizeEmail } from "./accounts.ts"
@@ -204,7 +207,9 @@ export const createInvite = Command.make("invite.create", {
         actorId: createdBy,
         version: null,
       })
-      return { invite, url: new URL(`/join/${token}`, config.url).toString() }
+      const url = new URL(`/join/${token}`, config.url).toString()
+      if (invite.email !== null) yield* sendInviteEmail({ email: invite.email, url })
+      return { invite, url }
     }),
 })
 
@@ -301,6 +306,31 @@ export const acceptInvite = Command.make("invite.accept", {
         actorId: userId,
         version: null,
       })
+      const admins = yield* db
+        .select({ userId: workspaceMembers.userId })
+        .from(workspaceMembers)
+        .innerJoin(
+          notificationPrefs,
+          and(
+            eq(notificationPrefs.userId, workspaceMembers.userId),
+            eq(notificationPrefs.kind, "invite_accepted"),
+            eq(notificationPrefs.channel, "in_app"),
+            eq(notificationPrefs.enabled, true),
+          ),
+        )
+        .where(inArray(workspaceMembers.role, ["owner", "admin"]))
+        .pipe(Effect.orDie)
+      for (const admin of admins) {
+        yield* notify({
+          userId: admin.userId as UserId,
+          kind: "invite_accepted",
+          entityId: userId,
+          projectId: null,
+          actorId: userId,
+          payload: { title: input.name },
+          groupKey: `invite_accepted:${userId}`,
+        })
+      }
       return userId
     }),
 })
@@ -505,9 +535,20 @@ export const updateWorkspace = Command.make("workspace.updated", {
         ["name", "settings", "signupPolicy", "searchConfig"],
       )
       if (Object.keys(changes).length === 0) return
+      // The stored VAPID entry is internal: a settings save must not drop it.
+      const vapid =
+        typeof before.settings === "object" &&
+        before.settings !== null &&
+        "vapid" in before.settings
+          ? before.settings.vapid
+          : undefined
       yield* db
         .update(workspace)
-        .set({ ...input, updatedAt: new Date() })
+        .set({
+          ...input,
+          ...(input.settings === undefined ? {} : { settings: { ...input.settings, vapid } }),
+          updatedAt: new Date(),
+        })
         .where(eq(workspace.id, 1))
       if (input.searchConfig !== undefined && input.searchConfig !== before.searchConfig) {
         // Recompute every search vector with the new text-search configuration.

@@ -9,7 +9,7 @@ import { defineJob } from "@audit/platform/jobs"
 import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import * as Command from "../command.ts"
-import { notify } from "../tasks/notify.ts"
+import { notify } from "../notifications/notify.ts"
 
 export const docFreshness = Command.make("docs.freshness", {
   input: Schema.Struct({}),
@@ -25,6 +25,7 @@ export const docFreshness = Command.make("docs.freshness", {
           title: entities.title,
           projectId: docs.projectId,
           ownerUserId: docs.ownerUserId,
+          reviewNotifiedAt: docs.reviewNotifiedAt,
         })
         .from(docs)
         .innerJoin(entities, eq(entities.id, docs.id))
@@ -50,7 +51,7 @@ export const docFreshness = Command.make("docs.freshness", {
           projectId: row.projectId as ProjectId | null,
           actorId: null,
           payload: { title: row.title, docId: row.id },
-          groupKey: `doc_review:${row.id}`,
+          groupKey: `doc_review:${row.id}:${row.reviewNotifiedAt ?? "first"}`,
         })
         yield* db
           .update(docs)

@@ -9,7 +9,7 @@ import { Db } from "@audit/platform/database"
 import { and, eq, gt, isNull, lte } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import * as Command from "../command.ts"
-import { notify } from "./notify.ts"
+import { notify } from "../notifications/notify.ts"
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -80,7 +80,7 @@ const remindKind = (kind: "due_soon" | "overdue") =>
           projectId: row.projectId,
           actorId: null,
           payload: { taskKey: row.key, title: row.title, dueAt: row.dueAt.toISOString() },
-          groupKey: `${kind}:${row.id}`,
+          groupKey: `${kind}:${row.id}:${row.dueAt.getTime()}`,
         })
       }
       yield* db

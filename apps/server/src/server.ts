@@ -11,6 +11,10 @@
 import { join, normalize } from "node:path"
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
+import { Mailer } from "@audit/core/notifications/mail"
+import { PushTransport } from "@audit/core/notifications/push"
+import { vapidConfig } from "@audit/core/notifications/vapid"
+import { sendResetPasswordEmail } from "@audit/core/notifications/account-mail"
 import { CurrentActor } from "@audit/domain/actor"
 import type { UserId } from "@audit/domain/ids"
 import { RealtimeRpcs } from "@audit/domain/events"
@@ -20,7 +24,7 @@ import { BlobStore } from "@audit/platform/blob-store"
 import { Secrets } from "@audit/platform/crypto"
 import { APP_ROLE, databaseLayer, migrateDatabase } from "@audit/platform/database"
 import { pgBossLayer } from "@audit/platform/jobs"
-import { Context, Effect, Layer, ManagedRuntime } from "effect"
+import { Context, Effect, Layer, ManagedRuntime, Option, Redacted } from "effect"
 import { HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { SqlClient } from "effect/sql"
@@ -30,6 +34,7 @@ import { type CollabSocketData, createCollab } from "./collab.ts"
 import { withClientIp } from "./client-ip.ts"
 import { HttpApiLive } from "./http-api.ts"
 import { FilesHttpLive } from "./files-http.ts"
+import { IcalHttpLive } from "./ical-http.ts"
 import { jobDefinitions, jobWorkersLayer } from "./jobs.ts"
 import { Presence } from "./presence.ts"
 import { rateLimiterLayer } from "./rate-limit.ts"
@@ -71,6 +76,16 @@ const withHeaders = (response: Response) => {
   return response
 }
 
+/** Web push always has keys (env or generated per workspace); email stays off until SMTP is set. */
+const notificationTransports = (config: AppConfigShape) =>
+  Layer.mergeAll(
+    PushTransport.live(vapidConfig).pipe(Layer.provide(Secrets.layer)),
+    Option.match(Option.all({ smtp: config.smtpUrl, from: config.mailFrom }), {
+      onNone: () => Mailer.disabled,
+      onSome: ({ smtp, from }) => Mailer.smtp(Redacted.value(smtp), from),
+    }),
+  )
+
 /** Infrastructure shared by every entry point; built once per process. */
 export const makeCoreLayer = (config: AppConfigShape) => {
   const base = Layer.mergeAll(
@@ -82,6 +97,7 @@ export const makeCoreLayer = (config: AppConfigShape) => {
     EventBus.layer,
     BlobStore.layer,
     Secrets.layer,
+    notificationTransports(config),
     pgBossLayer({ url: config.databaseUrl, jobs: jobDefinitions }),
   )
   return services.pipe(Layer.provideMerge(base))
@@ -109,6 +125,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
         }),
       ),
     trail: makeTrailWriter(runtime),
+    sendResetPassword: (input) => runtime.runPromise(sendResetPasswordEmail(input)),
   })
 
   const sessions = sessionsLayer(auth)
@@ -150,7 +167,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   )
 
   const app = HttpRouter.toWebHandler(
-    Layer.mergeAll(HttpApiLive, rpcLayer, FilesHttpLive).pipe(
+    Layer.mergeAll(HttpApiLive, rpcLayer, FilesHttpLive, IcalHttpLive).pipe(
       Layer.provide(serverLayer),
       Layer.provide(HttpServer.layerServices),
     ),
@@ -209,7 +226,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
         const forwarded = withClientIp(request, bunServer, config.trustProxy)
         return withHeaders(await app.handler(forwarded, context))
       }
-      if (pathname.startsWith("/files/")) {
+      if (pathname.startsWith("/files/") || pathname.startsWith("/ical/")) {
         const forwarded = withClientIp(request, bunServer, config.trustProxy)
         return withHeaders(await app.handler(forwarded, context))
       }

@@ -7,7 +7,7 @@ import {
 } from "@audit/core/projects/commands"
 import { defaultBoardId } from "@audit/core/projects/read"
 import { createTask, updateTask } from "@audit/core/tasks/commands"
-import { myNotifications } from "@audit/core/tasks/queries"
+import { myNotifications } from "@audit/core/notifications/queries"
 import { remindDueSoon, remindOverdue } from "@audit/core/tasks/reminders"
 import type { BoardId, ColumnId, ProjectId, TaskId, UserId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
@@ -27,7 +27,7 @@ const remind = (kind: "soon" | "overdue") =>
   runAs(database, system)(kind === "soon" ? remindDueSoon.execute({}) : remindOverdue.execute({}))
 
 const notificationsFor = async (person: Person, kind: string, taskId: TaskId) => {
-  const items = await runAs(database, person.actor)(myNotifications())
+  const items = await runAs(database, person.actor)(myNotifications(false))
   return items.filter((item) => item.kind === kind && item.entityId === taskId)
 }
 

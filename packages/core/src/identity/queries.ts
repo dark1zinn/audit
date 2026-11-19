@@ -8,6 +8,7 @@ import {
   workspaceMembers,
 } from "@audit/db/schema"
 import { actorUserId, CurrentActor } from "@audit/domain/actor"
+import { Mailer } from "../notifications/mail.ts"
 import { Forbidden, NotFound, Unauthorized } from "@audit/domain/errors"
 import type { InviteId, ProjectId, TeamId, UserId } from "@audit/domain/ids"
 import {
@@ -59,15 +60,24 @@ export const toInvite = (row: InviteRow, now: Date): Invite => ({
   status: inviteStatus(row, now),
 })
 
-const readSettings = (raw: unknown): WorkspaceSettings => ({
-  ...defaultWorkspaceSettings,
-  ...(raw as Partial<WorkspaceSettings>),
-})
+/** Only the declared settings keys leave the server; `vapid` and other internal entries stay put. */
+const readSettings = (raw: unknown): WorkspaceSettings => {
+  const stored = (raw ?? {}) as Partial<WorkspaceSettings>
+  return {
+    ...defaultWorkspaceSettings,
+    ...Object.fromEntries(
+      Object.keys(defaultWorkspaceSettings).flatMap((key) =>
+        key in stored ? [[key, stored[key as keyof WorkspaceSettings]]] : [],
+      ),
+    ),
+  }
+}
 
 export const setupStatus = Effect.gen(function* () {
   const db = yield* Db
+  const mailer = yield* Mailer
   const rows = yield* db.select({ id: workspace.id }).from(workspace)
-  return { needsSetup: rows.length === 0 }
+  return { needsSetup: rows.length === 0, emailEnabled: mailer.enabled }
 }).pipe(Effect.orDie)
 
 export const getWorkspace = Effect.gen(function* () {

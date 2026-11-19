@@ -12,10 +12,16 @@ import * as docQueries from "@audit/core/docs/queries"
 import { backlinks, resolveEntities } from "@audit/core/references"
 import * as projectCommands from "@audit/core/projects/commands"
 import * as projectQueries from "@audit/core/projects/queries"
+import * as calendarCommands from "@audit/core/calendar/commands"
+import * as calendarQueries from "@audit/core/calendar/queries"
 import { RequestMeta } from "@audit/core/request"
 import { listTrail, verifyTrail } from "@audit/core/trail-queries"
 import * as taskCommands from "@audit/core/tasks/commands"
 import * as taskQueries from "@audit/core/tasks/queries"
+import * as notificationCommands from "@audit/core/notifications/commands"
+import * as notificationQueries from "@audit/core/notifications/queries"
+import type { Mailer } from "@audit/core/notifications/mail"
+import type { PushTransport } from "@audit/core/notifications/push"
 import * as chatCommands from "@audit/core/chat/commands"
 import * as chatQueries from "@audit/core/chat/queries"
 import * as chatThreadDoc from "@audit/core/chat/thread-doc"
@@ -36,7 +42,9 @@ import { Sessions } from "./sessions.ts"
 import { SetupToken } from "./setup-token.ts"
 
 /** Services every command and query may need, captured once when the handlers are built. */
-const coreContext = Effect.context<Db | SqlClient.SqlClient | Authz | EventBus | AppConfig>()
+const coreContext = Effect.context<
+  Db | SqlClient.SqlClient | Authz | EventBus | AppConfig | PushTransport | Mailer
+>()
 
 const systemActor = (reason: string) =>
   Effect.provideService(CurrentActor, { _tag: "system", reason } as const)
@@ -240,6 +248,70 @@ const TrailLive = HttpApiBuilder.group(AuditApi, "trail", (handlers) =>
     return handlers
       .handle("list", ({ query }) => listTrail(query).pipe(Effect.provide(core)))
       .handle("verify", () => verifyTrail.pipe(Effect.provide(core)))
+  }),
+)
+
+const CalendarLive = HttpApiBuilder.group(AuditApi, "calendar", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("calendars", () =>
+        calendarQueries.listCalendars.execute({}).pipe(Effect.provide(core)),
+      )
+      .handle("createCalendar", ({ payload }) =>
+        calendarCommands.createCalendar.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("updateCalendar", ({ params, payload }) =>
+        calendarCommands.updateCalendar
+          .execute({ calendarId: params.calendarId, patch: payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteCalendar", ({ params }) =>
+        calendarCommands.deleteCalendar
+          .execute({ calendarId: params.calendarId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("events", ({ query }) =>
+        calendarQueries.listEvents.execute(query).pipe(Effect.provide(core)),
+      )
+      .handle("createEvent", ({ params, payload }) =>
+        calendarCommands.createEvent
+          .execute({ ...payload, calendarId: params.calendarId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("updateEvent", ({ params, payload }) =>
+        calendarCommands.updateEvent
+          .execute({ eventId: params.eventId, patch: payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteEvent", ({ params, payload }) =>
+        calendarCommands.deleteEvent
+          .execute({ eventId: params.eventId, patch: payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("rsvp", ({ params, payload }) =>
+        calendarCommands.rsvp
+          .execute({ eventId: params.eventId, response: payload.response })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("linkEvent", ({ params, payload }) =>
+        calendarCommands.linkEvent
+          .execute({ eventId: params.eventId, kind: payload.kind, targetId: payload.targetId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unlinkEvent", ({ params, payload }) =>
+        calendarCommands.unlinkEvent
+          .execute({ eventId: params.eventId, kind: payload.kind, targetId: payload.targetId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("importIcs", ({ params, payload }) =>
+        calendarCommands.importIcs
+          .execute({ calendarId: params.calendarId, ics: payload.ics })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("regenerateIcalFeed", () =>
+        calendarCommands.regenerateIcalFeed.execute({}).pipe(Effect.provide(core)),
+      )
   }),
 )
 
@@ -484,16 +556,46 @@ const NotificationsLive = HttpApiBuilder.group(AuditApi, "notifications", (handl
   Effect.gen(function* () {
     const core = yield* coreContext
     return handlers
-      .handle("list", () => taskQueries.myNotifications().pipe(Effect.provide(core)))
+      .handle("list", ({ query }) =>
+        notificationQueries.myNotifications(query.archived === "true").pipe(Effect.provide(core)),
+      )
+      .handle("readAll", () =>
+        notificationCommands.markAllNotificationsRead.execute({}).pipe(Effect.provide(core)),
+      )
       .handle("read", ({ params }) =>
-        taskCommands.markNotificationRead
+        notificationCommands.markNotificationRead
+          .execute({ notificationId: params.notificationId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unread", ({ params }) =>
+        notificationCommands.markNotificationUnread
           .execute({ notificationId: params.notificationId })
           .pipe(Effect.provide(core)),
       )
       .handle("archive", ({ params }) =>
-        taskCommands.archiveNotification
+        notificationCommands.archiveNotification
           .execute({ notificationId: params.notificationId })
           .pipe(Effect.provide(core)),
+      )
+      .handle("unarchive", ({ params }) =>
+        notificationCommands.unarchiveNotification
+          .execute({ notificationId: params.notificationId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("settings", () =>
+        notificationQueries.notificationSettings().pipe(Effect.provide(core)),
+      )
+      .handle("updatePref", ({ payload }) =>
+        notificationCommands.updateNotificationPref.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("updateQuietHours", ({ payload }) =>
+        notificationCommands.updateQuietHours.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("subscribePush", ({ payload }) =>
+        notificationCommands.subscribePush.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("unsubscribePush", ({ payload }) =>
+        notificationCommands.unsubscribePush.execute(payload).pipe(Effect.provide(core)),
       )
   }),
 )
@@ -819,6 +921,7 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
 }).pipe(
   Layer.provide([
     SetupLive,
+    CalendarLive,
     JoinLive,
     MeLive,
     WorkspaceLive,

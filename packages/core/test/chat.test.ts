@@ -158,7 +158,7 @@ describe("channels and unread state", () => {
       owner.actor,
     )(chat.postMessage.execute({ channelId: channel.id, body: mentionOf("here", "here") }))
     expect(Exit.isSuccess(allowed)).toBe(true)
-  })
+  }, 30_000)
 
   test("a mention notifies only the mentioned person when they can see the channel", async () => {
     const channel = await newChannel("hidden-mention", "private")

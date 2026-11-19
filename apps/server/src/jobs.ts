@@ -5,6 +5,11 @@ import { purgeMessages, purgeMessagesJob } from "@audit/core/chat/retention"
 import { orphanCleanupJob, cleanupOrphanedFiles } from "@audit/core/files/cleanup"
 import { boardRebalance, rebalanceBoard } from "@audit/core/projects/rebalance"
 import { dueSoonJob, overdueJob, remindDueSoon, remindOverdue } from "@audit/core/tasks/reminders"
+import { calendarReminder, calendarReminderJob } from "@audit/core/calendar/reminders"
+import { deliverNotification } from "@audit/core/notifications/deliver"
+import { deliverJob } from "@audit/core/notifications/notify"
+import type { Mailer } from "@audit/core/notifications/mail"
+import type { PushTransport } from "@audit/core/notifications/push"
 import { CurrentActor } from "@audit/domain/actor"
 import type { BlobStore } from "@audit/platform/blob-store"
 import type { Db } from "@audit/platform/database"
@@ -20,6 +25,8 @@ export const jobDefinitions: ReadonlyArray<JobDefinition> = [
   docFreshnessJob,
   orphanCleanupJob,
   purgeMessagesJob,
+  calendarReminderJob,
+  deliverJob,
 ]
 
 /** Reminders run hourly, on the hour, in UTC. */
@@ -40,7 +47,9 @@ const asSystem = Effect.provideService(CurrentActor, {
 export const jobWorkersLayer = Layer.effectDiscard(
   Effect.gen(function* () {
     const jobs = yield* Jobs
-    const context = yield* Effect.context<Db | SqlClient.SqlClient | Authz | EventBus | BlobStore>()
+    const context = yield* Effect.context<
+      Db | SqlClient.SqlClient | Authz | EventBus | BlobStore | Jobs | PushTransport | Mailer
+    >()
     yield* jobs.work(boardRebalance, ({ boardId }) =>
       rebalanceBoard(boardId).pipe(Effect.provide(context)),
     )
@@ -58,6 +67,12 @@ export const jobWorkersLayer = Layer.effectDiscard(
     )
     yield* jobs.work(docFreshnessJob, () =>
       docFreshness.execute({}).pipe(asSystem, Effect.provide(context)),
+    )
+    yield* jobs.work(calendarReminderJob, (data) =>
+      calendarReminder.execute(data).pipe(asSystem, Effect.provide(context)),
+    )
+    yield* jobs.work(deliverJob, (data) =>
+      deliverNotification(data).pipe(asSystem, Effect.provide(context)),
     )
     yield* jobs.schedule(dueSoonJob, REMINDER_CRON, {})
     yield* jobs.schedule(overdueJob, REMINDER_CRON, {})

@@ -23,6 +23,12 @@ export interface AuthOptions {
   /** Whether a user may get a session (an active workspace member). */
   readonly canSignIn: (userId: string) => Promise<boolean>
   readonly trail: TrailWriter
+  /** Sends the password reset link through the notification mail service. */
+  readonly sendResetPassword: (input: {
+    userId: string
+    email: string
+    url: string
+  }) => Promise<void>
 }
 
 const requestMeta = (request: Request | undefined) => {
@@ -75,6 +81,9 @@ export const makeAuth = (options: AuthOptions): AuthHandle => {
       enabled: true,
       // Accounts are created by setup and invites, never by public sign-up.
       disableSignUp: true,
+      sendResetPassword: async ({ user, url }) => {
+        await options.sendResetPassword({ userId: user.id, email: user.email, url })
+      },
       minPasswordLength: 10,
       password: {
         hash: (password) => Bun.password.hash(password, { algorithm: "argon2id" }),
