@@ -107,6 +107,9 @@ const writeTool = <I>(spec: {
 const Title = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(300))
 const Body = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(8000))
 
+/** No-input tools need an explicit empty object schema; a bare empty struct breaks OpenAI tools. */
+const EmptyParams = Schema.Record(Schema.String, Schema.Never)
+
 export const readTools: ReadonlyArray<ReadTool> = [
   readTool({
     name: "search_workspace",
@@ -117,7 +120,7 @@ export const readTools: ReadonlyArray<ReadTool> = [
   readTool({
     name: "my_tasks",
     description: "List the tasks assigned to the user.",
-    input: Schema.Struct({}),
+    input: EmptyParams,
     run: () => Commands.myTasks(),
   }),
   readTool({
@@ -141,7 +144,7 @@ export const readTools: ReadonlyArray<ReadTool> = [
   readTool({
     name: "whoami",
     description: "Return the user's profile and workspace role.",
-    input: Schema.Struct({}),
+    input: EmptyParams,
     run: () => Commands.whoami(),
   }),
 ]

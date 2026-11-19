@@ -25,7 +25,7 @@ import * as Command from "../command.ts"
 import { readAiSettings } from "./settings.ts"
 import { loadAiContext } from "./guard.ts"
 import { findTool } from "./tools.ts"
-import { chatTurn } from "./assistant.ts"
+import { type AiPartRow, chatTurn } from "./assistant.ts"
 
 const LIST_LIMIT = 50
 
@@ -143,7 +143,16 @@ export const conversationDetail = (conversationId: AiConversationId) =>
       .where(eq(aiMessages.conversationId, conversationId))
       .orderBy(aiMessages.createdAt)
       .pipe(Effect.orDie)
-    const messages = rows.map((row) => Schema.decodeUnknownSync(AiMessage)(row))
+    // Parts are stored with a `type` key; the domain schema tags them with `_tag`.
+    const messages = rows.map((row) =>
+      Schema.decodeUnknownSync(AiMessage)({
+        ...row,
+        parts: (row.parts as ReadonlyArray<AiPartRow>).map(({ type, ...part }) => ({
+          ...part,
+          _tag: type,
+        })),
+      }),
+    )
     return Schema.decodeUnknownSync(AiConversationDetail)({ conversation, messages })
   })
 
