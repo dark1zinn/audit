@@ -6,7 +6,9 @@ import { Schema } from "effect"
 import { Rpc, RpcGroup } from "effect/rpc"
 import { Unauthorized } from "./errors.ts"
 import { RpcAuthentication } from "./http.ts"
-import { EntityId, ProjectId, UserId } from "./ids.ts"
+import { BoardId, ColumnId, EntityId, NotificationId, ProjectId, TaskId, UserId } from "./ids.ts"
+import { ColumnCategory, ProjectVisibility } from "./projects/schema.ts"
+import { Priority } from "./tasks/schema.ts"
 
 /** Fields every event carries so fan-out can filter by scope and permission. */
 const base = {
@@ -27,12 +29,82 @@ export const TeamsChanged = Schema.TaggedStruct("TeamsChanged", base)
 export const WorkspaceUpdated = Schema.TaggedStruct("WorkspaceUpdated", base)
 export const ProfileUpdated = Schema.TaggedStruct("ProfileUpdated", { ...base, userId: UserId })
 
+/** Project lifecycle, access and settings. `entityId` is the project id. */
+export const ProjectChanged = Schema.TaggedStruct("ProjectChanged", {
+  ...base,
+  kind: Schema.Literals([
+    "created",
+    "updated",
+    "archived",
+    "unarchived",
+    "deleted",
+    "restored",
+    "access_changed",
+  ]),
+  key: Schema.String,
+  visibility: ProjectVisibility,
+})
+
+/** Boards, columns and labels. `entityId` is the board id (labels use the project id). */
+export const BoardChanged = Schema.TaggedStruct("BoardChanged", {
+  ...base,
+  kind: Schema.Literals([
+    "created",
+    "renamed",
+    "deleted",
+    "restricted",
+    "access_changed",
+    "column_created",
+    "column_updated",
+    "column_moved",
+    "column_deleted",
+    "label_changed",
+  ]),
+  boardId: Schema.NullOr(BoardId),
+  columnId: Schema.NullOr(ColumnId),
+})
+
+/**
+ * Task lifecycle. `position`, `columnId`, `title` and `priority` are present only when they
+ * changed, so clients patch their local card instead of refetching the board.
+ */
+export const TaskChanged = Schema.TaggedStruct("TaskChanged", {
+  ...base,
+  kind: Schema.Literals(["created", "updated", "moved", "deleted", "restored"]),
+  boardId: Schema.NullOr(BoardId),
+  columnId: Schema.optionalKey(Schema.NullOr(ColumnId)),
+  columnCategory: Schema.optionalKey(ColumnCategory),
+  position: Schema.optionalKey(Schema.String),
+  title: Schema.optionalKey(Schema.String),
+  priority: Schema.optionalKey(Priority),
+  key: Schema.String,
+})
+
+export const CommentChanged = Schema.TaggedStruct("CommentChanged", {
+  ...base,
+  kind: Schema.Literals(["created", "updated", "deleted"]),
+  taskId: TaskId,
+})
+
+/** Sent to the recipient's `inbox` scope only. */
+export const NotificationChanged = Schema.TaggedStruct("NotificationChanged", {
+  ...base,
+  userId: UserId,
+  notificationId: NotificationId,
+  kind: Schema.Literals(["created", "read", "archived"]),
+})
+
 export const DomainEvent = Schema.Union([
   MembersChanged,
   InvitesChanged,
   TeamsChanged,
   WorkspaceUpdated,
   ProfileUpdated,
+  ProjectChanged,
+  BoardChanged,
+  TaskChanged,
+  CommentChanged,
+  NotificationChanged,
 ])
 export type DomainEvent = typeof DomainEvent.Type
 
@@ -67,11 +139,49 @@ export type SubscribeInput = typeof SubscribeInput.Type
 export const Hello = Schema.TaggedStruct("Hello", { connectionId: Schema.String })
 export type Hello = typeof Hello.Type
 
+// --- Presence --------------------------------------------------------------
+
+/**
+ * Who is looking at a scope right now. Held in memory only, never stored or audited. Updates are
+ * throttled to one per second per user; `presence.update` reports whether it was accepted.
+ */
+export const PresenceViewer = Schema.Struct({
+  userId: UserId,
+  name: Schema.String,
+  /** Task, board or document the viewer currently has open, if any. */
+  focusEntityId: Schema.NullOr(EntityId),
+})
+export type PresenceViewer = typeof PresenceViewer.Type
+
+export const PresenceState = Schema.TaggedStruct("Presence", {
+  scope: Scope,
+  viewers: Schema.Array(PresenceViewer),
+})
+export type PresenceState = typeof PresenceState.Type
+
+export const PresenceJoinInput = Schema.Struct({ scope: Scope })
+export const PresenceUpdateInput = Schema.Struct({
+  scope: Scope,
+  focusEntityId: Schema.NullOr(EntityId),
+})
+export const PresenceUpdateResult = Schema.Struct({ accepted: Schema.Boolean })
+
 export class RealtimeRpcs extends RpcGroup.make(
   Rpc.make("realtime.subscribe", {
     payload: SubscribeInput,
     success: Schema.Union([Hello, RealtimeEvent, RealtimeResync]),
     error: Unauthorized,
     stream: true,
+  }),
+  Rpc.make("presence.join", {
+    payload: PresenceJoinInput,
+    success: PresenceState,
+    error: Unauthorized,
+    stream: true,
+  }),
+  Rpc.make("presence.update", {
+    payload: PresenceUpdateInput,
+    success: PresenceUpdateResult,
+    error: Unauthorized,
   }),
 ).middleware(RpcAuthentication) {}
