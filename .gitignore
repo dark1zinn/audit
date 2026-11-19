@@ -11,6 +11,7 @@ coverage
 .env
 .env.*
 !.env.example
-/data
+# Local file storage (DATA_DIR defaults to ./data)
+data/
 playwright-report
 test-results
