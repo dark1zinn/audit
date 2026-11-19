@@ -7,9 +7,13 @@ import { sessionQuery } from "../lib/queries.ts"
 
 /** Every route under `_app` needs a session; without one the user goes to /login. */
 export const Route = createFileRoute("/_app")({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     const me = await context.queryClient.fetchQuery(sessionQuery).catch(() => null)
     if (me === null) throw redirect({ to: "/login" })
+    // The workspace requires 2FA: the server refuses everything else until it is set up.
+    if (me.twoFactorRequired && location.pathname !== "/settings/security") {
+      throw redirect({ to: "/settings/security" })
+    }
     return { me }
   },
   component: AppLayout,

@@ -64,7 +64,13 @@ function SetupPage() {
       description={t`Use the setup token printed by the server when it first started.`}
     >
       <form className="space-y-4" onSubmit={onSubmit}>
-        <TextField name="token" label={t`Setup token`} autoComplete="off" required />
+        <TextField
+          name="token"
+          label={t`Setup token`}
+          autoComplete="off"
+          required
+          defaultValue={new URLSearchParams(window.location.search).get("token") ?? ""}
+        />
         <TextField name="workspaceName" label={t`Workspace name`} required maxLength={80} />
         <TextField name="name" label={t`Your name`} autoComplete="name" required maxLength={120} />
         <TextField name="email" type="email" label={t`Email`} autoComplete="email" required />

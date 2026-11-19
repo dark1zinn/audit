@@ -30,6 +30,14 @@ function SecurityPage() {
     <>
       <PageHeader title={t`Security`} description={t`Protect your account and manage sign-ins.`} />
       <div className="grid gap-6">
+        {me.twoFactorRequired && (
+          <p role="alert" className="rounded-lg border border-destructive/40 p-4 text-sm">
+            <Trans>
+              This workspace requires two-factor authentication. Set it up below to continue using
+              audit.
+            </Trans>
+          </p>
+        )}
         <TwoFactorCard enabled={me.twoFactorEnabled} />
         <PasskeysCard />
         <SessionsCard />

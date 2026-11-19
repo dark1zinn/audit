@@ -21,6 +21,7 @@ import {
   type SignupPolicy,
   type Team,
   type TeamMember,
+  policyRequiresTwoFactor,
   type Workspace,
   type WorkspaceSettings,
 } from "@audit/domain/identity/schema"
@@ -116,6 +117,8 @@ export const getMe = Effect.gen(function* () {
     timezone: row.timezone,
     locale: row.locale as Locale | null,
     twoFactorEnabled: row.twoFactorEnabled === true,
+    twoFactorRequired:
+      policyRequiresTwoFactor(settings.twoFactorPolicy, row.role) && row.twoFactorEnabled !== true,
     workspace: {
       name: ws.name,
       defaultLocale: settings.defaultLocale,

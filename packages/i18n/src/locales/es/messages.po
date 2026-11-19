@@ -97,6 +97,7 @@ msgid "Appearance"
 msgstr "Apariencia"
 
 #: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/reset-password.tsx
 #: ../../apps/web/src/routes/setup.tsx
 msgid "At least 10 characters."
 msgstr "Al menos 10 caracteres."
@@ -133,6 +134,10 @@ msgstr "Cadena rota"
 msgid "Chain intact"
 msgstr "Cadena íntegra"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Changes"
 msgstr "Cambios"
@@ -144,6 +149,10 @@ msgstr "Estos cambios afectan a las nuevas sesiones y al aspecto de la app para 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Check the highlighted fields and try again."
 msgstr "Revisa los campos marcados e inténtalo de nuevo."
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Choose a new password for your account."
+msgstr "Elige una nueva contraseña para tu cuenta."
 
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Choose a person"
@@ -304,6 +313,10 @@ msgstr "Generar nuevos códigos de respaldo"
 msgid "Go home"
 msgstr "Ir al inicio"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Go to sign in"
+msgstr "Ir a iniciar sesión"
+
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Groups of members used for access and notifications."
 msgstr "Grupos de miembros usados para accesos y notificaciones."
@@ -422,6 +435,10 @@ msgstr "Nombre (opcional)"
 msgid "New invite"
 msgstr "Nueva invitación"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "New password"
+msgstr "Nueva contraseña"
+
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "New team"
 msgstr "Nuevo equipo"
@@ -494,6 +511,10 @@ msgstr "Claves de acceso"
 msgid "Password"
 msgstr "Contraseña"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Password changed"
+msgstr "Contraseña cambiada"
+
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Password reset link (share it privately)"
 msgstr "Enlace para restablecer la contraseña (compártelo en privado)"
@@ -543,6 +564,10 @@ msgstr "Obligatoria para administradores"
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Required for everyone"
 msgstr "Obligatoria para todos"
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Reset password"
+msgstr "Restablecer contraseña"
 
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reset two-factor"
@@ -702,6 +727,14 @@ msgstr "Tema"
 msgid "This device"
 msgstr "Este dispositivo"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "This link is incomplete. Ask an admin for a new password-reset link."
+msgstr "Este enlace está incompleto. Pide a un administrador un nuevo enlace para restablecer la contraseña."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "This workspace requires two-factor authentication. Set it up below to continue using audit."
+msgstr "Este espacio de trabajo requiere autenticación en dos pasos. Configúrala abajo para seguir usando audit."
+
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Time zone"
 msgstr "Zona horaria"
@@ -813,6 +846,10 @@ msgstr "Tu cuenta"
 #: ../../apps/web/src/routes/setup.tsx
 msgid "Your name"
 msgstr "Tu nombre"
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Your password was changed. You can now sign in with it."
+msgstr "Tu contraseña se cambió. Ya puedes iniciar sesión con ella."
 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Your session has ended. Sign in again."

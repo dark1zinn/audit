@@ -75,6 +75,10 @@ export const defaultWorkspaceSettings: WorkspaceSettings = {
   trailRetentionDays: 365,
 }
 
+/** Whether the workspace 2FA policy applies to someone with this role. */
+export const policyRequiresTwoFactor = (policy: TwoFactorPolicy, role: WorkspaceRole): boolean =>
+  policy === "everyone" || (policy === "admins" && (role === "owner" || role === "admin"))
+
 export const Workspace = Schema.Struct({
   name: Schema.String,
   settings: WorkspaceSettings,
@@ -102,6 +106,8 @@ export const Me = Schema.Struct({
   timezone: Schema.String,
   locale: Schema.NullOr(Locale),
   twoFactorEnabled: Schema.Boolean,
+  /** The workspace policy requires 2FA and this person has not enrolled: only security settings work. */
+  twoFactorRequired: Schema.Boolean,
   workspace: Schema.Struct({
     name: Schema.String,
     defaultLocale: Locale,

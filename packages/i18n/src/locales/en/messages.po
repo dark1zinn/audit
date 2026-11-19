@@ -97,6 +97,7 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #: ../../apps/web/src/routes/join.$token.tsx
+#: ../../apps/web/src/routes/reset-password.tsx
 #: ../../apps/web/src/routes/setup.tsx
 msgid "At least 10 characters."
 msgstr "At least 10 characters."
@@ -133,6 +134,10 @@ msgstr "Chain broken"
 msgid "Chain intact"
 msgstr "Chain intact"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Change password"
+msgstr "Change password"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Changes"
 msgstr "Changes"
@@ -144,6 +149,10 @@ msgstr "Changing these affects new sessions and the look of the app for everyone
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Check the highlighted fields and try again."
 msgstr "Check the highlighted fields and try again."
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Choose a new password for your account."
+msgstr "Choose a new password for your account."
 
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Choose a person"
@@ -304,6 +313,10 @@ msgstr "Generate new backup codes"
 msgid "Go home"
 msgstr "Go home"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Go to sign in"
+msgstr "Go to sign in"
+
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Groups of members used for access and notifications."
 msgstr "Groups of members used for access and notifications."
@@ -422,6 +435,10 @@ msgstr "Name (optional)"
 msgid "New invite"
 msgstr "New invite"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "New password"
+msgstr "New password"
+
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "New team"
 msgstr "New team"
@@ -494,6 +511,10 @@ msgstr "Passkeys"
 msgid "Password"
 msgstr "Password"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Password changed"
+msgstr "Password changed"
+
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Password reset link (share it privately)"
 msgstr "Password reset link (share it privately)"
@@ -543,6 +564,10 @@ msgstr "Required for admins"
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Required for everyone"
 msgstr "Required for everyone"
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Reset password"
+msgstr "Reset password"
 
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reset two-factor"
@@ -702,6 +727,14 @@ msgstr "Theme"
 msgid "This device"
 msgstr "This device"
 
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "This link is incomplete. Ask an admin for a new password-reset link."
+msgstr "This link is incomplete. Ask an admin for a new password-reset link."
+
+#: ../../apps/web/src/routes/_app.settings.security.tsx
+msgid "This workspace requires two-factor authentication. Set it up below to continue using audit."
+msgstr "This workspace requires two-factor authentication. Set it up below to continue using audit."
+
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Time zone"
 msgstr "Time zone"
@@ -813,6 +846,10 @@ msgstr "Your account"
 #: ../../apps/web/src/routes/setup.tsx
 msgid "Your name"
 msgstr "Your name"
+
+#: ../../apps/web/src/routes/reset-password.tsx
+msgid "Your password was changed. You can now sign in with it."
+msgstr "Your password was changed. You can now sign in with it."
 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Your session has ended. Sign in again."
