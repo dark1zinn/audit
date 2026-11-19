@@ -47,13 +47,15 @@ interface Subscription {
 }
 
 const inScope = (subscription: Subscription, event: DomainEvent): boolean => {
-  // Notifications go only to their recipient, whichever scopes they hold.
-  if (event._tag === "NotificationChanged") {
+  // Notifications and per-user read state go only to their recipient, whichever scopes they hold.
+  if (event._tag === "NotificationChanged" || event._tag === "ReadStateChanged") {
     return subscription.inbox && subscription.userId === event.userId
   }
   if (subscription.workspace && workspaceEvents[event._tag] === true) return true
   if (event.projectId !== null && subscription.projectIds.has(event.projectId)) return true
   if (event.entityId !== null && subscription.entityIds.has(event.entityId)) return true
+  // Channel events are routed to every `channel:<id>` subscriber of their channel.
+  if ("channelId" in event && subscription.entityIds.has(event.channelId)) return true
   // Comments are routed to the task they belong to, so `entity:<taskId>` sees them.
   return event._tag === "CommentChanged" && subscription.entityIds.has(event.taskId)
 }
@@ -117,9 +119,13 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
 
       /** Notifications are already restricted to their recipient by `inScope`. */
       const visible = (event: DomainEvent) =>
-        event._tag === "NotificationChanged" || event.entityId === null
+        event._tag === "NotificationChanged" || event._tag === "ReadStateChanged"
           ? Effect.succeed(true)
-          : authz.can("entity.read", event.entityId)
+          : "channelId" in event
+            ? authz.can("channel.read", event.channelId)
+            : event.entityId === null
+              ? Effect.succeed(true)
+              : authz.can("entity.read", event.entityId)
 
       const deliver = (subscription: Subscription) => (item: Sequenced) =>
         inScope(subscription, item.event)

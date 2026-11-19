@@ -16,6 +16,10 @@ import { RequestMeta } from "@audit/core/request"
 import { listTrail, verifyTrail } from "@audit/core/trail-queries"
 import * as taskCommands from "@audit/core/tasks/commands"
 import * as taskQueries from "@audit/core/tasks/queries"
+import * as chatCommands from "@audit/core/chat/commands"
+import * as chatQueries from "@audit/core/chat/queries"
+import * as chatThreadDoc from "@audit/core/chat/thread-doc"
+import { currentUser } from "@audit/core/current-user"
 import { CurrentActor } from "@audit/domain/actor"
 import { AuditApi } from "@audit/domain/api"
 import { Forbidden, Unauthorized } from "@audit/domain/errors"
@@ -494,6 +498,208 @@ const NotificationsLive = HttpApiBuilder.group(AuditApi, "notifications", (handl
   }),
 )
 
+const ChatLive = HttpApiBuilder.group(AuditApi, "chat", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("channels", () =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.sidebar(me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("browse", () =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.browse(me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("createChannel", ({ payload }) =>
+        chatCommands.createChannel.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("channel", ({ params }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.channelHeader(params.channelId, me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("updateChannel", ({ params, payload }) =>
+        chatCommands.updateChannel
+          .execute({ channelId: params.channelId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("archiveChannel", ({ params }) =>
+        chatCommands.archiveChannel
+          .execute({ channelId: params.channelId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unarchiveChannel", ({ params }) =>
+        chatCommands.unarchiveChannel
+          .execute({ channelId: params.channelId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("joinChannel", ({ params }) =>
+        chatCommands.joinChannel
+          .execute({ channelId: params.channelId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("leaveChannel", ({ params }) =>
+        chatCommands.leaveChannel
+          .execute({ channelId: params.channelId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("addMembers", ({ params, payload }) =>
+        chatCommands.addMembers.execute({ channelId: params.channelId, ...payload }).pipe(
+          Effect.provide(core),
+          Effect.flatMap(({ channelId }) =>
+            currentUser("chat.read").pipe(
+              Effect.flatMap((me) => chatQueries.channelHeader(channelId, me)),
+              Effect.provide(core),
+            ),
+          ),
+        ),
+      )
+      .handle("removeMember", ({ params, payload }) =>
+        chatCommands.removeMember.execute({ channelId: params.channelId, ...payload }).pipe(
+          Effect.provide(core),
+          Effect.flatMap(({ channelId }) =>
+            currentUser("chat.read").pipe(
+              Effect.flatMap((me) => chatQueries.channelHeader(channelId, me)),
+              Effect.provide(core),
+            ),
+          ),
+        ),
+      )
+      .handle("setNotify", ({ params, payload }) =>
+        chatCommands.setNotify
+          .execute({ channelId: params.channelId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("markRead", ({ params, payload }) =>
+        chatCommands.markRead
+          .execute({ channelId: params.channelId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("openDm", ({ payload }) =>
+        chatCommands.openDm.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("messages", ({ params, query }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.messagePage(params.channelId, query, me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("postMessage", ({ params, payload }) =>
+        chatCommands.postMessage
+          .execute({ channelId: params.channelId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("editMessage", ({ params, payload }) =>
+        chatCommands.editMessage
+          .execute({ messageId: params.messageId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteMessage", ({ params }) =>
+        chatCommands.deleteMessage
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("addReaction", ({ params, payload }) =>
+        chatCommands.addReaction
+          .execute({ messageId: params.messageId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("removeReaction", ({ params, payload }) =>
+        chatCommands.removeReaction
+          .execute({ messageId: params.messageId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("pins", ({ params }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.pinnedMessages(params.channelId, me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("pin", ({ params }) =>
+        chatCommands.pinMessage.execute({ messageId: params.messageId }).pipe(Effect.provide(core)),
+      )
+      .handle("unpin", ({ params }) =>
+        chatCommands.unpinMessage
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("save", ({ params }) =>
+        chatCommands.saveMessage
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unsave", ({ params }) =>
+        chatCommands.unsaveMessage
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("messageToTask", ({ params, payload }) =>
+        chatCommands.messageToTask
+          .execute({ messageId: params.messageId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("saved", () =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.saved(me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("thread", ({ params, query }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) =>
+            chatQueries
+              .threadRootOf(params.messageId)
+              .pipe(Effect.flatMap((root) => chatQueries.threadView(root, query, me))),
+          ),
+          Effect.provide(core),
+        ),
+      )
+      .handle("threads", () =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.threads(me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("followThread", ({ params }) =>
+        chatCommands.followThread
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unfollowThread", ({ params }) =>
+        chatCommands.unfollowThread
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("threadMarkRead", ({ params }) =>
+        chatCommands.threadMarkRead
+          .execute({ messageId: params.messageId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("threadToDoc", ({ params, payload }) =>
+        chatThreadDoc.threadToDoc
+          .execute({ messageId: params.messageId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("adminChannel", ({ params }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.adminChannel(params.channelId, me)),
+          Effect.provide(core),
+        ),
+      )
+      .handle("adminMessages", ({ params, query }) =>
+        currentUser("chat.read").pipe(
+          Effect.flatMap((me) => chatQueries.adminMessages(params.channelId, query, me)),
+          Effect.provide(core),
+        ),
+      )
+  }),
+)
+
 const DocsLive = HttpApiBuilder.group(AuditApi, "docs", (handlers) =>
   Effect.gen(function* () {
     const core = yield* coreContext
@@ -623,6 +829,7 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
     ProjectsLive,
     BoardsLive,
     TasksLive,
+    ChatLive,
     NotificationsLive,
     DocsLive,
     EntitiesLive,

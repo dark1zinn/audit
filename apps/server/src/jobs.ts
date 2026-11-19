@@ -1,6 +1,7 @@
 import type { Authz } from "@audit/core/authz"
 import type { EventBus } from "@audit/core/event-bus"
 import { docFreshness, docFreshnessJob } from "@audit/core/docs/freshness"
+import { purgeMessages, purgeMessagesJob } from "@audit/core/chat/retention"
 import { orphanCleanupJob, cleanupOrphanedFiles } from "@audit/core/files/cleanup"
 import { boardRebalance, rebalanceBoard } from "@audit/core/projects/rebalance"
 import { dueSoonJob, overdueJob, remindDueSoon, remindOverdue } from "@audit/core/tasks/reminders"
@@ -18,12 +19,15 @@ export const jobDefinitions: ReadonlyArray<JobDefinition> = [
   overdueJob,
   docFreshnessJob,
   orphanCleanupJob,
+  purgeMessagesJob,
 ]
 
 /** Reminders run hourly, on the hour, in UTC. */
 const REMINDER_CRON = "0 * * * *"
 /** Orphan file cleanup runs daily at 03:00 UTC. */
 const FILE_CLEANUP_CRON = "0 3 * * *"
+/** Message retention runs daily at 03:30 UTC, after file cleanup. */
+const MESSAGE_RETENTION_CRON = "30 3 * * *"
 /** Doc review reminders run daily at 06:00 UTC. */
 const DOC_FRESHNESS_CRON = "0 6 * * *"
 
@@ -49,12 +53,16 @@ export const jobWorkersLayer = Layer.effectDiscard(
     yield* jobs.work(orphanCleanupJob, () =>
       cleanupOrphanedFiles.pipe(asSystem, Effect.provide(context)),
     )
+    yield* jobs.work(purgeMessagesJob, () =>
+      purgeMessages.execute({}).pipe(asSystem, Effect.provide(context)),
+    )
     yield* jobs.work(docFreshnessJob, () =>
       docFreshness.execute({}).pipe(asSystem, Effect.provide(context)),
     )
     yield* jobs.schedule(dueSoonJob, REMINDER_CRON, {})
     yield* jobs.schedule(overdueJob, REMINDER_CRON, {})
     yield* jobs.schedule(orphanCleanupJob, FILE_CLEANUP_CRON, {})
+    yield* jobs.schedule(purgeMessagesJob, MESSAGE_RETENTION_CRON, {})
     yield* jobs.schedule(docFreshnessJob, DOC_FRESHNESS_CRON, {})
   }),
 )

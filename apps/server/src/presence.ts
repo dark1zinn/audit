@@ -15,10 +15,13 @@ import { eq } from "drizzle-orm"
 import { Context, Effect, Layer, PubSub, Stream } from "effect"
 
 const THROTTLE_MS = 1000
+const TYPING_TTL_MS = 5000
 
 interface Entry {
   readonly name: string
   focusEntityId: EntityId | null
+  /** Epoch ms until which the viewer counts as typing; 0 when not typing. */
+  typingUntil: number
   refs: number
 }
 
@@ -27,6 +30,7 @@ export interface PresenceShape {
   readonly update: (input: {
     readonly scope: string
     readonly focusEntityId: EntityId | null
+    readonly typing?: boolean
   }) => Effect.Effect<{ readonly accepted: boolean }, Unauthorized, CurrentActor>
 }
 
@@ -50,6 +54,7 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
           userId,
           name: entry.name,
           focusEntityId: entry.focusEntityId,
+          typing: entry.typingUntil > Date.now(),
         })),
       })
 
@@ -112,7 +117,7 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
               scopes.set(scope, members)
               const existing = members.get(userId)
               if (existing === undefined) {
-                members.set(userId, { name, focusEntityId: null, refs: 1 })
+                members.set(userId, { name, focusEntityId: null, refs: 1, typingUntil: 0 })
               } else {
                 existing.refs += 1
               }
@@ -130,19 +135,41 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
             }),
           ),
 
-        update: ({ scope, focusEntityId }) =>
+        update: ({ scope, focusEntityId, typing }) =>
           Effect.gen(function* () {
             const userId = actorUserId(yield* CurrentActor)
             if (userId === null) return yield* new Unauthorized({ message: "Not signed in" })
             const entry = scopes.get(scope)?.get(userId)
             if (entry === undefined) return { accepted: false }
             const now = Date.now()
-            if (now - (lastUpdate.get(userId) ?? 0) < THROTTLE_MS) return { accepted: false }
-            lastUpdate.set(userId, now)
-            if (entry.focusEntityId !== focusEntityId) {
-              entry.focusEntityId = focusEntityId
-              yield* PubSub.publish(changes, snapshot(scope))
+            // Stopping typing always goes through; everything else obeys the throttle.
+            const stopsTyping = typing === false && entry.typingUntil > now
+            if (!stopsTyping && now - (lastUpdate.get(userId) ?? 0) < THROTTLE_MS) {
+              return { accepted: false }
             }
+            lastUpdate.set(userId, now)
+            let changed = entry.focusEntityId !== focusEntityId
+            entry.focusEntityId = focusEntityId
+            if (typing === true) {
+              if (entry.typingUntil <= now) changed = true
+              const until = now + TYPING_TTL_MS
+              entry.typingUntil = until
+              // Clears itself unless a later refresh moved `typingUntil` on.
+              yield* Effect.forkDetach(
+                Effect.gen(function* () {
+                  yield* Effect.sleep(TYPING_TTL_MS)
+                  if (entry.typingUntil !== until || scopes.get(scope)?.get(userId) !== entry) {
+                    return
+                  }
+                  entry.typingUntil = 0
+                  yield* PubSub.publish(changes, snapshot(scope))
+                }),
+              )
+            } else if (typing === false && entry.typingUntil > 0) {
+              entry.typingUntil = 0
+              changed = true
+            }
+            if (changed) yield* PubSub.publish(changes, snapshot(scope))
             return { accepted: true }
           }),
       })
