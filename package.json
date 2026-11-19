@@ -12,7 +12,9 @@
     "lint": "oxlint",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "bun test"
+    "test": "bun test",
+    "db:up": "docker compose -f deploy/compose.dev.yml up -d --wait",
+    "db:down": "docker compose -f deploy/compose.dev.yml down"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
