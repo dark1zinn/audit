@@ -752,15 +752,15 @@ msgstr "Verificación de contraseñas filtradas desactivada"
 msgid "Breached-password check on"
 msgstr "Verificación de contraseñas filtradas activada"
 
-#: ../../apps/web/src/components/task-panel/task-panel.tsx
+#: ../../apps/web/src/components/task-panel/break-down.tsx
 msgid "Break down"
 msgstr "Desglosar"
 
 #. placeholder {0}: task.title
 #. placeholder {1}: task.id
 #: ../../apps/web/src/components/task-panel/task-panel.tsx
-msgid "Break the task \"{0}\" (id {1}) into subtasks and propose each one as a task."
-msgstr "Desglosa la tarea \"{0}\" (id {1}) en subtareas y propón cada una como tarea."
+#~ msgid "Break the task \"{0}\" (id {1}) into subtasks and propose each one as a task."
+#~ msgstr "Desglosa la tarea \"{0}\" (id {1}) en subtareas y propón cada una como tarea."
 
 #. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
@@ -1148,6 +1148,10 @@ msgstr "Seguir escribiendo en el asistente"
 msgid "Conversation"
 msgstr "Conversación"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Conversations unused for longer than this are deleted, with their messages."
+msgstr "Las conversaciones sin uso durante más tiempo que esto se eliminan, junto con sus mensajes."
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Copied"
 msgstr "Copiado"
@@ -1502,6 +1506,7 @@ msgid "Discard my changes"
 msgstr "Descartar mis cambios"
 
 #: ../../apps/web/src/components/board/board-ai-menu.tsx
+#: ../../apps/web/src/components/task-panel/break-down.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Dismiss"
 msgstr "Descartar"
@@ -2166,6 +2171,10 @@ msgstr "Unirse al canal"
 #: ../../apps/web/src/routes/join.$token.tsx
 msgid "Join workspace"
 msgstr "Unirse al espacio de trabajo"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Keep AI conversations for (days)"
+msgstr "Conservar las conversaciones con la IA durante (días)"
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/routes/_app.admin.ai.tsx
@@ -2852,6 +2861,10 @@ msgstr "Sin resultados."
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "No saved view"
 msgstr "Ninguna vista guardada"
+
+#: ../../apps/web/src/components/task-panel/break-down.tsx
+msgid "No subtasks suggested."
+msgstr "No se sugirieron subtareas."
 
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "No subtasks yet."

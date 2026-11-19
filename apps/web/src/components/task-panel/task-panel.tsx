@@ -9,10 +9,11 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { callApi } from "../../lib/api.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
-import { openAssistantWith, useAiPageContext } from "../ai/ai-store.ts"
+import { useAiPageContext } from "../ai/ai-store.ts"
 import { useRealtimeScopes, usePresence } from "../../lib/realtime.ts"
 import { sessionQuery, taskDetailQuery } from "../../lib/queries.ts"
 import { ActivitySection } from "./activity.tsx"
+import { BreakDown } from "./break-down.tsx"
 import { CommentsSection } from "./comments.tsx"
 import { ConflictDialog } from "./conflict-dialog.tsx"
 import { Description } from "./description.tsx"
@@ -102,20 +103,6 @@ function TaskView({
               >
                 {task.watching ? t`Watching` : t`Watch`}
               </Button>
-              {canEdit ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    openAssistantWith(
-                      t`Break the task "${task.title}" (id ${task.id}) into subtasks and propose each one as a task.`,
-                    )
-                  }
-                >
-                  {t`Break down`}
-                </Button>
-              ) : null}
             </div>
           </div>
           <TitleEditor
@@ -125,6 +112,7 @@ function TaskView({
             onSave={(title) => save({ title })}
           />
         </header>
+        {canEdit ? <BreakDown task={task} /> : null}
 
         {update.error !== null && <ErrorMessage error={update.error} />}
         {update.conflict !== null && (

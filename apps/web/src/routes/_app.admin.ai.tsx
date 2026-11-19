@@ -185,6 +185,7 @@ function SettingsForm({
   const [budget, setBudget] = useState(
     settings.monthlyTokenBudget === null ? "" : String(settings.monthlyTokenBudget),
   )
+  const [retention, setRetention] = useState(String(settings.conversationRetentionDays))
 
   const save = useMutation({
     mutationFn: (input: AiSettingsInput) =>
@@ -204,6 +205,7 @@ function SettingsForm({
       embeddingProviderId: draft.embeddingProviderId,
       allowedRoles: [...draft.allowedRoles],
       monthlyTokenBudget: trimmedBudget === "" ? null : Number(trimmedBudget),
+      conversationRetentionDays: Number(retention.trim()),
       features: draft.features,
     })
   }
@@ -303,6 +305,29 @@ function SettingsForm({
             <p className="text-xs text-muted-foreground">
               <Trans>
                 Leave empty for no limit. Counts input and output tokens across the workspace.
+              </Trans>
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="conversationRetentionDays">
+              <Trans>Keep AI conversations for (days)</Trans>
+            </Label>
+            <Input
+              id="conversationRetentionDays"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={3650}
+              step={1}
+              className="max-w-xs"
+              required
+              value={retention}
+              onChange={(event) => setRetention(event.currentTarget.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              <Trans>
+                Conversations unused for longer than this are deleted, with their messages.
               </Trans>
             </p>
           </div>
