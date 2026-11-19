@@ -61,27 +61,6 @@ export const watch = (entityId: EntityId, userId: UserId) =>
     yield* db.insert(watchers).values({ entityId, userId }).onConflictDoNothing().pipe(Effect.orDie)
   })
 
-const collectMentions = (node: unknown, found: Set<string>): void => {
-  if (Array.isArray(node)) {
-    for (const child of node) collectMentions(child, found)
-    return
-  }
-  if (typeof node !== "object" || node === null) return
-  const record = node as Record<string, unknown>
-  if (record.type === "mention") {
-    const attrs = record.attrs as Record<string, unknown> | undefined
-    if (typeof attrs?.id === "string") found.add(attrs.id)
-  }
-  for (const value of Object.values(record)) collectMentions(value, found)
-}
-
-/** User ids mentioned in a Tiptap document (`{type: "mention", attrs: {id}}` nodes). */
-export const mentionedUserIds = (body: unknown): string[] => {
-  const found = new Set<string>()
-  collectMentions(body, found)
-  return [...found]
-}
-
 const collectText = (node: unknown, parts: string[]): void => {
   if (Array.isArray(node)) {
     for (const child of node) collectText(child, parts)

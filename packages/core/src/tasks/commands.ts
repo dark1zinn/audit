@@ -68,7 +68,8 @@ import { syncReferences } from "../references.ts"
 import { record, emit, diff } from "../trail.ts"
 import { Jobs } from "@audit/platform/jobs"
 import { taskRows, toCards } from "./cards.ts"
-import { notify, plainText, mentionedUserIds, watch } from "./notify.ts"
+import { extractMentions } from "@audit/editor/mentions"
+import { notify, plainText, watch } from "./notify.ts"
 import { completedAtFor } from "./state.ts"
 
 const invalid = (message: string, field?: string) =>
@@ -398,23 +399,36 @@ const softDeleteTask = (taskId: TaskId, actor: UserId) =>
     }
   })
 
-/** The `mention` references of a comment, and notifications for newly mentioned users. */
-const syncMentions = (commentId: CommentId, taskId: TaskId, body: unknown, actor: UserId) =>
+/**
+ * Makes `sourceId`'s `mention` references match the mentions in `body` (people, teams, tasks,
+ * docs, messages, events, projects, each with its surrounding text) and notifies newly mentioned
+ * people, who must be able to see the task.
+ */
+const syncMentions = (
+  sourceId: EntityId,
+  taskId: TaskId,
+  body: unknown,
+  actor: UserId,
+  payload: Record<string, unknown>,
+) =>
   Effect.gen(function* () {
     const state = yield* loadTaskState(taskId)
-    const mentioned = mentionedUserIds(body).map((id) => ({
-      targetId: id as EntityId,
-    }))
-    const added = yield* syncReferences(commentId, "mention", mentioned)
+    const mentions = extractMentions(body)
+    const added = yield* syncReferences(
+      sourceId,
+      "mention",
+      mentions.map((m) => ({ targetId: m.id as EntityId, snippet: m.snippet })),
+    )
+    const people = new Set(mentions.filter((m) => m.type === "user").map((m) => m.id))
     for (const targetId of added) {
-      if (targetId === actor) continue
+      if (targetId === actor || !people.has(targetId)) continue
       yield* notify({
         userId: targetId as UserId,
         kind: "mention",
         entityId: taskId,
         projectId: state.projectId,
         actorId: actor,
-        payload: { taskKey: state.key, commentId },
+        payload: { taskKey: state.key, ...payload },
         groupKey: `mention:${taskId}`,
       })
     }
@@ -571,6 +585,9 @@ export const createTask = Command.make("task.create", {
       yield* addAssignees(state, input.assignees ?? [], userId)
       yield* addLabels(id, board.projectId, input.labels ?? [])
       yield* watch(id, userId)
+      if (input.description !== undefined && input.description !== null) {
+        yield* syncMentions(id, id, input.description, userId, {})
+      }
       yield* record({
         action: "task.created",
         entityId: id,
@@ -617,6 +634,9 @@ export const updateTask = Command.make("task.update", {
       }
       if (Object.keys(patch).length > 0) {
         yield* db.update(tasks).set(patch).where(eq(tasks.id, input.taskId)).pipe(Effect.orDie)
+      }
+      if (input.description !== undefined) {
+        yield* syncMentions(input.taskId, input.taskId, input.description, userId, {})
       }
 
       if (input.assignees !== undefined) {
@@ -970,7 +990,7 @@ export const createComment = Command.make("comment.create", {
         })
         .pipe(Effect.orDie)
       yield* watch(input.taskId, userId)
-      yield* syncMentions(id, input.taskId, input.body, userId)
+      yield* syncMentions(id, input.taskId, input.body, userId, { commentId: id })
       yield* record({
         action: "comment.created",
         entityId: id,
@@ -1026,7 +1046,9 @@ export const updateComment = Command.make("comment.update", {
           })
           .where(eq(comments.id, input.commentId))
           .pipe(Effect.orDie)
-        yield* syncMentions(input.commentId, target.taskId, input.body, userId)
+        yield* syncMentions(input.commentId, target.taskId, input.body, userId, {
+          commentId: input.commentId,
+        })
       }
       if (input.resolved !== undefined) {
         yield* db

@@ -3,7 +3,8 @@ import { archiveProject, createProject, unarchiveProject } from "@audit/core/pro
 import { defaultBoardId } from "@audit/core/projects/read"
 import { loadBoard } from "@audit/core/projects/board-read"
 import { createTask, moveTask, updateTask } from "@audit/core/tasks/commands"
-import type { ProjectId } from "@audit/domain/ids"
+import { backlinks } from "@audit/core/references"
+import type { EntityId, ProjectId, TaskId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
 import { type Person, exitAs, runAs, setupWorkspace } from "@audit/testkit/fixtures"
 import { Cause, Exit, Option } from "effect"
@@ -124,5 +125,46 @@ describe("optimistic versions", () => {
       owner.actor,
     )(updateTask.execute({ taskId: card.id, title: "Edited", version: card.version + 5 }))
     expect(failureTag(stale)).toBe("Conflict")
+  })
+})
+
+describe("task description mentions", () => {
+  test("become backlinks of the mentioned entity and follow description edits", async () => {
+    const { boardId } = await newProject("MENT")
+    const target = await runAs(
+      database,
+      owner.actor,
+    )(createTask.execute({ boardId, title: "Target" }))
+    const mentionOf = (id: string) => ({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "Depends on " },
+            { type: "mention", attrs: { id, type: "task", label: "Target" } },
+          ],
+        },
+      ],
+    })
+    const source = await runAs(
+      database,
+      owner.actor,
+    )(createTask.execute({ boardId, title: "Source", description: mentionOf(target.id) }))
+    const linked = await runAs(database, owner.actor)(backlinks(target.id as EntityId))
+    expect(
+      linked.flatMap((group) => group.items.map((item) => [item.sourceId, item.snippet])),
+    ).toEqual([[source.id, "Depends on @Target"]])
+
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      updateTask.execute({
+        taskId: source.id as TaskId,
+        description: { type: "doc", content: [] },
+      }),
+    )
+    expect(await runAs(database, owner.actor)(backlinks(target.id as EntityId))).toEqual([])
   })
 })
