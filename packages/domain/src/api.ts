@@ -12,6 +12,7 @@ import { BoardsApi, ProjectsApi } from "./projects/api.ts"
 import { DocsApi, EntitiesApi } from "./docs/api.ts"
 import { NotificationsApi, TasksApi } from "./tasks/api.ts"
 import { TrailApi } from "./trail/api.ts"
+import { ChatApi } from "./chat/api.ts"
 
 /** The REST API served under `/api`, shared by the server and the typed web client. */
 export const AuditApi = HttpApi.make("audit")
@@ -29,4 +30,5 @@ export const AuditApi = HttpApi.make("audit")
   .add(DocsApi)
   .add(EntitiesApi)
   .add(NotificationsApi)
+  .add(ChatApi)
   .annotateMerge(OpenApi.annotations({ title: "audit API", version: "1.0.0" }))

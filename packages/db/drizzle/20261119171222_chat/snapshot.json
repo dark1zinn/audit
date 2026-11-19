@@ -1,0 +1,2109 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "49d22b7a-abe0-4063-899c-2b864eb000d7",
+  "prevIds": [
+    "215a27b5-3066-4dee-bc1e-183c119a76cd"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_members"
+      ],
+      "writes": [
+        "s|tbl|public.channel_members",
+        "n|tbl|public.channel_members",
+        "e|tbl|public.channel_members",
+        "n|rel|public.channel_members",
+        "n|type|public.channel_members",
+        "n|rel|public.channel_members_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "channels"
+      ],
+      "writes": [
+        "s|tbl|public.channels",
+        "n|tbl|public.channels",
+        "e|tbl|public.channels",
+        "n|rel|public.channels",
+        "n|type|public.channels",
+        "n|rel|public.channels_pkey",
+        "n|rel|public.channels_dm_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|tbl|public.messages",
+        "n|tbl|public.messages",
+        "e|tbl|public.messages",
+        "n|rel|public.messages",
+        "n|type|public.messages",
+        "n|rel|public.messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "pins"
+      ],
+      "writes": [
+        "s|tbl|public.pins",
+        "n|tbl|public.pins",
+        "e|tbl|public.pins",
+        "n|rel|public.pins",
+        "n|type|public.pins",
+        "n|rel|public.pins_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "reactions"
+      ],
+      "writes": [
+        "s|tbl|public.reactions",
+        "n|tbl|public.reactions",
+        "e|tbl|public.reactions",
+        "n|rel|public.reactions",
+        "n|type|public.reactions",
+        "n|rel|public.reactions_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "saved_messages"
+      ],
+      "writes": [
+        "s|tbl|public.saved_messages",
+        "n|tbl|public.saved_messages",
+        "e|tbl|public.saved_messages",
+        "n|rel|public.saved_messages",
+        "n|type|public.saved_messages",
+        "n|rel|public.saved_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "thread_followers"
+      ],
+      "writes": [
+        "s|tbl|public.thread_followers",
+        "n|tbl|public.thread_followers",
+        "e|tbl|public.thread_followers",
+        "n|rel|public.thread_followers",
+        "n|type|public.thread_followers",
+        "n|rel|public.thread_followers_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "channel_members",
+        "channel_members_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.channel_members_user_idx",
+        "n|idx|public.channel_members_user_idx",
+        "e|idx|public.channel_members_user_idx",
+        "n|rel|public.channel_members_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.channel_members",
+        "n|sch|public",
+        "n|col|public.channel_members.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "channels",
+        "channels_name_uq"
+      ],
+      "writes": [
+        "s|idx|public.channels_name_uq",
+        "n|idx|public.channels_name_uq",
+        "e|idx|public.channels_name_uq",
+        "n|rel|public.channels_name_uq"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|col|public.channels.name"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "channels",
+        "channels_project_idx"
+      ],
+      "writes": [
+        "s|idx|public.channels_project_idx",
+        "n|idx|public.channels_project_idx",
+        "e|idx|public.channels_project_idx",
+        "n|rel|public.channels_project_idx"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|col|public.channels.project_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "messages",
+        "messages_channel_idx"
+      ],
+      "writes": [
+        "s|idx|public.messages_channel_idx",
+        "n|idx|public.messages_channel_idx",
+        "e|idx|public.messages_channel_idx",
+        "n|rel|public.messages_channel_idx"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.messages.channel_id",
+        "n|col|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "messages",
+        "messages_thread_idx"
+      ],
+      "writes": [
+        "s|idx|public.messages_thread_idx",
+        "n|idx|public.messages_thread_idx",
+        "e|idx|public.messages_thread_idx",
+        "n|rel|public.messages_thread_idx"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.messages.thread_root_id",
+        "n|col|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "thread_followers",
+        "thread_followers_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.thread_followers_user_idx",
+        "n|idx|public.thread_followers_user_idx",
+        "e|idx|public.thread_followers_user_idx",
+        "n|rel|public.thread_followers_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.thread_followers",
+        "n|sch|public",
+        "n|col|public.thread_followers.user_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_members"
+      ],
+      "writes": [
+        "s|fk|public.channel_members.channel_members_channel_id_channels_id_fkey",
+        "n|fk|public.channel_members.channel_members_channel_id_channels_id_fkey",
+        "e|fk|public.channel_members.channel_members_channel_id_channels_id_fkey",
+        "n|con|public.channel_members.channel_members_channel_id_channels_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channel_members",
+        "n|sch|public",
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|col|public.channel_members.channel_id",
+        "n|col|public.channels.id",
+        "e|uniqueness|public.channels.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_members"
+      ],
+      "writes": [
+        "s|fk|public.channel_members.channel_members_user_id_user_id_fkey",
+        "n|fk|public.channel_members.channel_members_user_id_user_id_fkey",
+        "e|fk|public.channel_members.channel_members_user_id_user_id_fkey",
+        "n|con|public.channel_members.channel_members_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channel_members",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.channel_members.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_members"
+      ],
+      "writes": [
+        "s|fk|public.channel_members.channel_members_last_read_message_id_entities_id_fkey",
+        "n|fk|public.channel_members.channel_members_last_read_message_id_entities_id_fkey",
+        "e|fk|public.channel_members.channel_members_last_read_message_id_entities_id_fkey",
+        "n|con|public.channel_members.channel_members_last_read_message_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channel_members",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.channel_members.last_read_message_id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channels"
+      ],
+      "writes": [
+        "s|fk|public.channels.channels_id_entities_id_fkey",
+        "n|fk|public.channels.channels_id_entities_id_fkey",
+        "e|fk|public.channels.channels_id_entities_id_fkey",
+        "n|con|public.channels.channels_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.channels.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channels"
+      ],
+      "writes": [
+        "s|fk|public.channels.channels_project_id_projects_id_fkey",
+        "n|fk|public.channels.channels_project_id_projects_id_fkey",
+        "e|fk|public.channels.channels_project_id_projects_id_fkey",
+        "n|con|public.channels.channels_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.channels.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channels"
+      ],
+      "writes": [
+        "s|fk|public.channels.channels_created_by_user_id_fkey",
+        "n|fk|public.channels.channels_created_by_user_id_fkey",
+        "e|fk|public.channels.channels_created_by_user_id_fkey",
+        "n|con|public.channels.channels_created_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.channels.created_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_id_entities_id_fkey",
+        "n|fk|public.messages.messages_id_entities_id_fkey",
+        "e|fk|public.messages.messages_id_entities_id_fkey",
+        "n|con|public.messages.messages_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.messages.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_channel_id_channels_id_fkey",
+        "n|fk|public.messages.messages_channel_id_channels_id_fkey",
+        "e|fk|public.messages.messages_channel_id_channels_id_fkey",
+        "n|con|public.messages.messages_channel_id_channels_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|col|public.messages.channel_id",
+        "n|col|public.channels.id",
+        "e|uniqueness|public.channels.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_thread_root_id_messages_id_fkey",
+        "n|fk|public.messages.messages_thread_root_id_messages_id_fkey",
+        "e|fk|public.messages.messages_thread_root_id_messages_id_fkey",
+        "n|con|public.messages.messages_thread_root_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.messages.thread_root_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_author_id_user_id_fkey",
+        "n|fk|public.messages.messages_author_id_user_id_fkey",
+        "e|fk|public.messages.messages_author_id_user_id_fkey",
+        "n|con|public.messages.messages_author_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.messages.author_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "pins"
+      ],
+      "writes": [
+        "s|fk|public.pins.pins_channel_id_channels_id_fkey",
+        "n|fk|public.pins.pins_channel_id_channels_id_fkey",
+        "e|fk|public.pins.pins_channel_id_channels_id_fkey",
+        "n|con|public.pins.pins_channel_id_channels_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.pins",
+        "n|sch|public",
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|col|public.pins.channel_id",
+        "n|col|public.channels.id",
+        "e|uniqueness|public.channels.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "pins"
+      ],
+      "writes": [
+        "s|fk|public.pins.pins_message_id_messages_id_fkey",
+        "n|fk|public.pins.pins_message_id_messages_id_fkey",
+        "e|fk|public.pins.pins_message_id_messages_id_fkey",
+        "n|con|public.pins.pins_message_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.pins",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.pins.message_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "pins"
+      ],
+      "writes": [
+        "s|fk|public.pins.pins_pinned_by_user_id_fkey",
+        "n|fk|public.pins.pins_pinned_by_user_id_fkey",
+        "e|fk|public.pins.pins_pinned_by_user_id_fkey",
+        "n|con|public.pins.pins_pinned_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.pins",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.pins.pinned_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "reactions"
+      ],
+      "writes": [
+        "s|fk|public.reactions.reactions_message_id_messages_id_fkey",
+        "n|fk|public.reactions.reactions_message_id_messages_id_fkey",
+        "e|fk|public.reactions.reactions_message_id_messages_id_fkey",
+        "n|con|public.reactions.reactions_message_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.reactions",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.reactions.message_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "reactions"
+      ],
+      "writes": [
+        "s|fk|public.reactions.reactions_user_id_user_id_fkey",
+        "n|fk|public.reactions.reactions_user_id_user_id_fkey",
+        "e|fk|public.reactions.reactions_user_id_user_id_fkey",
+        "n|con|public.reactions.reactions_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.reactions",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.reactions.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "saved_messages"
+      ],
+      "writes": [
+        "s|fk|public.saved_messages.saved_messages_user_id_user_id_fkey",
+        "n|fk|public.saved_messages.saved_messages_user_id_user_id_fkey",
+        "e|fk|public.saved_messages.saved_messages_user_id_user_id_fkey",
+        "n|con|public.saved_messages.saved_messages_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.saved_messages",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.saved_messages.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "saved_messages"
+      ],
+      "writes": [
+        "s|fk|public.saved_messages.saved_messages_message_id_messages_id_fkey",
+        "n|fk|public.saved_messages.saved_messages_message_id_messages_id_fkey",
+        "e|fk|public.saved_messages.saved_messages_message_id_messages_id_fkey",
+        "n|con|public.saved_messages.saved_messages_message_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.saved_messages",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.saved_messages.message_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "thread_followers"
+      ],
+      "writes": [
+        "s|fk|public.thread_followers.thread_followers_root_id_messages_id_fkey",
+        "n|fk|public.thread_followers.thread_followers_root_id_messages_id_fkey",
+        "e|fk|public.thread_followers.thread_followers_root_id_messages_id_fkey",
+        "n|con|public.thread_followers.thread_followers_root_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.thread_followers",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.thread_followers.root_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "thread_followers"
+      ],
+      "writes": [
+        "s|fk|public.thread_followers.thread_followers_user_id_user_id_fkey",
+        "n|fk|public.thread_followers.thread_followers_user_id_user_id_fkey",
+        "e|fk|public.thread_followers.thread_followers_user_id_user_id_fkey",
+        "n|con|public.thread_followers.thread_followers_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.thread_followers",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.thread_followers.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "thread_followers"
+      ],
+      "writes": [
+        "s|fk|public.thread_followers.thread_followers_last_read_id_messages_id_fkey",
+        "n|fk|public.thread_followers.thread_followers_last_read_id_messages_id_fkey",
+        "e|fk|public.thread_followers.thread_followers_last_read_id_messages_id_fkey",
+        "n|con|public.thread_followers.thread_followers_last_read_id_messages_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.thread_followers",
+        "n|sch|public",
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.thread_followers.last_read_id",
+        "n|col|public.messages.id",
+        "e|uniqueness|public.messages.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "channel_members",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "channels",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "pins",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "reactions",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "saved_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "thread_followers",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "role",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'member'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "last_read_message_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "notify_level",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'mentions'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "muted_until",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "joined_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "project_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "topic",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "dm_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "created_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "channel_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "thread_root_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "author_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "body",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "body_text",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "edited_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "deleted_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "reply_count",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "last_reply_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "channel_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "message_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pinned_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pinned_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "message_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "emoji",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "message_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "saved_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "root_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "last_read_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_name_uq",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "name",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" in ('public', 'private')",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_project_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "project_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_channel_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "channel_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_thread_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "thread_root_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "thread_followers_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_channel_id_channels_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "channel_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "channels",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_last_read_message_id_entities_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "last_read_message_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "entities",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_id_entities_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "entities",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_project_id_projects_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "project_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "projects",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_created_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_id_entities_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "entities",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_channel_id_channels_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "channel_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "channels",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_thread_root_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "thread_root_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_author_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "author_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pins_channel_id_channels_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "channel_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "channels",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pins_message_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "message_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pins_pinned_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "pinned_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "reactions_message_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "message_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "reactions_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "saved_messages_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "saved_messages_message_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "message_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "thread_followers_root_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "root_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "thread_followers_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "thread_followers_last_read_id_messages_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "last_read_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "messages",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_pkey",
+        "columns": [
+          "channel_id",
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pins",
+        "name": "pins_pkey",
+        "columns": [
+          "channel_id",
+          "message_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reactions",
+        "name": "reactions_pkey",
+        "columns": [
+          "message_id",
+          "user_id",
+          "emoji"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "saved_messages",
+        "name": "saved_messages_pkey",
+        "columns": [
+          "user_id",
+          "message_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "thread_followers",
+        "name": "thread_followers_pkey",
+        "columns": [
+          "root_id",
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "messages_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_dm_key_key",
+        "nameExplicit": false,
+        "columns": [
+          "dm_key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_role_check",
+        "value": "\"role\" in ('member', 'manager')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channel_members",
+        "name": "channel_members_notify_check",
+        "value": "\"notify_level\" in ('all', 'mentions', 'none')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_kind_check",
+        "value": "\"kind\" in ('public', 'private', 'dm', 'group_dm')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "channels",
+        "name": "channels_dm_key_check",
+        "value": "(\"kind\" in ('dm', 'group_dm')) = (\"dm_key\" is not null)",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

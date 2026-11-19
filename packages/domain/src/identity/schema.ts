@@ -61,6 +61,10 @@ export const WorkspaceSettings = Schema.Struct({
   accentColor: Schema.String,
   defaultTheme: Schema.Literals(["light", "dark", "system"]),
   trailRetentionDays: Schema.Int.check(Schema.isBetween({ minimum: 30, maximum: 3650 })),
+  /** Chat messages older than this are purged daily; null keeps them forever. */
+  messageRetentionDays: Schema.NullOr(
+    Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 3650 })),
+  ),
   uploadLimitMb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 1024 })),
   storageQuotaGb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 10_000 })),
 })
@@ -75,6 +79,7 @@ export const defaultWorkspaceSettings: WorkspaceSettings = {
   accentColor: "#4f46e5",
   defaultTheme: "system",
   trailRetentionDays: 365,
+  messageRetentionDays: null,
   uploadLimitMb: 50,
   storageQuotaGb: 10,
 }

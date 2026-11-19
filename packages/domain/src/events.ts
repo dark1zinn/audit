@@ -8,9 +8,11 @@ import { Unauthorized } from "./errors.ts"
 import { RpcAuthentication } from "./http.ts"
 import {
   BoardId,
+  ChannelId,
   ColumnId,
   DocId,
   EntityId,
+  MessageId,
   NotificationId,
   ProjectId,
   TaskId,
@@ -130,6 +132,51 @@ export const NotificationChanged = Schema.TaggedStruct("NotificationChanged", {
   kind: Schema.Literals(["created", "read", "archived"]),
 })
 
+/**
+ * Channel lifecycle, membership and settings. `entityId` is the channel id; `channelId` routes the
+ * event to `channel:<id>` subscribers.
+ */
+export const ChannelChanged = Schema.TaggedStruct("ChannelChanged", {
+  ...base,
+  channelId: ChannelId,
+  kind: Schema.Literals([
+    "created",
+    "updated",
+    "archived",
+    "unarchived",
+    "membership_changed",
+    "access_changed",
+  ]),
+})
+
+/**
+ * Messages, threads, reactions and pins. `entityId` is the message id; `channelId` routes the event
+ * to `channel:<id>` subscribers, and the server checks the viewer can read the channel.
+ */
+export const MessageChanged = Schema.TaggedStruct("MessageChanged", {
+  ...base,
+  channelId: ChannelId,
+  messageId: MessageId,
+  kind: Schema.Literals([
+    "created",
+    "edited",
+    "deleted",
+    "pinned",
+    "unpinned",
+    "reaction_changed",
+    "thread_reply",
+    "purged",
+  ]),
+})
+
+/** Per-user channel state: read position, mute and thread follows. Sent to `inbox` only. */
+export const ReadStateChanged = Schema.TaggedStruct("ReadStateChanged", {
+  ...base,
+  userId: UserId,
+  channelId: ChannelId,
+  kind: Schema.Literals(["read", "muted_changed", "thread_followed", "thread_unfollowed"]),
+})
+
 export const DomainEvent = Schema.Union([
   MembersChanged,
   InvitesChanged,
@@ -142,6 +189,9 @@ export const DomainEvent = Schema.Union([
   CommentChanged,
   NotificationChanged,
   DocChanged,
+  ChannelChanged,
+  MessageChanged,
+  ReadStateChanged,
 ])
 export type DomainEvent = typeof DomainEvent.Type
 
@@ -187,6 +237,8 @@ export const PresenceViewer = Schema.Struct({
   name: Schema.String,
   /** Task, board or document the viewer currently has open, if any. */
   focusEntityId: Schema.NullOr(EntityId),
+  /** True while this viewer is typing in the scope; clears ~5 s after the last refresh. */
+  typing: Schema.Boolean,
 })
 export type PresenceViewer = typeof PresenceViewer.Type
 
@@ -200,6 +252,8 @@ export const PresenceJoinInput = Schema.Struct({ scope: Scope })
 export const PresenceUpdateInput = Schema.Struct({
   scope: Scope,
   focusEntityId: Schema.NullOr(EntityId),
+  /** `true` starts or refreshes typing, `false` stops it at once. Never stored. */
+  typing: Schema.optionalKey(Schema.Boolean),
 })
 export const PresenceUpdateResult = Schema.Struct({ accepted: Schema.Boolean })
 

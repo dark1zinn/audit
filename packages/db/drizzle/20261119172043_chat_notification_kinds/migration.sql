@@ -1,0 +1,1 @@
+ALTER TABLE "notifications" DROP CONSTRAINT "notifications_kind_check", ADD CONSTRAINT "notifications_kind_check" CHECK ("kind" in ('task_due_soon', 'task_overdue', 'task_assigned', 'mention', 'doc_review_due', 'direct_message', 'thread_reply'));
