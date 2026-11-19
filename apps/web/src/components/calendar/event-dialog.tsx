@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState, type FormEvent } from "react"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import type { CalendarId } from "@audit/domain/ids"
+import { MeetingPrep } from "./meeting-prep.tsx"
 import type {
   AttendeeInput,
   CalendarSummary,
@@ -667,6 +668,7 @@ function EventForm({
               <Trans>Delete</Trans>
             </Button>
           )}
+          {occurrence !== null && <MeetingPrep calendarId={form.calendarId} />}
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="ghost" onClick={onDone}>

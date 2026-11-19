@@ -19,6 +19,17 @@ import { ChannelSettingsDialog, MessageToTaskDialog, PinsDialog } from "./dialog
 import { typingLabel } from "./typing.ts"
 import { channelTitle } from "./channel-title.ts"
 import { useRecordRecent } from "../../lib/search.ts"
+import { ChannelAiMenu } from "./channel-ai-menu.tsx"
+import { useAiPageContext } from "../ai/ai-store.ts"
+
+/** Turns plain text into one composer paragraph per line. */
+const paragraphDoc = (text: string): RichDoc => ({
+  type: "doc",
+  content: text.split("\n").map((line) => ({
+    type: "paragraph",
+    content: line === "" ? [] : [{ type: "text", text: line }],
+  })),
+})
 
 type Row = { readonly kind: "divider" } | { readonly kind: "message"; readonly message: Message }
 
@@ -53,6 +64,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   const [taskFrom, setTaskFrom] = useState<Message | null>(null)
   const [anchor, setAnchor] = useState<{ channelId: string; lastRead: string | null } | null>(null)
   const [error, setError] = useState<unknown>(null)
+  const [draft, setDraft] = useState<{ key: number; body: RichDoc } | null>(null)
+  useAiPageContext(channelId)
 
   const channel = header.data?.channel
   useEffect(() => {
@@ -192,6 +205,12 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <ChannelAiMenu
+            channelId={channelId}
+            onDraft={(text) =>
+              setDraft((previous) => ({ key: (previous?.key ?? 0) + 1, body: paragraphDoc(text) }))
+            }
+          />
           <Button variant="ghost" size="sm" onClick={() => setDialog("pins")}>
             <Pin className="size-4" />
             <Trans>Pinned</Trans>
@@ -291,6 +310,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
         {isMember ? (
           <Composer
             channelId={channelId}
+            key={draft?.key ?? 0}
+            initial={draft?.body}
             placeholder={t`Message ${channelTitle(data.channel)}`}
             submitLabel={t`Send`}
             onTyping={(typingNow) => sendTyping(scope, typingNow)}

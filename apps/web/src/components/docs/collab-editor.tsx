@@ -80,6 +80,8 @@ interface DocEditorProps {
     quote: string,
   ) => void
   readonly template?: string | undefined
+  /** Lets the surrounding page act on the live editor (AI insert, selection reads). */
+  readonly editorRef?: { current: Editor | null } | undefined
 }
 
 /** The live editor. Mounted only after its provider exists so the editor never starts empty. */
@@ -107,7 +109,8 @@ const LiveEditor = (
   const fileInput = useRef<HTMLInputElement | null>(null)
   const imageInput = useRef<HTMLInputElement | null>(null)
   const pendingFile = useRef<{ range: Range; accept: "image" | "file" } | null>(null)
-  const editorRef = useRef<Editor | null>(null)
+  const internalEditorRef = useRef<Editor | null>(null)
+  const editorRef = props.editorRef ?? internalEditorRef
   const { provider, ydoc, docId, role, user } = props
   const writable = canWrite(role) && scope !== "readonly"
 

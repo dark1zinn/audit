@@ -26,6 +26,7 @@ import { Route as AppThreadsRouteImport } from './routes/_app.threads'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppAdminAccessRouteImport } from './routes/_app.admin.access'
+import { Route as AppAdminAiRouteImport } from './routes/_app.admin.ai'
 import { Route as AppAdminAuditRouteImport } from './routes/_app.admin.audit'
 import { Route as AppAdminBrandingRouteImport } from './routes/_app.admin.branding'
 import { Route as AppAdminEmailRouteImport } from './routes/_app.admin.email'
@@ -139,6 +140,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
 const AppAdminAccessRoute = AppAdminAccessRouteImport.update({
   id: '/access',
   path: '/access',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminAiRoute = AppAdminAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminAuditRoute = AppAdminAuditRouteImport.update({
@@ -310,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/admin/access': typeof AppAdminAccessRoute
+  '/admin/ai': typeof AppAdminAiRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/branding': typeof AppAdminBrandingRoute
   '/admin/email': typeof AppAdminEmailRoute
@@ -357,6 +364,7 @@ export interface FileRoutesByTo {
   '/join/$token': typeof JoinTokenRoute
   '/': typeof AppIndexRoute
   '/admin/access': typeof AppAdminAccessRoute
+  '/admin/ai': typeof AppAdminAiRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/branding': typeof AppAdminBrandingRoute
   '/admin/email': typeof AppAdminEmailRoute
@@ -407,6 +415,7 @@ export interface FileRoutesById {
   '/join/$token': typeof JoinTokenRoute
   '/_app/': typeof AppIndexRoute
   '/_app/admin/access': typeof AppAdminAccessRoute
+  '/_app/admin/ai': typeof AppAdminAiRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/branding': typeof AppAdminBrandingRoute
   '/_app/admin/email': typeof AppAdminEmailRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/threads'
     | '/join/$token'
     | '/admin/access'
+    | '/admin/ai'
     | '/admin/audit'
     | '/admin/branding'
     | '/admin/email'
@@ -504,6 +514,7 @@ export interface FileRouteTypes {
     | '/join/$token'
     | '/'
     | '/admin/access'
+    | '/admin/ai'
     | '/admin/audit'
     | '/admin/branding'
     | '/admin/email'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/join/$token'
     | '/_app/'
     | '/_app/admin/access'
+    | '/_app/admin/ai'
     | '/_app/admin/audit'
     | '/_app/admin/branding'
     | '/_app/admin/email'
@@ -715,6 +727,13 @@ declare module '@tanstack/react-router' {
       path: '/access'
       fullPath: '/admin/access'
       preLoaderRoute: typeof AppAdminAccessRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/ai': {
+      id: '/_app/admin/ai'
+      path: '/ai'
+      fullPath: '/admin/ai'
+      preLoaderRoute: typeof AppAdminAiRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/audit': {
@@ -932,6 +951,7 @@ declare module '@tanstack/react-router' {
 
 interface AppAdminRouteChildren {
   AppAdminAccessRoute: typeof AppAdminAccessRoute
+  AppAdminAiRoute: typeof AppAdminAiRoute
   AppAdminAuditRoute: typeof AppAdminAuditRoute
   AppAdminBrandingRoute: typeof AppAdminBrandingRoute
   AppAdminEmailRoute: typeof AppAdminEmailRoute
@@ -950,6 +970,7 @@ interface AppAdminRouteChildren {
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminAccessRoute: AppAdminAccessRoute,
+  AppAdminAiRoute: AppAdminAiRoute,
   AppAdminAuditRoute: AppAdminAuditRoute,
   AppAdminBrandingRoute: AppAdminBrandingRoute,
   AppAdminEmailRoute: AppAdminEmailRoute,

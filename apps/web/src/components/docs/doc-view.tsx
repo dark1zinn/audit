@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { DocDetail, DocNode } from "@audit/domain/docs/schema"
@@ -26,6 +26,9 @@ import { docQuery, commentsQuery, invalidateDoc } from "./queries.ts"
 import { VersionsPanel } from "./versions-panel.tsx"
 import { BacklinksPanel } from "./backlinks-panel.tsx"
 import { useRecordRecent } from "../../lib/search.ts"
+import type { Editor } from "@tiptap/core"
+import { DocAiMenu } from "./doc-ai-menu.tsx"
+import { useAiPageContext } from "../ai/ai-store.ts"
 
 interface DocViewProps {
   readonly docId: DocId
@@ -99,6 +102,8 @@ const DocBody = ({
   const [pending, setPending] = useState<PendingAnchor | null>(null)
   const [title, setTitle] = useState(doc.title)
   const [error, setError] = useState<unknown>(null)
+  const editorRef = useRef<Editor | null>(null)
+  useAiPageContext(docId)
 
   const anchors: ReadonlyArray<AnchorRange> = (comments.data ?? []).flatMap((comment) => {
     const anchor = comment.anchor
@@ -168,6 +173,7 @@ const DocBody = ({
             >
               <Trans>Export HTML</Trans>
             </a>
+            <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-sm print:hidden">
@@ -227,6 +233,7 @@ const DocBody = ({
             user={{ name: me.name, color: colorFor(me.id) }}
             comments={anchors}
             template={template}
+            editorRef={editorRef}
             onSelectionComment={(anchor, quote) => {
               if (canComment) setPending({ ...anchor, quote })
             }}

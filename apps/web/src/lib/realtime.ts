@@ -22,7 +22,7 @@ const SocketLive = Layer.effect(Socket.Socket, Socket.makeWebSocket(socketUrl())
   Layer.provide(Socket.layerWebSocketConstructorGlobal),
 )
 
-const ProtocolLive = RpcClient.layerProtocolSocket().pipe(
+export const ProtocolLive = RpcClient.layerProtocolSocket().pipe(
   Layer.provide([RpcSerialization.layerJson, SocketLive]),
 )
 

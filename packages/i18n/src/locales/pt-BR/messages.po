@@ -304,6 +304,7 @@ msgstr "Ação"
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
@@ -377,6 +378,10 @@ msgstr "Adicionar membro"
 msgid "Add passkey"
 msgstr "Adicionar chave de acesso"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Add provider"
+msgstr "Adicionar provedor"
+
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Add subtask"
 msgstr "Adicionar subtarefa"
@@ -388,9 +393,37 @@ msgstr "Adiciona os eventos de um arquivo .ics a {0}."
 
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Admin"
 msgstr "Administrador"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "After"
+msgstr "Depois"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/components/chat/channel-ai-menu.tsx
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "AI"
+msgstr "IA"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "AI enabled"
+msgstr "IA ativada"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "AI is off until it is turned on here. Nothing is sent to a provider before then."
+msgstr "A IA fica desativada até ser ativada aqui. Nada é enviado a um provedor antes disso."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "AI is turned off for this workspace."
+msgstr "A IA está desativada neste espaço de trabalho."
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "AI settings saved"
+msgstr "Configurações de IA salvas"
 
 #: ../../apps/web/src/components/mentions/mention-picker-menu.tsx
 #: ../../apps/web/src/routes/_app.inbox.tsx
@@ -422,6 +455,10 @@ msgstr "Domínios permitidos: {0}"
 #: ../../apps/web/src/routes/_app.admin.security.tsx
 msgid "Allowed email domains"
 msgstr "Domínios de e-mail permitidos"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Allowed roles"
+msgstr "Funções permitidas"
 
 #: ../../apps/web/src/routes/signup.tsx
 msgid "Already have an account? Sign in"
@@ -467,6 +504,14 @@ msgstr "Qualquer pessoa com o link"
 msgid "Anyone with this link can read your calendars. Regenerate it to revoke access."
 msgstr "Qualquer pessoa com este link pode ler seus calendários. Gere novamente para revogar o acesso."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "API key"
+msgstr "Chave de API"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "API keys are write-only. Only the last four characters are shown."
+msgstr "As chaves de API são somente gravação. Apenas os últimos quatro caracteres são exibidos."
+
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Appearance"
 msgstr "Aparência"
@@ -482,6 +527,14 @@ msgstr "Aplicar escolhas"
 #: ../../apps/web/src/routes/_app.search.tsx
 msgid "Apply search"
 msgstr "Aplicar busca"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Approve"
+msgstr "Aprovar"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Approved"
+msgstr "Aprovado"
 
 #: ../../apps/web/src/components/inbox/inbox-list.tsx
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
@@ -521,6 +574,14 @@ msgstr "Projetos arquivados são somente leitura até que alguém os desarquive.
 msgid "Ascending"
 msgstr "Crescente"
 
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Ask about this page, search the workspace, or request drafts. Changes wait for your approval."
+msgstr "Pergunte sobre esta página, pesquise no espaço de trabalho ou peça rascunhos. As alterações aguardam sua aprovação."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Ask the assistant"
+msgstr "Pergunte ao assistente"
+
 #. placeholder {0}: card.key
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
 msgid "Assign {0}"
@@ -529,6 +590,10 @@ msgstr "Atribuir {0}"
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Assign selected to"
 msgstr "Atribuir selecionados a"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Assign task"
+msgstr "Atribuir tarefa"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Assign to"
@@ -547,6 +612,17 @@ msgstr "Responsável"
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
 msgid "Assignees"
 msgstr "Responsáveis"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Assistant"
+msgstr "Assistente"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Assistant settings"
+msgstr "Configurações do assistente"
 
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/reset-password.tsx
@@ -586,6 +662,10 @@ msgstr "Retenção do registro de auditoria (dias)"
 msgid "Author"
 msgstr "Autor"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Auto-approve these actions"
+msgstr "Aprovar automaticamente estas ações"
+
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "B"
 msgstr "N"
@@ -605,9 +685,21 @@ msgstr "Referências"
 msgid "Backlog"
 msgstr "Backlog"
 
+#: ../../apps/web/src/components/board/board-ai-menu.tsx
+msgid "Backlog triage"
+msgstr "Triagem do backlog"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Backup codes (shown once; store them safely)"
 msgstr "Códigos de backup (exibidos uma vez; guarde-os em local seguro)"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Base URL (optional)"
+msgstr "URL base (opcional)"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Before"
+msgstr "Antes"
 
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "Blank"
@@ -618,6 +710,7 @@ msgid "Blocks"
 msgstr "Bloqueia"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Board"
 msgstr "Quadro"
@@ -625,6 +718,10 @@ msgstr "Quadro"
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Board name"
 msgstr "Nome do quadro"
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Board positions"
+msgstr "Posições dos quadros"
 
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Boards"
@@ -655,6 +752,16 @@ msgstr "Verificação de senhas vazadas desativada"
 msgid "Breached-password check on"
 msgstr "Verificação de senhas vazadas ativada"
 
+#: ../../apps/web/src/components/task-panel/task-panel.tsx
+msgid "Break down"
+msgstr "Dividir em partes"
+
+#. placeholder {0}: task.title
+#. placeholder {1}: task.id
+#: ../../apps/web/src/components/task-panel/task-panel.tsx
+msgid "Break the task \"{0}\" (id {1}) into subtasks and propose each one as a task."
+msgstr "Divida a tarefa \"{0}\" (id {1}) em subtarefas e proponha cada uma como tarefa."
+
 #. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Broken at sequence {0}."
@@ -680,8 +787,21 @@ msgstr "Lista com marcadores"
 msgid "Bulleted list"
 msgstr "Lista com marcadores"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "By feature"
+msgstr "Por recurso"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "By person"
+msgstr "Por pessoa"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "By provider"
+msgstr "Por provedor"
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.calendar.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Calendar"
@@ -699,6 +819,10 @@ msgstr "Calendários"
 msgid "Callout"
 msgstr "Destaque"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Calls"
+msgstr "Chamadas"
+
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 #: ../../apps/web/src/components/board/new-task-dialog.tsx
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
@@ -709,6 +833,7 @@ msgstr "Destaque"
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 #: ../../apps/web/src/components/task-panel/description.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Cancel"
 msgstr "Cancelar"
@@ -774,6 +899,10 @@ msgstr "Canal"
 msgid "Channel settings"
 msgstr "Configurações do canal"
 
+#: ../../apps/web/src/components/chat/channel-ai-menu.tsx
+msgid "Channel summary"
+msgstr "Resumo do canal"
+
 #: ../../apps/web/src/components/chat/sidebar.tsx
 #: ../../apps/web/src/routes/_app.search.tsx
 msgid "Channels"
@@ -785,8 +914,13 @@ msgid "Channels that {0} belongs to. Opening one is read-only."
 msgstr "Canais dos quais {0} faz parte. Abrir um deles é somente leitura."
 
 #: ../../apps/web/src/components/chat/sidebar.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Chat"
 msgstr "Chat"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Chat model"
+msgstr "Modelo de chat"
 
 #: ../../apps/web/src/routes/_app.admin.security.tsx
 msgid "Check passwords against breach lists"
@@ -816,6 +950,10 @@ msgstr "Escolher"
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Choose a board"
 msgstr "Escolha um quadro"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Choose a conversation"
+msgstr "Escolha uma conversa"
 
 #: ../../apps/web/src/routes/reset-password.tsx
 msgid "Choose a new password for your account."
@@ -956,6 +1094,19 @@ msgstr "Comentários"
 msgid "Compact"
 msgstr "Compacta"
 
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Compact docs"
+msgstr "Compactar documentos"
+
+#. placeholder {0}: maintenance.data.compaction.count ?? 0
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Compacted {0} docs."
+msgstr "{0} documentos compactados."
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Compaction queued. This page updates when it finishes."
+msgstr "Compactação na fila. Esta página é atualizada ao terminar."
+
 #: ../../apps/web/src/routes/_app.admin.index.tsx
 msgid "Configured"
 msgstr "Configurado"
@@ -972,18 +1123,52 @@ msgstr "Confirmar"
 msgid "Confirm delete"
 msgstr "Confirmar exclusão"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Connected"
+msgstr "Conectado"
+
+#. placeholder {0}: result.latencyMs
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Connection works ({0} ms)"
+msgstr "Conexão funcionando ({0} ms)"
+
 #: ../../apps/web/src/routes/_app.admin.access.tsx
 msgid "Container"
 msgstr "Contêiner"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Continue the document \"{title}\" (id {docId}) from where it ends. Propose the addition as a document edit."
+msgstr "Continue o documento \"{title}\" (id {docId}) a partir do ponto em que termina. Proponha a adição como uma edição do documento."
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Continue writing in assistant"
+msgstr "Continuar escrevendo no assistente"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Conversation"
+msgstr "Conversa"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Copied"
 msgstr "Copiado"
 
+#: ../../apps/web/src/components/ai/ai-text-dialog.tsx
+msgid "Copied."
+msgstr "Copiado."
+
+#: ../../apps/web/src/components/ai/ai-text-dialog.tsx
 #: ../../apps/web/src/components/calendar/calendar-list.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Copy"
 msgstr "Copiar"
+
+#: ../../apps/web/src/components/ai/ai-text-dialog.tsx
+msgid "Copy failed. Select the text and copy it manually."
+msgstr "Falha ao copiar. Selecione o texto e copie manualmente."
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Corrected text"
+msgstr "Texto corrigido"
 
 #: ../../apps/web/src/components/palette/command-palette.tsx
 msgid "Could not change language"
@@ -1053,6 +1238,14 @@ msgstr "Criar canal"
 msgid "Create doc"
 msgstr "Criar documento"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Create document"
+msgstr "Criar documento"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Create event"
+msgstr "Criar evento"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Create invite"
 msgstr "Criar convite"
@@ -1069,6 +1262,7 @@ msgstr "Criar link de redefinição de senha"
 msgid "Create project"
 msgstr "Criar projeto"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
 #: ../../apps/web/src/components/board/new-task-dialog.tsx
 #: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/chat/message-item.tsx
@@ -1163,6 +1357,10 @@ msgstr "Idioma padrão"
 msgid "Default member role"
 msgstr "Papel padrão dos membros"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Default provider"
+msgstr "Provedor padrão"
+
 #: ../../apps/web/src/routes/_app.admin.branding.tsx
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Default theme"
@@ -1180,6 +1378,7 @@ msgstr "Padrões e políticas para todos no espaço de trabalho."
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Delete"
 msgstr "Excluir"
@@ -1195,6 +1394,10 @@ msgstr "Excluir quadro"
 #: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
 msgid "Delete calendar"
 msgstr "Excluir calendário"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Delete conversation"
+msgstr "Excluir conversa"
 
 #: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
@@ -1213,6 +1416,10 @@ msgstr "Excluir projeto"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Delete project {0}?"
 msgstr "Excluir o projeto {0}?"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Delete provider?"
+msgstr "Excluir provedor?"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Delete selected tasks?"
@@ -1294,6 +1501,7 @@ msgstr "Mensagens diretas não podem ser renomeadas."
 msgid "Discard my changes"
 msgstr "Descartar minhas alterações"
 
+#: ../../apps/web/src/components/board/board-ai-menu.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Dismiss"
 msgstr "Dispensar"
@@ -1310,6 +1518,10 @@ msgstr "Divisor"
 #: ../../apps/web/src/components/mentions/mention-picker-menu.tsx
 msgid "Doc"
 msgstr "Documento"
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Doc compaction"
+msgstr "Compactação de documentos"
 
 #: ../../apps/web/src/components/inbox/kind.tsx
 msgid "Doc review due"
@@ -1334,6 +1546,10 @@ msgstr "Configurações do documento"
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Document title"
 msgstr "Título do documento"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Document upkeep"
+msgstr "Manutenção de documentos"
 
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 #: ../../apps/web/src/components/docs/docs-page.tsx
@@ -1370,6 +1586,14 @@ msgstr "Baixar JSON"
 #: ../../apps/web/src/routes/_app.settings.privacy.tsx
 msgid "Download your data"
 msgstr "Baixe seus dados"
+
+#: ../../apps/web/src/components/chat/channel-ai-menu.tsx
+msgid "Draft a reply"
+msgstr "Rascunhar uma resposta"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Draft message"
+msgstr "Mensagem em rascunho"
 
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 msgid "Drag cancelled."
@@ -1417,6 +1641,7 @@ msgstr "Duplica"
 
 #: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Edit"
 msgstr "Editar"
 
@@ -1428,6 +1653,10 @@ msgstr "Editar comentário"
 msgid "Edit description"
 msgstr "Editar descrição"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Edit document"
+msgstr "Editar documento"
+
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
 msgid "Edit event"
 msgstr "Editar evento"
@@ -1435,6 +1664,10 @@ msgstr "Editar evento"
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "Edit message"
 msgstr "Editar mensagem"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Edit provider"
+msgstr "Editar provedor"
 
 #: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
 msgid "Edit recurring event"
@@ -1446,6 +1679,7 @@ msgstr "Editou um comentário"
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Editor"
 msgstr "Editor"
 
@@ -1484,6 +1718,22 @@ msgstr "Incorporar uma tarefa"
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Embed task"
 msgstr "Incorporar tarefa"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Embedding dimensions"
+msgstr "Dimensões de embedding"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Embedding model"
+msgstr "Modelo de embedding"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Embedding model (optional)"
+msgstr "Modelo de embedding (opcional)"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Embedding provider"
+msgstr "Provedor de embedding"
 
 #: ../../apps/web/src/routes/_app.admin.email.tsx
 #: ../../apps/web/src/routes/_app.settings.security.tsx
@@ -1591,6 +1841,7 @@ msgstr "example.com"
 msgid "Expand"
 msgstr "Expandir"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Expired"
 msgstr "Expirado"
@@ -1614,6 +1865,23 @@ msgstr "Exportar HTML"
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Export Markdown"
 msgstr "Exportar Markdown"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Extract tasks in assistant"
+msgstr "Extrair tarefas no assistente"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Extract the action items from the document \"{title}\" (id {docId}) and propose each as a task."
+msgstr "Extraia os itens de ação do documento \"{title}\" (id {docId}) e proponha cada um como tarefa."
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Failed"
+msgstr "Falhou"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Features"
+msgstr "Recursos"
 
 #: ../../apps/web/src/components/calendar/calendar-list.tsx
 msgid "Feed link"
@@ -1643,6 +1911,10 @@ msgstr "Filtrar tarefas"
 #: ../../apps/web/src/components/board/filters-bar.tsx
 msgid "Filters"
 msgstr "Filtros"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Fix grammar in selection"
+msgstr "Corrigir gramática da seleção"
 
 #: ../../apps/web/src/components/chat/thread-panel.tsx
 msgid "Follow"
@@ -1715,6 +1987,7 @@ msgid "Groups of members used for access and notifications."
 msgstr "Grupos de membros usados para acesso e notificações."
 
 #: ../../apps/web/src/components/project-settings/options.ts
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Guest"
@@ -1815,6 +2088,14 @@ msgstr "Caixa de entrada"
 msgid "Inherited from container"
 msgstr "Herdado do contêiner"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Input tokens"
+msgstr "Tokens de entrada"
+
+#: ../../apps/web/src/components/ai/ai-text-dialog.tsx
+msgid "Insert"
+msgstr "Inserir"
+
 #: ../../apps/web/src/components/docs/slash-menu.tsx
 msgid "Insert block"
 msgstr "Inserir bloco"
@@ -1887,6 +2168,7 @@ msgid "Join workspace"
 msgstr "Entrar no espaço de trabalho"
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Key"
 msgstr "Chave"
@@ -1898,6 +2180,10 @@ msgstr "Atalhos de teclado"
 #: ../../apps/web/src/components/inbox/inbox-list.tsx
 msgid "Keys: j/k move, Enter open, r read or unread, e archive or unarchive."
 msgstr "Teclas: j/k mover, Enter abrir, r marcar como lida ou não lida, e arquivar ou desarquivar."
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Kind"
+msgstr "Tipo"
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
@@ -1945,6 +2231,15 @@ msgstr "Líder"
 msgid "Leave channel"
 msgstr "Sair do canal"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Leave empty for no limit. Counts input and output tokens across the workspace."
+msgstr "Deixe vazio para não ter limite. Conta os tokens de entrada e saída em todo o espaço de trabalho."
+
+#. placeholder {0}: provider.keyLast4 ?? ""
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Leave empty to keep ••••{0}"
+msgstr "Deixe vazio para manter ••••{0}"
+
 #: ../../apps/web/src/routes/_app.admin.retention.tsx
 msgid "Leave message retention empty to keep messages indefinitely."
 msgstr "Deixe a retenção de mensagens vazia para manter as mensagens indefinidamente."
@@ -1972,6 +2267,14 @@ msgstr "Vincular"
 #: ../../apps/web/src/components/calendar/linked-items.tsx
 msgid "Link {0}"
 msgstr "Vincular {0}"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Link items"
+msgstr "Vincular itens"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Link items without review"
+msgstr "Vincular itens sem revisão"
 
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Link task"
@@ -2097,7 +2400,12 @@ msgstr "Média"
 msgid "Meeting notes"
 msgstr "Notas de reunião"
 
+#: ../../apps/web/src/components/calendar/meeting-prep.tsx
+msgid "Meeting prep"
+msgstr "Preparação da reunião"
+
 #: ../../apps/web/src/components/project-settings/options.ts
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
@@ -2168,6 +2476,10 @@ msgstr "Mensagem excluída"
 msgid "Message retention (days)"
 msgstr "Retenção de mensagens (dias)"
 
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Message the assistant"
+msgstr "Enviar mensagem ao assistente"
+
 #: ../../apps/web/src/components/chat/channel-view.tsx
 #: ../../apps/web/src/routes/_app.search.tsx
 msgid "Messages"
@@ -2181,9 +2493,17 @@ msgstr "Somente metadados"
 msgid "Minimum password length: {MIN_PASSWORD_LENGTH}"
 msgstr "Tamanho mínimo da senha: {MIN_PASSWORD_LENGTH}"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Month"
+msgstr "Mês"
+
 #: ../../apps/web/src/components/calendar/recurrence-fields.tsx
 msgid "Monthly"
 msgstr "Mensalmente"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Monthly token budget"
+msgstr "Orçamento mensal de tokens"
 
 #. placeholder {0}: card.key
 #. placeholder {0}: doc.title || t`Untitled`
@@ -2217,6 +2537,10 @@ msgstr "Mover para fora"
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Move selected to column"
 msgstr "Mover selecionados para a coluna"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Move task"
+msgstr "Mover tarefa"
 
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Move tasks to"
@@ -2265,6 +2589,7 @@ msgstr "Minhas tarefas"
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
@@ -2303,6 +2628,7 @@ msgstr "Aninhado."
 msgid "Never ends"
 msgstr "Nunca termina"
 
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
 #: ../../apps/web/src/components/chat/sidebar.tsx
 msgid "New"
 msgstr "Nova"
@@ -2334,6 +2660,10 @@ msgstr "Novo comentário"
 #: ../../apps/server/src/notify-messages.ts
 msgid "notify.comment_added"
 msgstr "Novo comentário em {title}"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "New conversations start with this page as context."
+msgstr "Novas conversas começam com esta página como contexto."
 
 #: ../../apps/web/src/components/palette/command-palette.tsx
 msgid "New doc"
@@ -2407,6 +2737,10 @@ msgstr "Nenhum membro ativo pode acessar este item."
 msgid "No activity yet."
 msgstr "Sem atividade ainda."
 
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "No AI provider is configured yet."
+msgstr "Nenhum provedor de IA está configurado ainda."
+
 #: ../../apps/web/src/routes/_app.inbox.tsx
 msgid "No archived notifications."
 msgstr "Nenhuma notificação arquivada."
@@ -2414,6 +2748,10 @@ msgstr "Nenhuma notificação arquivada."
 #: ../../apps/web/src/components/calendar/calendar-workspace.tsx
 msgid "No calendars yet. Create one to start adding events."
 msgstr "Nenhum calendário ainda. Crie um para começar a adicionar eventos."
+
+#: ../../apps/web/src/components/board/board-ai-menu.tsx
+msgid "No changes suggested."
+msgstr "Nenhuma alteração sugerida."
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
@@ -2440,9 +2778,17 @@ msgstr "Sem concessões explícitas."
 msgid "No grouping"
 msgstr "Sem agrupamento"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "No key"
+msgstr "Sem chave"
+
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 msgid "No lead"
 msgstr "Sem responsável"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "No limit"
+msgstr "Sem limite"
 
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 msgid "No longer over a drop target."
@@ -2483,6 +2829,10 @@ msgstr "Sem prioridade"
 msgid "No private channels or direct messages."
 msgstr "Nenhum canal privado ou mensagem direta."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "No providers yet. Add one below."
+msgstr "Nenhum provedor ainda. Adicione um abaixo."
+
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "No relations yet."
 msgstr "Sem relações ainda."
@@ -2490,6 +2840,10 @@ msgstr "Sem relações ainda."
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
 msgid "No response"
 msgstr "Sem resposta"
+
+#: ../../apps/web/src/components/ai/ai-text-dialog.tsx
+msgid "No result."
+msgstr "Nenhum resultado."
 
 #: ../../apps/web/src/routes/_app.search.tsx
 msgid "No results."
@@ -2511,6 +2865,10 @@ msgstr "Nenhuma tarefa corresponde a essa chave."
 msgid "No tasks match these filters."
 msgstr "Nenhuma tarefa corresponde a estes filtros."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "No usage this month."
+msgstr "Nenhum uso neste mês."
+
 #: ../../apps/web/src/components/docs/versions-panel.tsx
 msgid "No versions yet."
 msgstr "Nenhuma versão ainda."
@@ -2518,6 +2876,7 @@ msgstr "Nenhuma versão ainda."
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 #: ../../apps/web/src/routes/_app.admin.access.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "None"
 msgstr "Nenhum"
 
@@ -2652,6 +3011,10 @@ msgstr "Aberto para os domínios de e-mail listados"
 msgid "Open workspace settings"
 msgstr "Abrir configurações do espaço de trabalho"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "OpenAI-compatible"
+msgstr "Compatível com OpenAI"
+
 #: ../../apps/web/src/routes/_app.dm.$userId.tsx
 msgid "Opening conversation…"
 msgstr "Abrindo conversa…"
@@ -2685,6 +3048,10 @@ msgstr "Outras sessões encerradas"
 msgid "Outgoing email delivery for invitations and notifications."
 msgstr "Envio de e-mails de saída para convites e notificações."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Output tokens"
+msgstr "Tokens de saída"
+
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 msgid "Over a drop target."
 msgstr "Sobre uma área de soltura."
@@ -2700,6 +3067,7 @@ msgstr "Visão geral"
 
 #: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Owner"
 msgstr "Proprietário"
@@ -2908,6 +3276,26 @@ msgstr "Projetos"
 msgid "Protect your account and manage sign-ins."
 msgstr "Proteja sua conta e gerencie os acessos."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Provider added"
+msgstr "Provedor adicionado"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Provider default"
+msgstr "Padrão do provedor"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Provider deleted"
+msgstr "Provedor excluído"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Provider saved"
+msgstr "Provedor salvo"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Providers"
+msgstr "Provedores"
+
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Public"
 msgstr "Público"
@@ -2970,6 +3358,19 @@ msgid "Read"
 msgstr "Lidas"
 
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rebalance all boards"
+msgstr "Rebalancear todos os quadros"
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rebalance queued. This page updates when it finishes."
+msgstr "Rebalanceamento na fila. Esta página é atualizada ao terminar."
+
+#. placeholder {0}: maintenance.data.rebalance.count ?? 0
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rebalanced {0} boards."
+msgstr "{0} quadros rebalanceados."
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuild queued. This page updates when it finishes."
 msgstr "Reconstrução na fila. Esta página será atualizada quando terminar."
 
@@ -2978,8 +3379,16 @@ msgid "Rebuild search index"
 msgstr "Reconstruir índice de busca"
 
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
-msgid "Rebuild the search index and export workspace data."
-msgstr "Reconstrua o índice de busca e exporte os dados do espaço de trabalho."
+#~ msgid "Rebuild the search index and export workspace data."
+#~ msgstr "Reconstrua o índice de busca e exporte os dados do espaço de trabalho."
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rebuild the search index, rebalance boards, compact docs and export workspace data."
+msgstr "Reconstrua o índice de busca, rebalanceie quadros, compacte documentos e exporte os dados do espaço de trabalho."
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rebuilds large docs from their content to drop accumulated edit history. The previous state is kept as a version. Docs open right now are skipped."
+msgstr "Reconstrói documentos grandes a partir do conteúdo, removendo o histórico de edições acumulado. O estado anterior é mantido como uma versão. Documentos abertos no momento são ignorados."
 
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuilds the search index from current data. Search may be slow meanwhile."
@@ -3000,6 +3409,14 @@ msgstr "Regra de recorrência (RFC 5545)"
 #: ../../apps/web/src/components/calendar/calendar-list.tsx
 msgid "Regenerate link"
 msgstr "Gerar novo link"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Reject"
+msgstr "Rejeitar"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Rejected"
+msgstr "Rejeitado"
 
 #: ../../apps/web/src/routes/_app.admin.security.tsx
 msgid "Rejects passwords found in known breaches. Minimum length is {MIN_PASSWORD_LENGTH} characters."
@@ -3169,6 +3586,18 @@ msgstr "Revogar acesso de {name}"
 msgid "Revoked"
 msgstr "Revogado"
 
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Rewrite selection"
+msgstr "Reescrever seleção"
+
+#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
+msgid "Rewrites column and task position keys on every board into short, evenly spaced keys. Task order does not change."
+msgstr "Reescreve as chaves de posição de colunas e tarefas de cada quadro em chaves curtas e espaçadas. A ordem das tarefas não muda."
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Rewritten text"
+msgstr "Texto reescrito"
+
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "RFC"
 msgstr "RFC"
@@ -3197,6 +3626,7 @@ msgstr "Runbook"
 #: ../../apps/web/src/components/docs/doc-view.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.branding.tsx
 #: ../../apps/web/src/routes/_app.admin.retention.tsx
 #: ../../apps/web/src/routes/_app.admin.security.tsx
@@ -3223,6 +3653,10 @@ msgstr "Salvar descrição"
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Save profile"
 msgstr "Salvar perfil"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Save provider"
+msgstr "Salvar provedor"
 
 #: ../../apps/web/src/routes/_app.settings.notifications.tsx
 msgid "Save quiet hours"
@@ -3337,6 +3771,15 @@ msgstr "Selecione uma equipe."
 msgid "Select or deselect the focused card"
 msgstr "Selecionar ou desselecionar o cartão em foco"
 
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Select some text first."
+msgstr "Selecione um texto primeiro."
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Semantic search"
+msgstr "Busca semântica"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
 #: ../../apps/web/src/components/chat/channel-view.tsx
 msgid "Send"
 msgstr "Enviar"
@@ -3344,6 +3787,10 @@ msgstr "Enviar"
 #: ../../apps/web/src/routes/_app.admin.email.tsx
 msgid "Send a test email"
 msgstr "Envie um e-mail de teste"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Send drafted messages without review"
+msgstr "Enviar mensagens rascunhadas sem revisão"
 
 #: ../../apps/web/src/routes/forgot-password.tsx
 msgid "Send reset link"
@@ -3504,6 +3951,10 @@ msgstr "Ordenar por"
 msgid "Sort descending"
 msgstr "Ordenar decrescente"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Sources"
+msgstr "Fontes"
+
 #: ../../apps/web/src/routes/_app.admin.storage.tsx
 msgid "Space used by uploaded files across the workspace."
 msgstr "Espaço usado pelos arquivos enviados em todo o espaço de trabalho."
@@ -3534,11 +3985,16 @@ msgid "Starts"
 msgstr "Começa"
 
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Status"
 msgstr "Status"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Stop"
+msgstr "Parar"
 
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.index.tsx
@@ -3561,6 +4017,22 @@ msgstr "Assinar em outro app"
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Subtasks"
 msgstr "Subtarefas"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Summaries"
+msgstr "Resumos"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Summarise document"
+msgstr "Resumir documento"
+
+#: ../../apps/web/src/components/chat/channel-ai-menu.tsx
+msgid "Summarise unread messages"
+msgstr "Resumir mensagens não lidas"
+
+#: ../../apps/web/src/components/docs/doc-ai-menu.tsx
+msgid "Summary"
+msgstr "Resumo"
 
 #: ../../apps/web/src/components/palette/command-palette.tsx
 msgid "Switch language"
@@ -3677,6 +4149,10 @@ msgstr "Equipes"
 msgid "Template"
 msgstr "Modelo"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Test"
+msgstr "Testar"
+
 #: ../../apps/web/src/routes/_app.admin.email.tsx
 msgid "Test email sent"
 msgstr "E-mail de teste enviado"
@@ -3697,6 +4173,22 @@ msgstr "Este não é um ID de item válido."
 msgid "That item no longer exists."
 msgstr "Este item não existe mais."
 
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "The assistant is turned off for this workspace."
+msgstr "O assistente está desativado neste espaço de trabalho."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "The assistant replied."
+msgstr "O assistente respondeu."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "The assistant stopped before it finished."
+msgstr "O assistente parou antes de terminar."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "The assistant stopped."
+msgstr "O assistente parou."
+
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "The bulk action failed. Nothing was changed."
 msgstr "A ação em lote falhou. Nada foi alterado."
@@ -3716,6 +4208,10 @@ msgstr "A data de término não pode ser antes da data de início."
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "The file could not be uploaded."
 msgstr "Não foi possível enviar o arquivo."
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "The key is stored sealed and is never shown again."
+msgstr "A chave é armazenada criptografada e nunca é exibida novamente."
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
 msgid "The key prefixes task numbers, for example ABC-12."
@@ -3753,6 +4249,10 @@ msgstr "O projeto volta a ser editável."
 msgid "The project disappears from every list except this page. Type the project key to confirm."
 msgstr "O projeto desaparece de todas as listas, exceto desta página. Digite a chave do projeto para confirmar."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "The provider and its stored key are removed. Features that use it stop working until another provider is chosen."
+msgstr "O provedor e a chave armazenada são removidos. Os recursos que o usam deixam de funcionar até que outro provedor seja escolhido."
+
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
 msgid "The repeat end date is before the start."
 msgstr "A data final da repetição é anterior ao início."
@@ -3765,6 +4265,10 @@ msgstr "A série inteira."
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Theme"
 msgstr "Tema"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Thinking…"
+msgstr "Pensando…"
 
 #: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
@@ -3794,6 +4298,10 @@ msgstr "Este link está incompleto. Peça a um administrador um novo link de red
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "This message was deleted."
 msgstr "Esta mensagem foi apagada."
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "This month's AI budget is used up."
+msgstr "O orçamento de IA deste mês foi esgotado."
 
 #: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
 msgid "This occurrence"
@@ -3887,9 +4395,21 @@ msgstr "A fazer"
 msgid "To move a task, press space or enter, use the arrow keys to choose a position, then press space or enter to drop. Press escape to cancel."
 msgstr "Para mover uma tarefa, pressione espaço ou enter, use as setas para escolher uma posição e pressione espaço ou enter para soltar. Pressione escape para cancelar."
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Tokens used in the chosen calendar month (UTC)."
+msgstr "Tokens usados no mês do calendário escolhido (UTC)."
+
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Too many attempts. Wait a moment and try again."
 msgstr "Muitas tentativas. Aguarde um pouco e tente novamente."
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Tool result: {name}"
+msgstr "Resultado da ferramenta: {name}"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Tool: {name}"
+msgstr "Ferramenta: {name}"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Topic"
@@ -3898,6 +4418,14 @@ msgstr "Tópico"
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Transfer ownership"
 msgstr "Transferir propriedade"
+
+#: ../../apps/web/src/components/board/board-ai-menu.tsx
+msgid "Triage backlog"
+msgstr "Triagem do backlog"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Turn AI on for the workspace, choose the providers it uses and watch token use."
+msgstr "Ative a IA no espaço de trabalho, escolha os provedores que ela usa e acompanhe o uso de tokens."
 
 #: ../../apps/web/src/routes/_app.settings.notifications.tsx
 msgid "Turn off push on this device"
@@ -4004,6 +4532,10 @@ msgstr "Desafixar"
 msgid "Unread"
 msgstr "Não lidas"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Untested"
+msgstr "Não testado"
+
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "Untitled"
@@ -4012,6 +4544,10 @@ msgstr "Sem título"
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Up"
 msgstr "Para cima"
+
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Update task"
+msgstr "Atualizar tarefa"
 
 #: ../../apps/web/src/routes/_app.index.tsx
 msgid "Update your name, language, time zone and appearance."
@@ -4045,6 +4581,7 @@ msgstr "Enviar logo"
 msgid "Urgent"
 msgstr "Urgente"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
 #: ../../apps/web/src/routes/_app.admin.storage.tsx
 msgid "Usage"
 msgstr "Uso"
@@ -4124,6 +4661,10 @@ msgstr "Visualizando como administrador. Somente leitura."
 msgid "Visibility"
 msgstr "Visibilidade"
 
+#: ../../apps/web/src/components/ai/assistant-parts.tsx
+msgid "Waiting for approval"
+msgstr "Aguardando aprovação"
+
 #: ../../apps/web/src/components/task-panel/task-panel.tsx
 msgid "Watch"
 msgstr "Acompanhar"
@@ -4164,6 +4705,10 @@ msgstr "Limite de WIP"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Workspace"
 msgstr "Espaço de trabalho"
+
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Workspace AI"
+msgstr "IA do espaço de trabalho"
 
 #: ../../apps/web/src/routes/_app.admin.branding.tsx
 msgid "Workspace appearance"
@@ -4292,6 +4837,10 @@ msgstr "Seus dados pessoais neste espaço de trabalho."
 #: ../../apps/web/src/components/calendar/event-dialog.tsx
 msgid "Your response"
 msgstr "Sua resposta"
+
+#: ../../apps/web/src/components/ai/assistant-panel.tsx
+msgid "Your role cannot use AI in this workspace."
+msgstr "Sua função não pode usar IA neste espaço de trabalho."
 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Your session has ended. Sign in again."

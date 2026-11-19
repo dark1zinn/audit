@@ -9,6 +9,7 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { callApi } from "../../lib/api.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { openAssistantWith, useAiPageContext } from "../ai/ai-store.ts"
 import { useRealtimeScopes, usePresence } from "../../lib/realtime.ts"
 import { sessionQuery, taskDetailQuery } from "../../lib/queries.ts"
 import { ActivitySection } from "./activity.tsx"
@@ -37,6 +38,7 @@ export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
   })
   useRealtimeScopes([`entity:${taskId}`])
   useRecordRecent(taskId)
+  useAiPageContext(taskId)
 
   if (task.isError) return <ErrorMessage error={task.error} />
   if (task.data === undefined) return <LoadingRows />
@@ -100,6 +102,20 @@ function TaskView({
               >
                 {task.watching ? t`Watching` : t`Watch`}
               </Button>
+              {canEdit ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    openAssistantWith(
+                      t`Break the task "${task.title}" (id ${task.id}) into subtasks and propose each one as a task.`,
+                    )
+                  }
+                >
+                  {t`Break down`}
+                </Button>
+              ) : null}
             </div>
           </div>
           <TitleEditor

@@ -39,6 +39,7 @@ export const keys = {
   adminOverview: ["admin", "overview"] as const,
   adminEmail: ["admin", "email"] as const,
   adminStorage: ["admin", "storage"] as const,
+  adminMaintenance: ["admin", "maintenance"] as const,
   adminAccessItem: (entityId: string) => ["admin", "access", "items", entityId] as const,
   adminAccessPerson: (userId: string) => ["admin", "access", "people", userId] as const,
 }

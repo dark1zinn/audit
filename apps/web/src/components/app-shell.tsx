@@ -17,7 +17,7 @@ import {
 } from "@audit/ui/components/ui/dropdown-menu.tsx"
 import { Separator } from "@audit/ui/components/ui/separator.tsx"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@audit/ui/components/ui/sheet.tsx"
-import { Menu } from "lucide-react"
+import { Menu, Sparkles } from "lucide-react"
 import { useTheme, type Density, type ThemeMode } from "@audit/ui/theme.tsx"
 import { useState, type ReactNode } from "react"
 import { authClient } from "../lib/auth.ts"
@@ -28,6 +28,8 @@ import { ProjectCreateDialog } from "./project-create-dialog.tsx"
 import { InboxNavLink } from "./inbox/nav-link.tsx"
 import { ChatNav } from "./chat/sidebar.tsx"
 import { ShortcutsHelp } from "./shortcuts-help.tsx"
+import { AssistantPanel } from "./ai/assistant-panel.tsx"
+import { setAssistantOpen, useAssistantState } from "./ai/ai-store.ts"
 
 const navLinkClass =
   "flex items-center rounded-md px-3 py-2 max-md:min-h-11 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -239,6 +241,9 @@ function SidebarBody({ me }: { readonly me: Me }) {
             <NavLink to="/admin/maintenance">
               <Trans>Maintenance</Trans>
             </NavLink>
+            <NavLink to="/admin/ai">
+              <Trans>AI</Trans>
+            </NavLink>
           </>
         )}
       </nav>
@@ -252,6 +257,7 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
   const { t } = useLingui()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const assistantOpen = useAssistantState().open
   return (
     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <div className="flex min-h-screen">
@@ -295,13 +301,24 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
               </SheetTrigger>
               <span className="truncate font-medium">{me.workspace.name}</span>
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                aria-haspopup="dialog"
+                aria-expanded={assistantOpen}
+                onClick={() => setAssistantOpen(!assistantOpen)}
+              >
+                <Sparkles aria-hidden="true" className="size-4" />
+                <Trans>Assistant</Trans>
+              </Button>
               <UserMenu me={me} />
             </div>
           </header>
           <main id="main" tabIndex={-1} className="w-full flex-1 p-4 md:p-6">
             {children}
           </main>
+          <AssistantPanel />
         </div>
       </div>
     </Sheet>

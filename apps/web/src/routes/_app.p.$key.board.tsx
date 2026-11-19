@@ -28,6 +28,8 @@ import { ErrorMessage, LoadingRows } from "../components/feedback.tsx"
 import { useMe } from "../components/use-me.ts"
 import { boardViewQuery, labelsQuery, membersQuery, projectsQuery } from "../lib/queries.ts"
 import { usePresence, useRealtimeScopes } from "../lib/realtime.ts"
+import { BoardAiMenu } from "../components/board/board-ai-menu.tsx"
+import { useAiPageContext } from "../components/ai/ai-store.ts"
 
 /** Filters plus `new=task`, a one-shot request to open the new-task entry in the first column. */
 type BoardRouteSearch = ListTasksQuery & { readonly new?: "task" }
@@ -67,6 +69,7 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
   const { t } = useLingui()
   const navigate = Route.useNavigate()
   const { new: newRequest, ...query } = Route.useSearch()
+  useAiPageContext(boardId)
   const me = useMe()
   const reduced = useReducedMotion()
   const scope = `project:${project.key}`
@@ -188,6 +191,7 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
           ))}
         </ul>
       </div>
+      <BoardAiMenu boardId={boardId} />
       <SavedFilters
         projectId={project.id}
         query={query}

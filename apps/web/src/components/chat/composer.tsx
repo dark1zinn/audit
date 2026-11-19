@@ -33,7 +33,7 @@ interface ComposerProps {
   readonly onSubmit: (body: RichDoc) => Promise<void>
   readonly onTyping?: (typing: boolean) => void
   readonly onCancel?: () => void
-  readonly initial?: RichDoc
+  readonly initial?: RichDoc | undefined
 }
 
 /** Chat message composer. Enter sends, Shift+Enter inserts a newline, `@` opens the people picker. */
