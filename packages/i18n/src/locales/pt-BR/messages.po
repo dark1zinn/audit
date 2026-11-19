@@ -592,8 +592,8 @@ msgid "Assign selected to"
 msgstr "Atribuir selecionados a"
 
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
-msgid "Assign task"
-msgstr "Atribuir tarefa"
+#~ msgid "Assign task"
+#~ msgstr "Atribuir tarefa"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Assign to"

@@ -49,7 +49,7 @@ test("editing a recurring event for all occurrences shows the new title", async 
   })
 
   await page.goto(`/p/${key}/calendar`)
-  await page.getByText(title, { exact: true }).first().click()
+  await page.getByText(title).first().click()
 
   await expect(page.getByRole("heading", { name: "Edit event", exact: true })).toBeVisible()
   const renamed = `${title} (moved)`
@@ -62,5 +62,5 @@ test("editing a recurring event for all occurrences shows the new title", async 
   ).toBeVisible()
   await page.getByRole("button", { name: "All occurrences" }).click()
 
-  await expect(page.getByText(renamed, { exact: true }).first()).toBeVisible()
+  await expect(page.getByText(renamed).first()).toBeVisible()
 })

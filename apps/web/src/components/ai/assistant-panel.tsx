@@ -42,12 +42,17 @@ function ConversationMessages({
   const detail = useQuery(aiConversationQuery(conversationId))
   if (detail.isPending) return <LoadingRows />
   if (detail.isError) return <ErrorMessage error={detail.error} />
+  const persisted = new Set(
+    detail.data.messages.flatMap((message) =>
+      message.parts.flatMap((part) => (part._tag === "proposal" ? [part.proposalId] : [])),
+    ),
+  )
   return (
     <div className="space-y-4">
       {detail.data.messages.map((message) => (
         <MessageView key={message.id} message={message} />
       ))}
-      {live === null ? null : <LiveTurnView live={live} />}
+      {live === null ? null : <LiveTurnView live={live} persisted={persisted} />}
     </div>
   )
 }

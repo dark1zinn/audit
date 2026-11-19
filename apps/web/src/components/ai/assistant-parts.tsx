@@ -162,16 +162,16 @@ export function ProposalCard({ proposalId }: { readonly proposalId: AiProposalId
   const proposal = proposals.data.find((item) => item.id === proposalId)
   if (proposal === undefined) return null
 
+  // Keyed by the command a proposal runs on approval.
   const commandLabels: Record<string, string | undefined> = {
-    create_task: t`Create task`,
-    update_task: t`Update task`,
-    move_task: t`Move task`,
-    assign_task: t`Assign task`,
-    create_doc: t`Create document`,
-    propose_doc_edit: t`Edit document`,
-    create_event: t`Create event`,
-    link_entities: t`Link items`,
-    draft_message: t`Draft message`,
+    "task.create": t`Create task`,
+    "task.update": t`Update task`,
+    "task.move": t`Move task`,
+    "task.link": t`Link items`,
+    "doc.create": t`Create document`,
+    "doc.edit.apply": t`Edit document`,
+    "event.create": t`Create event`,
+    "message.post": t`Draft message`,
   }
   const statusLabels: Record<typeof proposal.status, string> = {
     pending: t`Waiting for approval`,
@@ -269,7 +269,14 @@ export function MessageView({ message }: { readonly message: AiMessage }) {
   )
 }
 
-export function LiveTurnView({ live }: { readonly live: LiveTurn }) {
+/** `persisted`: proposals already shown by stored messages, so the live turn doesn't repeat them. */
+export function LiveTurnView({
+  live,
+  persisted,
+}: {
+  readonly live: LiveTurn
+  readonly persisted: ReadonlySet<string>
+}) {
   return (
     <div className="space-y-2" aria-busy="true">
       <p className="sr-only">{live.userText}</p>
@@ -287,9 +294,11 @@ export function LiveTurnView({ live }: { readonly live: LiveTurn }) {
           ) : null}
         </Fragment>
       ))}
-      {live.proposals.map((proposalId) => (
-        <ProposalCard key={proposalId} proposalId={proposalId} />
-      ))}
+      {live.proposals
+        .filter((proposalId) => !persisted.has(proposalId))
+        .map((proposalId) => (
+          <ProposalCard key={proposalId} proposalId={proposalId} />
+        ))}
       {live.text === "" && live.tools.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           <Trans>Thinking…</Trans>
