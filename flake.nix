@@ -30,8 +30,16 @@
           default = pkgs.mkShellNoCC {
             packages = with pkgs; [
               bun
+              playwright-driver.browsers
               self.formatter.${system}
             ];
+
+            # Playwright's bundled Chromium cannot start on NixOS; use the Nix-built one for e2e.
+            PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
+            PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+            shellHook = ''
+              export PW_CHROMIUM="$(echo ${pkgs.playwright-driver.browsers}/chromium-*/chrome-linux64/chrome)"
+            '';
           };
         }
       );
