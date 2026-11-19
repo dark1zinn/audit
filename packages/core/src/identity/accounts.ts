@@ -9,6 +9,7 @@ import type { Locale } from "@audit/domain/identity/schema"
 import type { WorkspaceRole } from "@audit/domain/roles"
 import { Db } from "@audit/platform/database"
 import { Effect } from "effect"
+import { Authz } from "../authz.ts"
 import { isUniqueViolation } from "../command.ts"
 import { emit, record } from "../trail.ts"
 
@@ -58,6 +59,9 @@ export const createAccount = (input: NewAccount) =>
     yield* db
       .insert(workspaceMembers)
       .values({ userId, role: input.role, invitedBy: input.invitedBy })
+    // Role-based grants (workspace space, workspace-visible projects) apply from the first request.
+    const authz = yield* Authz
+    yield* authz.rebuild({ userId })
 
     yield* record({
       action: "member.joined",
