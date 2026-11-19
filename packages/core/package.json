@@ -1,0 +1,17 @@
+{
+  "name": "@audit/core",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@audit/db": "workspace:*",
+    "@audit/domain": "workspace:*",
+    "@audit/platform": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.5",
+    "effect": "4.1.4"
+  }
+}

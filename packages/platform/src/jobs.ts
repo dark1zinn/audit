@@ -123,7 +123,9 @@ export const pgBossLayer = (options: {
         ) =>
           Effect.gen(function* () {
             const context = yield* Effect.context<R>()
-            const decode = Schema.decodeUnknownEffect(job.schema as Schema.Codec<JobData<J>, unknown>)
+            const decode = Schema.decodeUnknownEffect(
+              job.schema as Schema.Codec<JobData<J>, unknown>,
+            )
             yield* Effect.promise(() =>
               boss.work(
                 job.name,
