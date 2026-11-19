@@ -10,7 +10,7 @@ import {
 import { actorUserId, CurrentActor } from "@audit/domain/actor"
 import { Mailer } from "../notifications/mail.ts"
 import { Forbidden, NotFound, Unauthorized } from "@audit/domain/errors"
-import type { InviteId, ProjectId, TeamId, UserId } from "@audit/domain/ids"
+import type { FileId, InviteId, ProjectId, TeamId, UserId } from "@audit/domain/ids"
 import {
   defaultWorkspaceSettings,
   type Invite,
@@ -88,6 +88,7 @@ export const getWorkspace = Effect.gen(function* () {
   if (row === undefined) return yield* new Forbidden({ action: "workspace", message: "Not set up" })
   return {
     name: row.name,
+    ...(row.logoFileId === null ? {} : { logoFileId: row.logoFileId as FileId }),
     settings: readSettings(row.settings),
     signupPolicy: row.signupPolicy as SignupPolicy,
     searchConfig: row.searchConfig as Workspace["searchConfig"],

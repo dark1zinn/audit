@@ -85,6 +85,8 @@ describe("channels and unread state", () => {
     const before = await summaryFor(mia, channel.id)
     expect(before.unread).toBe(1)
     expect(before.mentions).toBe(1)
+    // The author's own message is never unread for them.
+    expect((await summaryFor(owner, channel.id)).unread).toBe(0)
 
     await runAs(
       database,

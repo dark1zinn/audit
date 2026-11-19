@@ -167,7 +167,6 @@ export const createDoc = Command.make("doc.create", {
         id,
         type: "doc",
         title: input.title,
-        searchText: input.title,
         parentId: input.parentId,
         projectId: scope.projectId,
       })
@@ -245,7 +244,7 @@ export const renameDoc = Command.make("doc.rename", {
       version: input.version,
       action: "doc.rename",
       kind: "renamed",
-      entity: { title: input.title, searchText: input.title },
+      entity: { title: input.title },
     }),
 })
 

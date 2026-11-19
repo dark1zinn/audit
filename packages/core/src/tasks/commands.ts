@@ -63,6 +63,7 @@ import {
   touchEntity,
 } from "../entities.ts"
 import { syncReferences } from "../references.ts"
+import { taskSearchText } from "../search/text.ts"
 import { record, emit, diff } from "../trail.ts"
 import { Jobs } from "@audit/platform/jobs"
 import { taskRows, toCards } from "./cards.ts"
@@ -537,9 +538,11 @@ export const createTask = Command.make("task.create", {
       }
 
       const position = yield* placeInColumn(columnId as ColumnId, undefined, null)
+      const key = `${project?.key ?? ""}-${number}`
       const id = (yield* createEntity({
         type: "task",
         title: input.title,
+        searchText: taskSearchText(key, input.description),
         parentId: input.parentId ?? input.boardId,
         projectId: board.projectId,
       })) as TaskId
@@ -664,6 +667,9 @@ export const updateTask = Command.make("task.update", {
       const version = yield* touchEntity(input.taskId, {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.parentId !== undefined ? { parentId: input.parentId ?? state.boardId } : {}),
+        ...(input.description !== undefined
+          ? { searchText: taskSearchText(state.key, input.description) }
+          : {}),
       })
       yield* record({
         action: "task.updated",
@@ -978,6 +984,7 @@ export const createComment = Command.make("comment.create", {
       const id = (yield* createEntity({
         type: "comment",
         title: "",
+        searchText: plainText(input.body),
         parentId: input.taskId,
         projectId: state.projectId,
       })) as CommentId
@@ -1069,7 +1076,10 @@ export const updateComment = Command.make("comment.update", {
           .where(eq(comments.id, input.commentId))
           .pipe(Effect.orDie)
       }
-      const version = yield* touchEntity(input.commentId)
+      const version = yield* touchEntity(
+        input.commentId,
+        input.body !== undefined ? { searchText: plainText(input.body) } : {},
+      )
       yield* emit({
         _tag: "CommentChanged",
         kind: "updated",

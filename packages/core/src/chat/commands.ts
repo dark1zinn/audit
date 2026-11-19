@@ -52,6 +52,7 @@ import { currentUser } from "../current-user.ts"
 import { checkVersion, createEntity, lockEntity, touchEntity } from "../entities.ts"
 import { assertWritable } from "../projects/read.ts"
 import { syncReferences } from "../references.ts"
+import { channelSearchText } from "../search/text.ts"
 import { createTask } from "../tasks/commands.ts"
 import { notify, plainText } from "../notifications/notify.ts"
 import { emit, record } from "../trail.ts"
@@ -269,7 +270,12 @@ export const createChannel = Command.make("channel.create", {
       const userId = yield* currentUser("channel.create")
       const name = yield* requireName(input.name)
       const channelId = Bun.randomUUIDv7() as ChannelId
-      yield* createEntity({ id: entityOf(channelId), type: "channel", title: name })
+      yield* createEntity({
+        id: entityOf(channelId),
+        type: "channel",
+        title: name,
+        searchText: channelSearchText(name, input.topic ?? ""),
+      })
       yield* nameTaken(
         db.insert(channels).values({
           id: channelId,
@@ -309,6 +315,7 @@ export const insertProjectChannel = (projectId: ProjectId, key: string, userId: 
       id: entityOf(channelId),
       type: "channel",
       title: name,
+      searchText: name,
       parentId: entityOf(projectId),
       projectId,
     })
@@ -362,7 +369,9 @@ export const updateChannel = Command.make("channel.update", {
           .where(eq(entities.id, entityOf(input.channelId)))
           .pipe(Effect.orDie)
       }
-      const version = yield* touchEntity(entityOf(input.channelId))
+      const version = yield* touchEntity(entityOf(input.channelId), {
+        searchText: channelSearchText(name, input.topic ?? channel.topic),
+      })
       yield* record({
         action: "channel.updated",
         entityId: entityOf(input.channelId),
@@ -808,6 +817,7 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
       id: entityOf(messageId),
       type: "message",
       title: "",
+      searchText: bodyText,
       parentId: entityOf(channelId),
       projectId: channel.projectId as ProjectId | null,
     })
@@ -822,6 +832,16 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
         bodyText,
       })
       .pipe(Effect.orDie)
+    if (root === null) {
+      // Your own message is never unread for you.
+      yield* db
+        .update(channelMembers)
+        .set({
+          lastReadMessageId: sql`greatest(${channelMembers.lastReadMessageId}, ${messageId}::uuid)`,
+        })
+        .where(and(eq(channelMembers.channelId, channelId), eq(channelMembers.userId, userId)))
+        .pipe(Effect.orDie)
+    }
     if (root !== null) {
       yield* db
         .update(messages)
@@ -958,7 +978,7 @@ export const editMessage = Command.make("message.edit", {
         userId,
         false,
       )
-      const version = yield* touchEntity(entityOf(input.messageId))
+      const version = yield* touchEntity(entityOf(input.messageId), { searchText: bodyText })
       yield* record({
         action: "message.edited",
         entityId: entityOf(input.messageId),

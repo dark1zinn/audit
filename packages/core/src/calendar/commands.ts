@@ -28,6 +28,7 @@ import * as Command from "../command.ts"
 import { currentUser } from "../current-user.ts"
 import {
   checkVersion,
+  type EntityChanges,
   createEntity,
   lockEntity,
   softDeleteEntity,
@@ -36,6 +37,7 @@ import {
 import { notify } from "../notifications/notify.ts"
 import { emit, record } from "../trail.ts"
 import { syncReferences } from "../references.ts"
+import { eventSearchText } from "../search/text.ts"
 import { isValidRule, countBefore, withCount, withUntil } from "./recurrence.ts"
 import { scheduleReminders } from "./reminders.ts"
 import { parseIcs } from "./ics.ts"
@@ -250,6 +252,7 @@ const insertEvent = (input: {
       id: input.id,
       type: "event",
       title: input.title,
+      searchText: eventSearchText(input.description, input.location),
       parentId: input.calendarId,
       projectId: input.projectId,
     })
@@ -266,6 +269,24 @@ const insertEvent = (input: {
       originalStart: input.originalStart ?? null,
       location: input.location,
       description: input.description as never,
+    })
+  })
+
+/**
+ * Touches an event entity after its row changed. Its search text follows the stored description
+ * and location, so the row is read back here rather than trusting each caller's patch.
+ */
+const touchEvent = (id: EventId, changes: EntityChanges = {}) =>
+  Effect.gen(function* () {
+    const db = yield* Db
+    const [row] = yield* db
+      .select({ description: events.description, location: events.location })
+      .from(events)
+      .where(eq(events.id, id))
+      .pipe(Effect.orDie)
+    return yield* touchEntity(id, {
+      ...changes,
+      searchText: eventSearchText(row?.description, row?.location ?? ""),
     })
   })
 
@@ -602,8 +623,8 @@ const updateSingle = (row: EventRow, patch: S.UpdateEventInput, actorId: UserId)
           patch.description !== undefined ? (patch.description as never) : row.description,
       })
       .where(eq(events.id, row.id))
-    if (patch.title !== undefined) yield* touchEntity(row.id, { title: patch.title })
-    else yield* touchEntity(row.id)
+    if (patch.title !== undefined) yield* touchEvent(row.id, { title: patch.title })
+    else yield* touchEvent(row.id)
     if (patch.attendees !== undefined) yield* replaceAttendees(row.id, patch.attendees)
     if (patch.reminders !== undefined) yield* replaceReminders(row.id, patch.reminders)
     yield* scheduleReminders(row.id)
@@ -648,7 +669,7 @@ const updateThis = (
         .update(events)
         .set({ startsAt, endsAt, timezone, allDay, location, description: description as never })
         .where(eq(events.id, existing.id))
-      yield* touchEntity(existing.id, patch.title !== undefined ? { title: patch.title } : {})
+      yield* touchEvent(existing.id, patch.title !== undefined ? { title: patch.title } : {})
       yield* emitEvent(
         "updated",
         series.calendarId as CalendarId,
@@ -737,7 +758,7 @@ const updateFollowing = (
           exdates: series.exdates.filter((d) => d.getTime() < occurrence.getTime()),
         })
         .where(eq(events.id, series.id))
-      yield* touchEntity(series.id)
+      yield* touchEvent(series.id)
       yield* scheduleReminders(series.id)
     }
     yield* scheduleReminders(id)
@@ -784,8 +805,8 @@ const updateAll = (
         .set({ originalStart: new Date(override.originalStart.getTime() + startDelta) })
         .where(eq(events.id, override.id))
     }
-    if (patch.title !== undefined) yield* touchEntity(series.id, { title: patch.title })
-    else yield* touchEntity(series.id)
+    if (patch.title !== undefined) yield* touchEvent(series.id, { title: patch.title })
+    else yield* touchEvent(series.id)
     if (patch.attendees !== undefined) yield* replaceAttendees(series.id, patch.attendees)
     if (patch.reminders !== undefined) yield* replaceReminders(series.id, patch.reminders)
     yield* scheduleReminders(series.id)
@@ -961,7 +982,7 @@ export const deleteEvent = Command.make("event.delete", {
           .update(events)
           .set({ exdates: [...series.exdates, occurrence] })
           .where(eq(events.id, series.id))
-        yield* touchEntity(series.id)
+        yield* touchEvent(series.id)
         yield* scheduleReminders(series.id)
       } else if (patch.scope === "following") {
         for (const override of yield* liveOverrides(series.id, occurrence))
@@ -980,7 +1001,7 @@ export const deleteEvent = Command.make("event.delete", {
               exdates: series.exdates.filter((d) => d.getTime() < occurrence.getTime()),
             })
             .where(eq(events.id, series.id))
-          yield* touchEntity(series.id)
+          yield* touchEvent(series.id)
           yield* scheduleReminders(series.id)
         }
       } else {

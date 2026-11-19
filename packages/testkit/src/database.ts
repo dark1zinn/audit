@@ -4,6 +4,7 @@
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { type MailMessage, Mailer } from "@audit/core/notifications/mail"
+import { PasswordBreaches } from "@audit/core/admin/passwords"
 import { type PostFn, PushTransport } from "@audit/core/notifications/push"
 import { vapidConfig } from "@audit/core/notifications/vapid"
 import type { AppConfigShape } from "@audit/platform/config"
@@ -51,6 +52,7 @@ export type TestServices =
   | Secrets
   | Jobs
   | Mailer
+  | PasswordBreaches
   | PushTransport
 
 export interface PushRequest {
@@ -71,6 +73,8 @@ export interface TestDatabase {
   /** Every email the app sent, in order. */
   readonly mail: MailMessage[]
   readonly push: PushStub
+  /** Passwords the breach check reports as breached; tests add to it. */
+  readonly breachedPasswords: Set<string>
   /** Login-role connection for fixtures and assertions that bypass the app role. */
   readonly superuser: SQL
   readonly drop: () => Promise<void>
@@ -94,6 +98,7 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
   const jobs = recordingJobs()
   const mail: MailMessage[] = []
   const push: PushStub = { requests: [], status: 201 }
+  const breachedPasswords = new Set<string>()
   const post: PostFn = async (url, init) => {
     push.requests.push({ url, init })
     return new Response(null, { status: push.status })
@@ -109,6 +114,9 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
     Secrets.layer,
     jobs.layer,
     Mailer.recording(mail),
+    Layer.succeed(PasswordBreaches, {
+      isBreached: (password) => Effect.succeed(breachedPasswords.has(password)),
+    }),
     PushTransport.live(vapidConfig, post).pipe(Layer.provide(Secrets.layer)),
   ).pipe(Layer.provideMerge(base))
   const runtime = ManagedRuntime.make(layer.pipe(Layer.orDie))
@@ -120,6 +128,7 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
     config,
     mail,
     push,
+    breachedPasswords,
     superuser,
     drop: async () => {
       await runtime.dispose()

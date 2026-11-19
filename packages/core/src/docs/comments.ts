@@ -122,6 +122,7 @@ export const createDocComment = Command.make("doc.comment.create", {
       const id = (yield* createEntity({
         type: "comment",
         title: "",
+        searchText: plainText(input.body),
         parentId: input.docId,
         projectId: doc.projectId,
       })) as CommentId
@@ -195,7 +196,10 @@ export const updateDocComment = Command.make("doc.comment.update", {
           .where(eq(comments.id, input.commentId))
           .pipe(Effect.orDie)
       }
-      const version = yield* touchEntity(input.commentId, {})
+      const version = yield* touchEntity(
+        input.commentId,
+        input.body !== undefined ? { searchText: plainText(input.body) } : {},
+      )
       yield* emit({
         _tag: "DocChanged",
         kind: "comment_updated",

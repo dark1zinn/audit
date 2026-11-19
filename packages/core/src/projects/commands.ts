@@ -53,6 +53,7 @@ import { insertProjectChannel } from "../chat/commands.ts"
 import { assertWritable, projectRow, projectRowAny, projectDetail } from "./read.ts"
 import { boardColumnsWithCounts, loadBoard, boardRow } from "./board-read.ts"
 import { completedAtFor } from "../tasks/state.ts"
+import { projectSearchText } from "../search/text.ts"
 
 // --- Shared helpers ---------------------------------------------------------
 
@@ -422,6 +423,7 @@ export const updateProject = Command.make("project.update", {
         .pipe(Effect.orDie)
       yield* touchEntity(input.projectId, {
         title: after.name,
+        searchText: projectSearchText(before.key, after.name),
         restricted: after.visibility === "restricted",
       })
       if (visibilityChanged || after.memberRole !== before.memberRole) {
