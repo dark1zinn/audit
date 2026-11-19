@@ -97,10 +97,24 @@
         "workbox-precaching": "7.4.1",
       },
     },
+    "packages/ai": {
+      "name": "@audit/ai",
+      "version": "0.0.0",
+      "dependencies": {
+        "@audit/domain": "workspace:*",
+        "@audit/platform": "workspace:*",
+        "@effect/ai-anthropic": "4.1.4",
+        "@effect/ai-openai": "4.1.4",
+        "@effect/ai-openai-compat": "4.1.4",
+        "@effect/ai-openrouter": "4.1.4",
+        "effect": "4.1.4",
+      },
+    },
     "packages/core": {
       "name": "@audit/core",
       "version": "0.0.0",
       "dependencies": {
+        "@audit/ai": "workspace:*",
         "@audit/db": "workspace:*",
         "@audit/domain": "workspace:*",
         "@audit/editor": "workspace:*",
@@ -213,6 +227,8 @@
   },
   "packages": {
     "@apideck/better-ajv-errors": ["@apideck/better-ajv-errors@0.3.7", "", { "dependencies": { "jsonpointer": "^5.0.1", "leven": "^3.1.0" }, "peerDependencies": { "ajv": ">=8" } }, "sha512-TajUJwGWbDwkCx/CZi7tRE8PVB7simCvKJfHUsSdvps+aTM/PDPP4gkLmKnc+x3CE//y9i/nj74GqdL/hwk7Iw=="],
+
+    "@audit/ai": ["@audit/ai@workspace:packages/ai"],
 
     "@audit/core": ["@audit/core@workspace:packages/core"],
 
@@ -495,6 +511,14 @@
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.75.1", "", { "dependencies": { "@dotenvx/primitives": "^0.8.0", "commander": "^11.1.0", "conf": "^10.2.0", "dotenv": "^17.2.1", "enquirer": "^2.4.1", "env-paths": "^2.2.1", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "open": "^8.4.2", "picomatch": "^4.0.4", "systeminformation": "^5.22.11", "undici": "^7.11.0", "which": "^4.0.0", "yocto-spinner": "^1.1.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, "sha512-/BITOC9dmS/edY2zQwZNicQ059O6RKabtQfyEafV0nGtfYRNHYy1DIPiYVcov40+tob9hfmBnbR963dS+EQ1DQ=="],
 
     "@dotenvx/primitives": ["@dotenvx/primitives@0.8.0", "", {}, "sha512-VYJy0uhFm9zTJ1TxBaW/pA8bjbOM/OttaNMwZ1RHG4JKyRG7DhSdiqD1ipQoAyoD22olUtxbP78W9xY3Wd11bg=="],
+
+    "@effect/ai-anthropic": ["@effect/ai-anthropic@4.1.4", "", { "peerDependencies": { "effect": "^4.1.4" } }, "sha512-VDcsyL3k76HhF7YqH8z0gQ0bUybX4ti5RHv3JadDXZvEgNpvUT3p4YBssvKR2HAGa7NXr9yfmFedRilhQM7tdQ=="],
+
+    "@effect/ai-openai": ["@effect/ai-openai@4.1.4", "", { "peerDependencies": { "effect": "^4.1.4" } }, "sha512-xodZLHmt1N7Ziw94jr0nTfG/fgyMZioYKS85fyy2L1kscNurWGllaDaTQyHUSYd8wghqMoc8vV3XPei0+c9NIQ=="],
+
+    "@effect/ai-openai-compat": ["@effect/ai-openai-compat@4.1.4", "", { "peerDependencies": { "effect": "^4.1.4" } }, "sha512-Rmb6tcV/5zv7PFHvZt08eSqSI5G8JyEGOBeIwyKKz1mBes9WAgeYv7Kplzy5rBSWH1LtUA4CIuREzS7ovXDhRw=="],
+
+    "@effect/ai-openrouter": ["@effect/ai-openrouter@4.1.4", "", { "peerDependencies": { "effect": "^4.1.4" } }, "sha512-xnubaIw9iGhHUcjSDVgwzcelm2bftBmTpn9lxywpJEO7KBbErqXYmLhXyARo6KH8Tz7Egut52360JEsTfWhkfg=="],
 
     "@effect/platform-bun": ["@effect/platform-bun@4.1.4", "", { "dependencies": { "@effect/platform-node-shared": "4.1.4" }, "peerDependencies": { "effect": "^4.1.4" } }, "sha512-Vdq82GOrD5HVF43aXVwHeX+4uIOrgAnjju9MEyizzFZ3yt3A6x9prtmHej1q/zAOaeNddtkpPr2ExHEvZ13S6Q=="],
 

@@ -11,8 +11,10 @@
 import { join, normalize } from "node:path"
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
+import { liveAiModels } from "@audit/core/ai/models"
 import { Mailer } from "@audit/core/notifications/mail"
 import { assertPasswordAllowed, PasswordBreaches } from "@audit/core/admin/passwords"
+import { LiveDocuments } from "@audit/core/docs/live-documents"
 import { PushTransport } from "@audit/core/notifications/push"
 import { vapidConfig } from "@audit/core/notifications/vapid"
 import { sendResetPasswordEmail } from "@audit/core/notifications/account-mail"
@@ -26,7 +28,7 @@ import { Secrets } from "@audit/platform/crypto"
 import { APP_ROLE, databaseLayer, migrateDatabase } from "@audit/platform/database"
 import { pgBossLayer } from "@audit/platform/jobs"
 import { Context, Effect, Layer, ManagedRuntime, Option, Redacted } from "effect"
-import { HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
+import { FetchHttpClient, HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { SqlClient } from "effect/sql"
 import type { ServerWebSocket } from "bun"
@@ -36,10 +38,12 @@ import { withClientIp } from "./client-ip.ts"
 import { HttpApiLive } from "./http-api.ts"
 import { FilesHttpLive } from "./files-http.ts"
 import { IcalHttpLive } from "./ical-http.ts"
+import { AiRpcs } from "@audit/domain/ai/rpc"
 import { jobDefinitions, jobWorkersLayer } from "./jobs.ts"
 import { Presence } from "./presence.ts"
 import { rateLimiterLayer } from "./rate-limit.ts"
 import { Realtime, RealtimeRpcLive } from "./realtime.ts"
+import { AiRpcLive } from "./ai-rpc.ts"
 import { Sessions, sessionsLayer } from "./sessions.ts"
 import { SetupToken } from "./setup-token.ts"
 import { makeTrailWriter } from "./trail-writer.ts"
@@ -98,6 +102,8 @@ export const makeCoreLayer = (config: AppConfigShape) => {
     EventBus.layer,
     BlobStore.layer,
     PasswordBreaches.live,
+    FetchHttpClient.layer,
+    liveAiModels.pipe(Layer.provide(FetchHttpClient.layer)),
     Secrets.layer,
     notificationTransports(config),
     pgBossLayer({ url: config.databaseUrl, jobs: jobDefinitions }),
@@ -139,6 +145,15 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
 
   const sessions = sessionsLayer(auth)
 
+  // Shares the memo map so Db, Authz and EventBus are the same instances as in `runtime`.
+  const collabRuntime = ManagedRuntime.make(sessions.pipe(Layer.provideMerge(core)), {
+    memoMap: runtime.memoMap,
+  })
+  const collab = createCollab({ runtime: collabRuntime })
+
+  // Compaction reads the collaboration server's open docs; the jobs see them through the layer.
+  const liveDocuments = Layer.succeed(LiveDocuments, { isOpen: (docId) => collab.isOpen(docId) })
+
   const serverLayer = Layer.mergeAll(
     sessions,
     SetupToken.layer,
@@ -149,13 +164,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     Presence.layer,
     Realtime.layer,
     jobWorkersLayer,
-  ).pipe(Layer.provideMerge(core))
-
-  // Shares the memo map so Db, Authz and EventBus are the same instances as in `runtime`.
-  const collabRuntime = ManagedRuntime.make(sessions.pipe(Layer.provideMerge(core)), {
-    memoMap: runtime.memoMap,
-  })
-  const collab = createCollab({ runtime: collabRuntime })
+  ).pipe(Layer.provideMerge(liveDocuments), Layer.provideMerge(core))
   await collab.start()
 
   const RpcAuthenticationLive = Layer.effect(
@@ -172,8 +181,8 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     }),
   )
 
-  const rpcLayer = RpcServer.layer(RealtimeRpcs).pipe(
-    Layer.provide([RealtimeRpcLive, RpcAuthenticationLive]),
+  const rpcLayer = RpcServer.layer(RealtimeRpcs.merge(AiRpcs)).pipe(
+    Layer.provide([RealtimeRpcLive, AiRpcLive, RpcAuthenticationLive]),
     Layer.provide(RpcServer.layerProtocolWebsocket({ path: "/rpc" })),
     Layer.provide(RpcSerialization.layerJson),
   )

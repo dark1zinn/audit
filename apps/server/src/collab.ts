@@ -61,6 +61,8 @@ export interface Collab {
   /** Closes sockets, flushes pending stores, waits for them to land. */
   shutdown(timeoutMs?: number): Promise<void>
   readonly documentsCount: () => number
+  /** True while a session holds the doc in memory. */
+  readonly isOpen: (docId: DocId) => boolean
 }
 
 const rejected = (reason: string): Error => Object.assign(new Error(reason), { reason })
@@ -257,5 +259,6 @@ export const createCollab = (options: CollabOptions): Collab => {
     },
 
     documentsCount: () => hocuspocus.getDocumentsCount(),
+    isOpen: (docId) => hocuspocus.documents.has(`doc:${docId}`),
   }
 }

@@ -31,13 +31,23 @@ import * as peopleCommands from "@audit/core/people/commands"
 import * as chatThreadDoc from "@audit/core/chat/thread-doc"
 import * as adminCommands from "@audit/core/admin/commands"
 import * as adminQueries from "@audit/core/admin/queries"
+import * as maintenance from "@audit/core/admin/maintenance"
 import * as adminSignup from "@audit/core/admin/signup"
+import * as aiCommands from "@audit/core/ai/commands"
+import * as aiQueries from "@audit/core/ai/queries"
+import * as aiConversations from "@audit/core/ai/conversations"
+import * as aiProposals from "@audit/core/ai/proposals"
+import { runAiAction } from "@audit/core/ai/actions"
 import { currentUser } from "@audit/core/current-user"
 import { CurrentActor } from "@audit/domain/actor"
 import { AuditApi } from "@audit/domain/api"
 import { Forbidden, Unauthorized } from "@audit/domain/errors"
 import { Authentication } from "@audit/domain/http"
 import { AppConfig } from "@audit/platform/config"
+import type { AiModels } from "@audit/core/ai/models"
+import type { Secrets } from "@audit/platform/crypto"
+import type { Jobs } from "@audit/platform/jobs"
+import type { HttpClient } from "effect/http/HttpClient"
 import { Db } from "@audit/platform/database"
 import { readFileSync } from "node:fs"
 import { Effect, Layer, Schema } from "effect"
@@ -51,7 +61,17 @@ import { SetupToken } from "./setup-token.ts"
 
 /** Services every command and query may need, captured once when the handlers are built. */
 const coreContext = Effect.context<
-  Db | SqlClient.SqlClient | Authz | EventBus | AppConfig | PushTransport | Mailer
+  | Db
+  | SqlClient.SqlClient
+  | Authz
+  | EventBus
+  | AppConfig
+  | PushTransport
+  | Mailer
+  | Secrets
+  | AiModels
+  | HttpClient
+  | Jobs
 >()
 
 const systemActor = (reason: string) =>
@@ -982,10 +1002,90 @@ const AdminLive = HttpApiBuilder.group(AuditApi, "admin", (handlers) =>
       .handle("runOrphanCleanup", () =>
         adminCommands.runOrphanCleanup.execute({}).pipe(Effect.provide(core)),
       )
+      .handle("maintenance", () => maintenance.maintenanceStatus.pipe(Effect.provide(core)))
+      .handle("rebalanceBoards", () =>
+        maintenance.requestRebalanceBoards.execute({}).pipe(Effect.provide(core)),
+      )
+      .handle("compactDocs", () =>
+        maintenance.requestDocCompaction.execute({}).pipe(Effect.provide(core)),
+      )
+      .handle("reembed", () => maintenance.requestReembed.execute({}).pipe(Effect.provide(core)))
       .handle("emailTest", ({ payload }) =>
         adminCommands.sendEmailTest.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
       )
       .handle("storage", () => adminQueries.storage.pipe(Effect.provide(core)))
+  }),
+)
+
+const AiAdminLive = HttpApiBuilder.group(AuditApi, "aiAdmin", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("settings", () => aiQueries.aiSettings.pipe(Effect.provide(core)))
+      .handle("updateSettings", ({ payload }) =>
+        aiCommands.updateSettings.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("providers", () => aiQueries.providerList.pipe(Effect.provide(core)))
+      .handle("createProvider", ({ payload }) =>
+        aiCommands.createProvider.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("updateProvider", ({ params, payload }) =>
+        aiCommands.updateProvider
+          .execute({ providerId: params.providerId, patch: payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteProvider", ({ params }) =>
+        aiCommands.deleteProvider
+          .execute({ providerId: params.providerId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("testProvider", ({ params }) =>
+        aiCommands.testProvider
+          .execute({ providerId: params.providerId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("usage", ({ query }) => aiQueries.aiUsage(query.month).pipe(Effect.provide(core)))
+  }),
+)
+
+const AiLive = HttpApiBuilder.group(AuditApi, "ai", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("status", () => aiConversations.aiStatus.pipe(Effect.provide(core)))
+      .handle("conversations", () => aiConversations.listConversations.pipe(Effect.provide(core)))
+      .handle("createConversation", ({ payload }) =>
+        aiConversations.createConversation.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("conversation", ({ params }) =>
+        aiConversations.conversationDetail(params.conversationId).pipe(Effect.provide(core)),
+      )
+      .handle("deleteConversation", ({ params }) =>
+        aiConversations.deleteConversation
+          .execute({ conversationId: params.conversationId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("chat", ({ params, payload }) =>
+        aiConversations
+          .sendChat({ conversationId: params.conversationId, text: payload.text })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("proposals", () => aiProposals.listProposals(null).pipe(Effect.provide(core)))
+      .handle("approveProposal", ({ params }) =>
+        aiProposals.approveProposal
+          .execute({ proposalId: params.proposalId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("rejectProposal", ({ params }) =>
+        aiProposals.rejectProposal
+          .execute({ proposalId: params.proposalId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("preferences", () => aiConversations.aiPreferences.pipe(Effect.provide(core)))
+      .handle("updatePreferences", ({ payload }) =>
+        aiConversations.updatePreferences.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("action", ({ payload }) => runAiAction(payload).pipe(Effect.provide(core)))
   }),
 )
 
@@ -1047,6 +1147,8 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
     EntitiesLive,
     PeopleLive,
     AdminLive,
+    AiAdminLive,
+    AiLive,
     SignupLive,
     SearchLive,
   ]),
