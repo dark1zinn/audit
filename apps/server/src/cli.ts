@@ -8,12 +8,13 @@ import { readAppConfig } from "@audit/platform/config"
 import { migrateDatabase } from "@audit/platform/database"
 import { Effect, Layer, ManagedRuntime } from "effect"
 import { makeCoreLayer, startServer } from "./server.ts"
+import { seedDemo } from "./seed-demo.ts"
 
 const usage = `Usage: audit <command>
 
 Commands:
   serve          Run migrations and start the server
-  migrate        Apply pending database migrations
+  seed --demo    Fill an empty workspace with demo data (--force adds to a workspace with members)
   trail verify   Re-check the audit log hash chain`
 
 const loadConfig = () => Effect.runPromise(readAppConfig)
@@ -54,6 +55,24 @@ const verify = async () => {
   process.exit(result.ok ? 0 : 2)
 }
 
+const seed = async (force: boolean) => {
+  const config = await loadConfig()
+  const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
+  try {
+    await runtime.runPromise(
+      seedDemo({ force }).pipe(
+        Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),
+        Effect.orDie,
+      ),
+    )
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exitCode = 1
+  } finally {
+    await runtime.dispose()
+  }
+}
+
 const [command, sub] = process.argv.slice(2)
 switch (command) {
   case "serve":
@@ -67,6 +86,10 @@ switch (command) {
   }
   case "trail":
     if (sub === "verify") await verify()
+    else console.log(usage)
+    break
+  case "seed":
+    if (sub === "--demo") await seed(process.argv.includes("--force"))
     else console.log(usage)
     break
   default:

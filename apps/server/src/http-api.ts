@@ -20,11 +20,18 @@ import * as taskCommands from "@audit/core/tasks/commands"
 import * as taskQueries from "@audit/core/tasks/queries"
 import * as notificationCommands from "@audit/core/notifications/commands"
 import * as notificationQueries from "@audit/core/notifications/queries"
+import * as searchQueries from "@audit/core/search/queries"
+import { recordRecent } from "@audit/core/search/recent"
+import { reindexStatus, requestReindex } from "@audit/core/search/reindex"
 import type { Mailer } from "@audit/core/notifications/mail"
 import type { PushTransport } from "@audit/core/notifications/push"
 import * as chatCommands from "@audit/core/chat/commands"
 import * as chatQueries from "@audit/core/chat/queries"
+import * as peopleCommands from "@audit/core/people/commands"
 import * as chatThreadDoc from "@audit/core/chat/thread-doc"
+import * as adminCommands from "@audit/core/admin/commands"
+import * as adminQueries from "@audit/core/admin/queries"
+import * as adminSignup from "@audit/core/admin/signup"
 import { currentUser } from "@audit/core/current-user"
 import { CurrentActor } from "@audit/domain/actor"
 import { AuditApi } from "@audit/domain/api"
@@ -32,7 +39,8 @@ import { Forbidden, Unauthorized } from "@audit/domain/errors"
 import { Authentication } from "@audit/domain/http"
 import { AppConfig } from "@audit/platform/config"
 import { Db } from "@audit/platform/database"
-import { Effect, Layer } from "effect"
+import { readFileSync } from "node:fs"
+import { Effect, Layer, Schema } from "effect"
 import { HttpServerRequest } from "effect/http"
 import { HttpApiBuilder } from "effect/http-api"
 import { SqlClient } from "effect/sql"
@@ -916,6 +924,107 @@ const EntitiesLive = HttpApiBuilder.group(AuditApi, "entities", (handlers) =>
   }),
 )
 
+const PeopleLive = HttpApiBuilder.group(AuditApi, "people", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("transferOwnership", ({ params }) =>
+        peopleCommands.transferOwnership
+          .execute({ userId: params.userId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteMember", ({ params }) =>
+        peopleCommands.deleteMember.execute(params.userId).pipe(Effect.provide(core)),
+      )
+      .handle("exportMine", () =>
+        peopleCommands.exportMine.execute(undefined).pipe(
+          Effect.catchTag("NotFound", (e) => Effect.die(e)),
+          Effect.provide(core),
+        ),
+      )
+  }),
+)
+
+const serverVersion = Schema.decodeUnknownSync(Schema.Struct({ version: Schema.String }))(
+  JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")),
+)
+
+const AdminLive = HttpApiBuilder.group(AuditApi, "admin", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("overview", () =>
+        adminQueries.overview.pipe(
+          Effect.map((overview) => ({
+            ...overview,
+            version: serverVersion.version,
+            gitSha: process.env.GIT_SHA ?? null,
+          })),
+          Effect.provide(core),
+        ),
+      )
+      .handle("accessItem", ({ params }) =>
+        adminQueries.accessItem(params.entityId).pipe(Effect.provide(core)),
+      )
+      .handle("accessPerson", ({ params }) =>
+        adminQueries.accessPerson(params.userId).pipe(Effect.provide(core)),
+      )
+      .handle("updateSecurity", ({ payload }) =>
+        adminCommands.updateSecurity.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("updateBranding", ({ payload }) =>
+        adminCommands.updateBranding.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("updateRetention", ({ payload }) =>
+        adminCommands.updateRetention.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("emailStatus", () => adminQueries.emailStatus.pipe(Effect.provide(core)))
+      .handle("runOrphanCleanup", () =>
+        adminCommands.runOrphanCleanup.execute({}).pipe(Effect.provide(core)),
+      )
+      .handle("emailTest", ({ payload }) =>
+        adminCommands.sendEmailTest.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("storage", () => adminQueries.storage.pipe(Effect.provide(core)))
+  }),
+)
+
+const SignupLive = HttpApiBuilder.group(AuditApi, "signup", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    const limiter = yield* RateLimiter
+    return handlers.handle("signup", ({ payload }) =>
+      Effect.gen(function* () {
+        const meta = yield* clientMeta
+        yield* limiter.check("signup", meta.ip ?? "unknown")
+        return yield* adminSignup.signup
+          .execute(payload)
+          .pipe(
+            systemActor("signup"),
+            Effect.provideService(RequestMeta, meta),
+            Effect.provide(core),
+          )
+      }),
+    )
+  }),
+)
+
+const SearchLive = HttpApiBuilder.group(AuditApi, "search", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("search", ({ query }) =>
+        searchQueries.search.execute(query).pipe(Effect.provide(core)),
+      )
+      .handle("quick", ({ query }) => searchQueries.quick.execute(query).pipe(Effect.provide(core)))
+      .handle("reindex", () => requestReindex.execute({}).pipe(Effect.provide(core)))
+      .handle("reindexStatus", () => reindexStatus.pipe(Effect.provide(core)))
+      .handle("recordRecent", ({ payload }) =>
+        recordRecent.execute(payload).pipe(Effect.provide(core)),
+      )
+  }),
+)
+
 export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
   openapiPath: "/api/openapi.json",
 }).pipe(
@@ -936,6 +1045,10 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
     NotificationsLive,
     DocsLive,
     EntitiesLive,
+    PeopleLive,
+    AdminLive,
+    SignupLive,
+    SearchLive,
   ]),
   Layer.provide(AuthenticationLive),
 )

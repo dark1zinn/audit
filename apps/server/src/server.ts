@@ -12,6 +12,7 @@ import { join, normalize } from "node:path"
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { Mailer } from "@audit/core/notifications/mail"
+import { assertPasswordAllowed, PasswordBreaches } from "@audit/core/admin/passwords"
 import { PushTransport } from "@audit/core/notifications/push"
 import { vapidConfig } from "@audit/core/notifications/vapid"
 import { sendResetPasswordEmail } from "@audit/core/notifications/account-mail"
@@ -96,6 +97,7 @@ export const makeCoreLayer = (config: AppConfigShape) => {
     Authz.layer,
     EventBus.layer,
     BlobStore.layer,
+    PasswordBreaches.live,
     Secrets.layer,
     notificationTransports(config),
     pgBossLayer({ url: config.databaseUrl, jobs: jobDefinitions }),
@@ -124,6 +126,13 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
           return (yield* authz.workspaceRole(userId as UserId)) !== null
         }),
       ),
+    checkPassword: (password) =>
+      runtime.runPromise(
+        assertPasswordAllowed(password).pipe(
+          Effect.as<string | null>(null),
+          Effect.catch((error) => Effect.succeed(error.message)),
+        ),
+      ),
     trail: makeTrailWriter(runtime),
     sendResetPassword: (input) => runtime.runPromise(sendResetPasswordEmail(input)),
   })
@@ -133,7 +142,10 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   const serverLayer = Layer.mergeAll(
     sessions,
     SetupToken.layer,
-    rateLimiterLayer({ join: { max: 20, windowMs: 10 * 60_000 } }),
+    rateLimiterLayer({
+      join: { max: 20, windowMs: 10 * 60_000 },
+      signup: { max: 10, windowMs: 60 * 60_000 },
+    }),
     Presence.layer,
     Realtime.layer,
     jobWorkersLayer,

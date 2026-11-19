@@ -29,12 +29,28 @@ export interface AuthOptions {
     email: string
     url: string
   }) => Promise<void>
+  /** Returns the refusal message for a password the workspace rejects, or null when it passes. */
+  readonly checkPassword: (password: string) => Promise<string | null>
 }
 
 const requestMeta = (request: Request | undefined) => {
   const userAgent = request?.headers.get("user-agent")
   const ip = request?.headers.get(CLIENT_IP_HEADER)
   return { ...(userAgent ? { userAgent } : {}), ...(ip ? { ip } : {}) }
+}
+
+/** The password fields Better Auth receives on the paths that set a password. */
+const PASSWORD_FIELDS: Record<string, string> = {
+  "/sign-up/email": "password",
+  "/change-password": "newPassword",
+  "/reset-password": "newPassword",
+}
+
+const passwordOf = (path: string, body: unknown): string | undefined => {
+  const field = PASSWORD_FIELDS[path]
+  if (field === undefined || typeof body !== "object" || body === null) return undefined
+  const value = (body as Record<string, unknown>)[field]
+  return typeof value === "string" ? value : undefined
 }
 
 /** Paths whose successful calls change the account's security and are audited. */
@@ -134,6 +150,12 @@ export const makeAuth = (options: AuthOptions): AuthHandle => {
       },
     },
     hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        const password = passwordOf(ctx.path, ctx.body)
+        if (password === undefined) return
+        const refusal = await options.checkPassword(password)
+        if (refusal !== null) throw new APIError("BAD_REQUEST", { message: refusal })
+      }),
       after: createAuthMiddleware(async (ctx) => {
         const returned = ctx.context.returned
         const failed = returned instanceof APIError

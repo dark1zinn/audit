@@ -22,9 +22,11 @@ const allowed = new Set([
   "OFL-1.1",
 ])
 
-/** Weak-copyleft packages used only at build time, never shipped in the image. */
+/** Weak-copyleft packages used only at build or test time, never shipped in the image. */
 const buildOnly: Record<string, string> = {
   lightningcss: "Tailwind CSS compiler",
+  "axe-core": "accessibility checks in the e2e suite",
+  "@axe-core/playwright": "accessibility checks in the e2e suite",
 }
 
 const isAllowed = (expression: string): boolean => {
