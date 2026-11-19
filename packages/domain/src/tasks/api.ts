@@ -2,7 +2,7 @@ import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 import { CommandError } from "../errors.ts"
 import { Authentication } from "../http.ts"
-import { BoardId, CommentId, EntityId, NotificationId, ProjectId, TaskId } from "../ids.ts"
+import { BoardId, CommentId, EntityId, ProjectId, TaskId } from "../ids.ts"
 import {
   BoardView,
   BulkAssignInput,
@@ -19,7 +19,6 @@ import {
   LinkInput,
   ListTasksQuery,
   MoveTaskInput,
-  Notification,
   SavedFilter,
   TaskCard,
   TaskDetail,
@@ -206,28 +205,6 @@ export const TasksApi = HttpApiGroup.make("tasks")
   .add(
     HttpApiEndpoint.post("deleteSavedFilter", "/api/saved-filters/:filterId/delete", {
       params: { filterId: EntityId },
-      error: CommandError,
-    }),
-  )
-  .middleware(Authentication)
-
-/** The caller's inbox: notifications for tasks they are assigned to, watch, or are @mentioned in. */
-export const NotificationsApi = HttpApiGroup.make("notifications")
-  .add(
-    HttpApiEndpoint.get("list", "/api/notifications", {
-      success: Schema.Array(Notification),
-      error: CommandError,
-    }),
-  )
-  .add(
-    HttpApiEndpoint.post("read", "/api/notifications/:notificationId/read", {
-      params: { notificationId: NotificationId },
-      error: CommandError,
-    }),
-  )
-  .add(
-    HttpApiEndpoint.post("archive", "/api/notifications/:notificationId/archive", {
-      params: { notificationId: NotificationId },
       error: CommandError,
     }),
   )

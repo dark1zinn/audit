@@ -89,20 +89,34 @@ export const workspace = pgTable(
   ],
 )
 
-export const userProfiles = pgTable("user_profiles", {
-  userId: uuid("user_id")
-    .primaryKey()
-    .references(() => user.id, { onDelete: "cascade" }),
-  displayName: text("display_name").notNull(),
-  title: text("title"),
-  timezone: text("timezone").notNull().default("UTC"),
-  locale: text("locale"),
-  avatarFileId: uuid("avatar_file_id"),
-  icalTokenHash: text("ical_token_hash").unique(),
-  lastSeenAt: timestamptz("last_seen_at"),
-  deactivatedAt: timestamptz("deactivated_at"),
-  deletedAt: timestamptz("deleted_at"),
-})
+export const userProfiles = pgTable(
+  "user_profiles",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    displayName: text("display_name").notNull(),
+    title: text("title"),
+    timezone: text("timezone").notNull().default("UTC"),
+    /** Quiet hours as local `HH:MM` in `timezone`; push and email wait until `quietEnd`. */
+    quietStart: text("quiet_start"),
+    quietEnd: text("quiet_end"),
+    locale: text("locale"),
+    avatarFileId: uuid("avatar_file_id"),
+    icalTokenHash: text("ical_token_hash").unique(),
+    lastSeenAt: timestamptz("last_seen_at"),
+    deactivatedAt: timestamptz("deactivated_at"),
+    deletedAt: timestamptz("deleted_at"),
+  },
+  (t) => [
+    check(
+      "user_profiles_quiet_check",
+      sql`(${t.quietStart} is null) = (${t.quietEnd} is null)
+      and (${t.quietStart} is null or ${t.quietStart} ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$')
+      and (${t.quietEnd} is null or ${t.quietEnd} ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$')`,
+    ),
+  ],
+)
 
 export const workspaceRoles = ["owner", "admin", "member", "guest"] as const
 

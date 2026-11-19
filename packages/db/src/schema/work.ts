@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm"
 import {
   type AnyPgColumn,
+  boolean,
   check,
   index,
   integer,
@@ -28,6 +29,13 @@ export const notificationKinds = [
   "doc_review_due",
   "direct_message",
   "thread_reply",
+  "task_unassigned",
+  "task_changed",
+  "comment_added",
+  "invite_accepted",
+  "event_invited",
+  "event_changed",
+  "event_reminder",
 ] as const
 
 /** A board belongs to a project. Its access grants live in `container_access` like other containers. */
@@ -206,4 +214,40 @@ export const notifications = pgTable(
     index("notifications_group_idx").on(t.userId, t.groupKey),
     index("notifications_entity_idx").on(t.entityId),
   ],
+)
+
+export const notificationChannels = ["in_app", "push", "email"] as const
+
+/** Per-person channel switches. A missing row means the default; see `optInNotificationKinds`. */
+export const notificationPrefs = pgTable(
+  "notification_prefs",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull().$type<(typeof notificationKinds)[number]>(),
+    channel: text("channel").notNull().$type<(typeof notificationChannels)[number]>(),
+    enabled: boolean("enabled").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.kind, t.channel] }),
+    check("notification_prefs_kind_check", inList(t.kind, notificationKinds)),
+    check("notification_prefs_channel_check", inList(t.channel, notificationChannels)),
+  ],
+)
+
+/** A browser push endpoint for one person. Removed when the push service reports it gone. */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: id(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull().unique(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("push_subscriptions_user_idx").on(t.userId)],
 )

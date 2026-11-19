@@ -5,7 +5,6 @@ import {
   CommentId,
   EntityId,
   LabelId,
-  NotificationId,
   ProjectId,
   TaskId,
   UserId,
@@ -285,18 +284,3 @@ export const CreateSavedFilterInput = Schema.Struct({
   filter: ListTasksQuery,
 })
 export type CreateSavedFilterInput = typeof CreateSavedFilterInput.Type
-
-// --- Notifications ---------------------------------------------------------
-
-export const Notification = Schema.Struct({
-  id: NotificationId,
-  kind: Schema.String,
-  entityId: EntityId,
-  actorId: Schema.NullOr(UserId),
-  payload: Schema.Record(Schema.String, Schema.Unknown),
-  groupKey: Schema.String,
-  readAt: Schema.NullOr(Schema.Date),
-  archivedAt: Schema.NullOr(Schema.Date),
-  createdAt: Schema.Date,
-})
-export type Notification = typeof Notification.Type

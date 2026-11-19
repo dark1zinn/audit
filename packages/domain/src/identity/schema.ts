@@ -27,7 +27,10 @@ export const WorkspaceName = Schema.String.check(
 
 // --- Setup ---------------------------------------------------------------
 
-export const SetupStatus = Schema.Struct({ needsSetup: Schema.Boolean })
+export const SetupStatus = Schema.Struct({
+  needsSetup: Schema.Boolean,
+  emailEnabled: Schema.Boolean,
+})
 export type SetupStatus = typeof SetupStatus.Type
 
 export const SetupInput = Schema.Struct({

@@ -16,6 +16,8 @@ import {
   NotificationId,
   ProjectId,
   TaskId,
+  CalendarId,
+  EventId,
   UserId,
 } from "./ids.ts"
 import { ColumnCategory, ProjectVisibility } from "./projects/schema.ts"
@@ -129,7 +131,7 @@ export const NotificationChanged = Schema.TaggedStruct("NotificationChanged", {
   ...base,
   userId: UserId,
   notificationId: NotificationId,
-  kind: Schema.Literals(["created", "read", "archived"]),
+  kind: Schema.Literals(["created", "updated", "read", "archived"]),
 })
 
 /**
@@ -177,6 +179,23 @@ export const ReadStateChanged = Schema.TaggedStruct("ReadStateChanged", {
   kind: Schema.Literals(["read", "muted_changed", "thread_followed", "thread_unfollowed"]),
 })
 
+/**
+ * Events and occurrences. `entityId` is the event id, `calendarId` routes the event to
+ * `entity:<calendarId>` subscribers, and the server checks the viewer can read the calendar.
+ */
+export const EventChanged = Schema.TaggedStruct("EventChanged", {
+  ...base,
+  calendarId: CalendarId,
+  eventId: EventId,
+  kind: Schema.Literals(["created", "updated", "deleted", "rsvp_changed"]),
+})
+
+export const CalendarChanged = Schema.TaggedStruct("CalendarChanged", {
+  ...base,
+  calendarId: CalendarId,
+  kind: Schema.Literals(["created", "updated", "deleted"]),
+})
+
 export const DomainEvent = Schema.Union([
   MembersChanged,
   InvitesChanged,
@@ -192,6 +211,8 @@ export const DomainEvent = Schema.Union([
   ChannelChanged,
   MessageChanged,
   ReadStateChanged,
+  EventChanged,
+  CalendarChanged,
 ])
 export type DomainEvent = typeof DomainEvent.Type
 

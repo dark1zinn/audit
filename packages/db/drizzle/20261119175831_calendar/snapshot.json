@@ -1,0 +1,63 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4d8fe322-f039-4708-80b0-401185453277",
+  "prevIds": [
+    "b7c6ce71-08f7-491c-b162-b8a28999a730"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "notifications"
+      ],
+      "writes": [
+        "s|ck|public.notifications.notifications_kind_check"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|col|public.notifications.kind",
+        "e|col|public.notifications.kind"
+      ],
+      "sqlHash": "fb1d6d3078b2e2d5"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification_prefs"
+      ],
+      "writes": [
+        "s|ck|public.notification_prefs.notification_prefs_kind_check"
+      ],
+      "reads": [
+        "n|tbl|public.notification_prefs",
+        "n|sch|public",
+        "n|col|public.notification_prefs.kind",
+        "e|col|public.notification_prefs.kind"
+      ],
+      "sqlHash": "9e805d5befe7c192"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"notifications\",\"notifications_kind_check\"]",
+      "set": {
+        "value": "\"kind\" in ('task_due_soon', 'task_overdue', 'task_assigned', 'mention', 'doc_review_due', 'direct_message', 'thread_reply', 'task_unassigned', 'task_changed', 'comment_added', 'invite_accepted', 'event_invited', 'event_changed', 'event_reminder')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"notification_prefs\",\"notification_prefs_kind_check\"]",
+      "set": {
+        "value": "\"kind\" in ('task_due_soon', 'task_overdue', 'task_assigned', 'mention', 'doc_review_due', 'direct_message', 'thread_reply', 'task_unassigned', 'task_changed', 'comment_added', 'invite_accepted', 'event_invited', 'event_changed', 'event_reminder')"
+      }
+    }
+  ]
+}
