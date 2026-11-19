@@ -1,0 +1,58 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4f92cd62-d661-4519-9eb1-6bc7a52d78e4",
+  "prevIds": [
+    "274bb7ba-b67f-4d97-b08b-474a2bff7b7b"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "teams"
+      ],
+      "writes": [
+        "s|ck|public.teams.teams_project_role_check",
+        "n|ck|public.teams.teams_project_role_check",
+        "e|ck|public.teams.teams_project_role_check",
+        "n|con|public.teams.teams_project_role_check"
+      ],
+      "reads": [
+        "n|tbl|public.teams",
+        "n|sch|public",
+        "e|col|public.teams.project_role"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "teams",
+        "project_role"
+      ],
+      "writes": [
+        "s|col|public.teams.project_role",
+        "n|col|public.teams.project_role",
+        "e|col|public.teams.project_role"
+      ],
+      "reads": [
+        "n|tbl|public.teams",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"teams\",\"project_role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "checks\u0000[\"public\",\"teams\",\"teams_project_role_check\"]"
+    }
+  ]
+}

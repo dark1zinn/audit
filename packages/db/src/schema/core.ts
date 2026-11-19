@@ -166,11 +166,9 @@ export const teams = pgTable(
     slug: text("slug").notNull().unique(),
     kind: text("kind").notNull().$type<"workspace" | "project">(),
     projectId: uuid("project_id").references((): AnyPgColumn => projects.id),
-    projectRole: text("project_role").notNull().$type<ResourceRoleColumn>().default("editor"),
   },
   (t) => [
     check("teams_kind_check", inList(t.kind, ["workspace", "project"])),
-    check("teams_project_role_check", inList(t.projectRole, resourceRoles)),
     check("teams_project_scope_check", sql`(${t.kind} = 'project') = (${t.projectId} is not null)`),
   ],
 )
