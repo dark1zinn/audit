@@ -6,7 +6,7 @@
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { projects } from "@audit/db/schema"
-import { CurrentActor } from "@audit/domain/actor"
+import { CurrentActor, actorUserId } from "@audit/domain/actor"
 import {
   type DomainEvent,
   type Hello,
@@ -17,6 +17,7 @@ import {
 import { Db } from "@audit/platform/database"
 import { inArray } from "drizzle-orm"
 import { Context, Effect, Layer, PubSub, Stream } from "effect"
+import { Presence } from "./presence.ts"
 
 const BUFFER_MS = 5 * 60_000
 
@@ -37,14 +38,24 @@ const workspaceEvents: Partial<Record<DomainEvent["_tag"], true>> = {
 
 interface Subscription {
   readonly workspace: boolean
+  /** The subscriber's user id, used for `inbox` routing. */
+  readonly userId: string | null
+  readonly inbox: boolean
   readonly projectIds: ReadonlySet<string>
   readonly entityIds: ReadonlySet<string>
 }
 
-const inScope = (subscription: Subscription, event: DomainEvent) =>
-  (subscription.workspace && workspaceEvents[event._tag] === true) ||
-  (event.projectId !== null && subscription.projectIds.has(event.projectId)) ||
-  (event.entityId !== null && subscription.entityIds.has(event.entityId))
+const inScope = (subscription: Subscription, event: DomainEvent): boolean => {
+  // Notifications go only to their recipient, whichever scopes they hold.
+  if (event._tag === "NotificationChanged") {
+    return subscription.inbox && subscription.userId === event.userId
+  }
+  if (subscription.workspace && workspaceEvents[event._tag] === true) return true
+  if (event.projectId !== null && subscription.projectIds.has(event.projectId)) return true
+  if (event.entityId !== null && subscription.entityIds.has(event.entityId)) return true
+  // Comments are routed to the task they belong to, so `entity:<taskId>` sees them.
+  return event._tag === "CommentChanged" && subscription.entityIds.has(event.taskId)
+}
 
 export interface RealtimeShape {
   readonly subscribe: (
@@ -79,7 +90,7 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
         Effect.forkScoped,
       )
 
-      const resolveScopes = (scopes: ReadonlyArray<string>) =>
+      const resolveScopes = (scopes: ReadonlyArray<string>, userId: string | null) =>
         Effect.gen(function* () {
           const keys = scopes.filter((s) => s.startsWith("project:")).map((s) => s.slice(8))
           const rows =
@@ -92,6 +103,8 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
                   .pipe(Effect.orDie)
           return {
             workspace: scopes.includes("workspace"),
+            userId,
+            inbox: scopes.includes("inbox"),
             projectIds: new Set(rows.map((r) => r.id)),
             entityIds: new Set(
               scopes
@@ -101,8 +114,11 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
           } satisfies Subscription
         })
 
+      /** Notifications are already restricted to their recipient by `inScope`. */
       const visible = (event: DomainEvent) =>
-        event.entityId === null ? Effect.succeed(true) : authz.can("entity.read", event.entityId)
+        event._tag === "NotificationChanged" || event.entityId === null
+          ? Effect.succeed(true)
+          : authz.can("entity.read", event.entityId)
 
       const deliver = (subscription: Subscription) => (item: Sequenced) =>
         inScope(subscription, item.event)
@@ -115,7 +131,8 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
         subscribe: (input) =>
           Stream.unwrap(
             Effect.gen(function* () {
-              const subscription = yield* resolveScopes(input.scopes)
+              const userId = actorUserId(yield* CurrentActor)
+              const subscription = yield* resolveScopes(input.scopes, userId)
               const queue = yield* PubSub.subscribe(live)
               const resume = input.resume
               const oldest = buffer[0]?.seq ?? seq + 1
@@ -150,8 +167,11 @@ export class Realtime extends Context.Service<Realtime, RealtimeShape>()("@audit
 export const RealtimeRpcLive = RealtimeRpcs.toLayer(
   Effect.gen(function* () {
     const realtime = yield* Realtime
+    const presence = yield* Presence
     return {
       "realtime.subscribe": (input) => realtime.subscribe(input),
+      "presence.join": (input) => presence.join(input.scope),
+      "presence.update": (input) => presence.update(input),
     }
   }),
 )

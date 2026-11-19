@@ -11,6 +11,7 @@ import { join, normalize } from "node:path"
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { CurrentActor } from "@audit/domain/actor"
+import type { UserId } from "@audit/domain/ids"
 import { RealtimeRpcs } from "@audit/domain/events"
 import { RpcAuthentication } from "@audit/domain/http"
 import { type AppConfigShape, AppConfig } from "@audit/platform/config"
@@ -25,7 +26,8 @@ import { SqlClient } from "effect/sql"
 import { type AuthHandle, makeAuth } from "./auth.ts"
 import { withClientIp } from "./client-ip.ts"
 import { HttpApiLive } from "./http-api.ts"
-import { jobDefinitions } from "./jobs.ts"
+import { jobDefinitions, jobWorkersLayer } from "./jobs.ts"
+import { Presence } from "./presence.ts"
 import { rateLimiterLayer } from "./rate-limit.ts"
 import { Realtime, RealtimeRpcLive } from "./realtime.ts"
 import { Sessions, sessionsLayer } from "./sessions.ts"
@@ -91,7 +93,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       runtime.runPromise(
         Effect.gen(function* () {
           const authz = yield* Authz
-          return (yield* authz.workspaceRole(userId as never)) !== null
+          return (yield* authz.workspaceRole(userId as UserId)) !== null
         }),
       ),
     trail: makeTrailWriter(runtime),
@@ -101,7 +103,9 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     sessionsLayer(auth),
     SetupToken.layer,
     rateLimiterLayer({ join: { max: 20, windowMs: 10 * 60_000 } }),
+    Presence.layer,
     Realtime.layer,
+    jobWorkersLayer,
   ).pipe(Layer.provideMerge(core))
 
   const RpcAuthenticationLive = Layer.effect(
@@ -167,7 +171,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     async fetch(request, bunServer) {
       const url = new URL(request.url)
       const { pathname } = url
-      const context = Context.make(BunServer, bunServer)
+      const context = Context.make(BunServer, bunServer) as Context.Context<unknown>
       if (pathname.startsWith("/api/auth/")) {
         return withHeaders(await auth.handler(withClientIp(request, bunServer, config.trustProxy)))
       }

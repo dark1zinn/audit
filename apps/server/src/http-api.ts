@@ -6,8 +6,12 @@ import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import * as identity from "@audit/core/identity/commands"
 import * as identityQueries from "@audit/core/identity/queries"
+import * as projectCommands from "@audit/core/projects/commands"
+import * as projectQueries from "@audit/core/projects/queries"
 import { RequestMeta } from "@audit/core/request"
 import { listTrail, verifyTrail } from "@audit/core/trail-queries"
+import * as taskCommands from "@audit/core/tasks/commands"
+import * as taskQueries from "@audit/core/tasks/queries"
 import { CurrentActor } from "@audit/domain/actor"
 import { AuditApi } from "@audit/domain/api"
 import { Forbidden, Unauthorized } from "@audit/domain/errors"
@@ -231,6 +235,261 @@ const TrailLive = HttpApiBuilder.group(AuditApi, "trail", (handlers) =>
   }),
 )
 
+const ProjectsLive = HttpApiBuilder.group(AuditApi, "projects", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("list", () => projectQueries.sidebarProjects().pipe(Effect.provide(core)))
+      .handle("adminList", () => projectQueries.adminProjects().pipe(Effect.provide(core)))
+      .handle("create", ({ payload }) =>
+        projectCommands.createProject.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("get", ({ params }) =>
+        projectQueries.projectDetailFor(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("update", ({ params, payload }) =>
+        projectCommands.updateProject
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("archive", ({ params }) =>
+        projectCommands.archiveProject
+          .execute({ projectId: params.projectId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unarchive", ({ params }) =>
+        projectCommands.unarchiveProject
+          .execute({ projectId: params.projectId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("delete", ({ params, payload }) =>
+        projectCommands.deleteProject
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("restore", ({ params }) =>
+        projectCommands.restoreProject
+          .execute({ projectId: params.projectId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("access", ({ params }) =>
+        projectQueries.projectAccess(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("grant", ({ params, payload }) =>
+        projectCommands.grantProjectAccess
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("revoke", ({ params, payload }) =>
+        projectCommands.revokeProjectAccess
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("setRestricted", ({ params, payload }) =>
+        projectCommands.setProjectRestricted
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+  }),
+)
+
+const BoardsLive = HttpApiBuilder.group(AuditApi, "boards", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("list", ({ params }) =>
+        projectQueries.projectBoards(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("create", ({ params, payload }) =>
+        projectCommands.createBoard
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("get", ({ params }) =>
+        projectQueries.boardFor(params.boardId).pipe(Effect.provide(core)),
+      )
+      .handle("rename", ({ params, payload }) =>
+        projectCommands.renameBoard
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("delete", ({ params }) =>
+        projectCommands.deleteBoard.execute({ boardId: params.boardId }).pipe(Effect.provide(core)),
+      )
+      .handle("setRestricted", ({ params, payload }) =>
+        projectCommands.setBoardRestricted
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("grant", ({ params, payload }) =>
+        projectCommands.grantBoardAccess
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("revoke", ({ params, payload }) =>
+        projectCommands.revokeBoardAccess
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("createColumn", ({ params, payload }) =>
+        projectCommands.createColumn
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("updateColumn", ({ params, payload }) =>
+        projectCommands.updateColumn
+          .execute({ columnId: params.columnId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("moveColumn", ({ params, payload }) =>
+        projectCommands.moveColumn
+          .execute({ columnId: params.columnId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteColumn", ({ params, payload }) =>
+        projectCommands.deleteColumn
+          .execute({ columnId: params.columnId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("labels", ({ params }) =>
+        projectQueries.projectLabels(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("createLabel", ({ params, payload }) =>
+        projectCommands.createLabel
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("updateLabel", ({ params, payload }) =>
+        projectCommands.updateLabel
+          .execute({ labelId: params.labelId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteLabel", ({ params }) =>
+        projectCommands.deleteLabel.execute({ labelId: params.labelId }).pipe(Effect.provide(core)),
+      )
+  }),
+)
+
+const TasksLive = HttpApiBuilder.group(AuditApi, "tasks", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("board", ({ params, query }) =>
+        taskQueries.boardView(params.boardId, query).pipe(Effect.provide(core)),
+      )
+      .handle("list", ({ params, query }) =>
+        taskQueries.listTasks(params.projectId, query).pipe(Effect.provide(core)),
+      )
+      .handle("calendar", ({ params, query }) =>
+        taskQueries.calendarItems(params.projectId, query).pipe(Effect.provide(core)),
+      )
+      .handle("mine", () => taskQueries.myTasks().pipe(Effect.provide(core)))
+      .handle("get", ({ params }) =>
+        taskQueries.taskDetail(params.taskId).pipe(Effect.provide(core)),
+      )
+      .handle("byNumber", ({ params }) =>
+        taskQueries.taskByNumber(params.projectId, params.number).pipe(Effect.provide(core)),
+      )
+      .handle("subtasks", ({ params }) =>
+        taskQueries.subtasksOf(params.taskId).pipe(Effect.provide(core)),
+      )
+      .handle("create", ({ params, payload }) =>
+        taskCommands.createTask
+          .execute({ boardId: params.boardId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("update", ({ params, payload }) =>
+        taskCommands.updateTask
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("move", ({ params, payload }) =>
+        taskCommands.moveTask
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("delete", ({ params, payload }) =>
+        taskCommands.deleteTask
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("bulkMove", ({ payload }) =>
+        taskCommands.bulkMoveTasks.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("bulkAssign", ({ payload }) =>
+        taskCommands.bulkAssignTasks.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("bulkLabel", ({ payload }) =>
+        taskCommands.bulkLabelTasks.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("bulkDelete", ({ payload }) =>
+        taskCommands.bulkDeleteTasks.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("link", ({ params, payload }) =>
+        taskCommands.linkTask
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("unlink", ({ params, payload }) =>
+        taskCommands.unlinkTask
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("watch", ({ params }) =>
+        taskCommands.watchTaskCommand.execute({ taskId: params.taskId }).pipe(Effect.provide(core)),
+      )
+      .handle("unwatch", ({ params }) =>
+        taskCommands.unwatchTask.execute({ taskId: params.taskId }).pipe(Effect.provide(core)),
+      )
+      .handle("createComment", ({ params, payload }) =>
+        taskCommands.createComment
+          .execute({ taskId: params.taskId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("updateComment", ({ params, payload }) =>
+        taskCommands.updateComment
+          .execute({ commentId: params.commentId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteComment", ({ params }) =>
+        taskCommands.deleteComment
+          .execute({ commentId: params.commentId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("savedFilters", ({ params }) =>
+        taskQueries.savedFiltersOf(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("createSavedFilter", ({ params, payload }) =>
+        taskCommands.createSavedFilter
+          .execute({ projectId: params.projectId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteSavedFilter", ({ params }) =>
+        taskCommands.deleteSavedFilter
+          .execute({ filterId: params.filterId })
+          .pipe(Effect.provide(core)),
+      )
+  }),
+)
+
+const NotificationsLive = HttpApiBuilder.group(AuditApi, "notifications", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("list", () => taskQueries.myNotifications().pipe(Effect.provide(core)))
+      .handle("read", ({ params }) =>
+        taskCommands.markNotificationRead
+          .execute({ notificationId: params.notificationId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("archive", ({ params }) =>
+        taskCommands.archiveNotification
+          .execute({ notificationId: params.notificationId })
+          .pipe(Effect.provide(core)),
+      )
+  }),
+)
+
 export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
   openapiPath: "/api/openapi.json",
 }).pipe(
@@ -243,6 +502,10 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
     InvitesLive,
     TeamsLive,
     TrailLive,
+    ProjectsLive,
+    BoardsLive,
+    TasksLive,
+    NotificationsLive,
   ]),
   Layer.provide(AuthenticationLive),
 )
