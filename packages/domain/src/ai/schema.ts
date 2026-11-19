@@ -9,6 +9,7 @@ import {
   ChannelId,
   DocId,
   EntityId,
+  TaskId,
 } from "../ids.ts"
 import { WorkspaceRole } from "../roles.ts"
 
@@ -98,6 +99,8 @@ export const AiSettings = Schema.Struct({
   embeddingProviderId: Schema.NullOr(AiProviderId),
   allowedRoles: Schema.Array(WorkspaceRole),
   monthlyTokenBudget: Schema.NullOr(Schema.Int),
+  /** Days an AI conversation is kept after its last activity. */
+  conversationRetentionDays: Schema.Int,
   features: AiFeatureFlags,
 })
 export type AiSettings = typeof AiSettings.Type
@@ -108,6 +111,11 @@ export const AiSettingsInput = Schema.Struct({
   embeddingProviderId: Schema.NullOr(AiProviderId),
   allowedRoles: Schema.Array(WorkspaceRole),
   monthlyTokenBudget: Schema.NullOr(Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))),
+  /** Days an AI conversation is kept after its last activity (1 to 3650). */
+  conversationRetentionDays: Schema.Int.check(
+    Schema.isGreaterThanOrEqualTo(1),
+    Schema.isLessThanOrEqualTo(3650),
+  ),
   features: AiFeatureFlags,
 })
 export type AiSettingsInput = typeof AiSettingsInput.Type
@@ -277,6 +285,12 @@ export const AiActionInput = Schema.Union([
     surface: Schema.Literal("board"),
     action: Schema.Literals(["triage", "summarize_column"]),
     boardId: BoardId,
+  }),
+  Schema.Struct({
+    surface: Schema.Literal("board"),
+    action: Schema.Literal("break_down"),
+    boardId: BoardId,
+    taskId: TaskId,
   }),
   Schema.Struct({
     surface: Schema.Literal("calendar"),

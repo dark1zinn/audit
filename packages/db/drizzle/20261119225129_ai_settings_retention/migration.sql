@@ -1,0 +1,2 @@
+ALTER TABLE "ai_settings" ADD COLUMN "conversation_retention_days" integer DEFAULT 90 NOT NULL;--> statement-breakpoint
+ALTER TABLE "ai_settings" ADD CONSTRAINT "ai_settings_retention_check" CHECK ("conversation_retention_days" >= 1);

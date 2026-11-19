@@ -105,6 +105,8 @@ export const aiSettings = pgTable(
       .default(sql`'{owner,admin,member}'`),
     /** Per person monthly budget in tokens; null means unlimited. */
     monthlyTokenBudget: integer("monthly_token_budget"),
+    /** Days an AI conversation is kept after its last activity. */
+    conversationRetentionDays: integer("conversation_retention_days").notNull().default(90),
     features: jsonb("features").notNull().default({}),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -115,6 +117,7 @@ export const aiSettings = pgTable(
       "ai_settings_budget_check",
       sql`${t.monthlyTokenBudget} is null or ${t.monthlyTokenBudget} >= 0`,
     ),
+    check("ai_settings_retention_check", sql`${t.conversationRetentionDays} >= 1`),
   ],
 )
 

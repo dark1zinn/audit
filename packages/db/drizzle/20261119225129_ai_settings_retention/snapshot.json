@@ -1,0 +1,76 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "2fcae831-7777-46de-8a53-e3db83b1306a",
+  "prevIds": [
+    "7a9c487b-b21d-4d95-bc3a-35f839daa2c3"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "ai_settings",
+        "conversation_retention_days"
+      ],
+      "writes": [
+        "s|col|public.ai_settings.conversation_retention_days",
+        "n|col|public.ai_settings.conversation_retention_days",
+        "e|col|public.ai_settings.conversation_retention_days"
+      ],
+      "reads": [
+        "n|tbl|public.ai_settings",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_settings"
+      ],
+      "writes": [
+        "s|ck|public.ai_settings.ai_settings_retention_check",
+        "n|ck|public.ai_settings.ai_settings_retention_check",
+        "e|ck|public.ai_settings.ai_settings_retention_check",
+        "n|con|public.ai_settings.ai_settings_retention_check"
+      ],
+      "reads": [
+        "n|tbl|public.ai_settings",
+        "n|sch|public",
+        "n|col|public.ai_settings.conversation_retention_days"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "conversation_retention_days",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "90",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_retention_check",
+        "value": "\"conversation_retention_days\" >= 1",
+        "entityType": "checks"
+      }
+    }
+  ]
+}
