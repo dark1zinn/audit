@@ -57,24 +57,27 @@ export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
 `
 
 /**
- * Condition true when `idColumn` names an entity the user can see. Used by every list, search,
+ * Condition true when `idColumn` names an entity the user can see. Inner aliases are prefixed
+ * `vis_` so they never shadow the caller's aliases inside `idColumn`. Used by every list, search,
  * backlink, notification fan-out, realtime filter and AI retrieval query.
  */
 export const visibleTo = (userId: UserId, idColumn: SQL) => sql`exists (
-  with recursive chain as (
-    select e.id, e.parent_id, e.type, e.restricted, true as start
-    from entities e where e.id = ${idColumn} and e.deleted_at is null
+  with recursive vis_chain as (
+    select vis_e.id, vis_e.parent_id, vis_e.type, vis_e.restricted, true as start
+    from entities vis_e where vis_e.id = ${idColumn} and vis_e.deleted_at is null
     union all
-    select p.id, p.parent_id, p.type, p.restricted, false
-    from chain c join entities p on p.id = c.parent_id
-    where not c.restricted and c.type not in (${containers})
+    select vis_p.id, vis_p.parent_id, vis_p.type, vis_p.restricted, false
+    from vis_chain vis_c join entities vis_p on vis_p.id = vis_c.parent_id
+    where not vis_c.restricted and vis_c.type not in (${containers})
   )
-  select 1 from chain c
-  where (c.start and c.type in (${directoryTypes}))
-    or (c.type in (${containers}) and exists (
-      select 1 from container_access ca where ca.container_id = c.id and ca.user_id = ${userId}))
-    or (c.type not in (${containers}) and exists (
-      select 1 from access_entries ae where ae.resource_id = c.id and ${entryMatchesUser(sql`${userId}`)}))
+  select 1 from vis_chain vis_c
+  where (vis_c.start and vis_c.type in (${directoryTypes}))
+    or (vis_c.type in (${containers}) and exists (
+      select 1 from container_access vis_ca
+      where vis_ca.container_id = vis_c.id and vis_ca.user_id = ${userId}))
+    or (vis_c.type not in (${containers}) and exists (
+      select 1 from access_entries ae
+      where ae.resource_id = vis_c.id and ${entryMatchesUser(sql`${userId}`)}))
 )`
 
 /** Highest own grant on container `c` for member `m`. */

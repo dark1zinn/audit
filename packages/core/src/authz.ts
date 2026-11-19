@@ -2,7 +2,7 @@
  * The one place that decides who may do what. Every command and query calls it.
  */
 import { entities, userProfiles, workspace, workspaceMembers } from "@audit/db/schema"
-import { type Actor, actorUserId, CurrentActor } from "@audit/domain/actor"
+import { actorUserId, CurrentActor } from "@audit/domain/actor"
 import { Forbidden, NotFound } from "@audit/domain/errors"
 import type { EntityId, UserId } from "@audit/domain/ids"
 import {
