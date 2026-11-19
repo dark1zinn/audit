@@ -7,6 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "(edited)"
 msgstr "(edited)"
@@ -75,6 +76,13 @@ msgstr "{0} of {1} subtasks done"
 msgid "{0} project {1}"
 msgstr "{0} project {1}"
 
+#. placeholder {0}: message.replyCount
+#. placeholder {0}: replies.length
+#: ../../apps/web/src/components/chat/message-item.tsx
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "{0} replies"
+msgstr "{0} replies"
+
 #. placeholder {0}: keyOf(active)
 #. placeholder {1}: columnName(columnOfDropId(String(over.id)))
 #: ../../apps/web/src/components/board/board-view.tsx
@@ -91,6 +99,14 @@ msgstr "{0} was dropped without moving."
 #: ../../apps/web/src/components/list/task-rows.tsx
 msgid "{0}/{1} subtasks"
 msgstr "{0}/{1} subtasks"
+
+#: ../../apps/web/src/components/chat/typing.ts
+msgid "{first} and {second} are typing…"
+msgstr "{first} and {second} are typing…"
+
+#: ../../apps/web/src/components/chat/typing.ts
+msgid "{first} is typing…"
+msgstr "{first} is typing…"
 
 #: ../../apps/web/src/components/docs/nodes.tsx
 msgid "@restricted"
@@ -180,6 +196,7 @@ msgstr "Activity"
 msgid "Actor"
 msgstr "Actor"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Add"
 msgstr "Add"
@@ -213,6 +230,10 @@ msgstr "Add label"
 msgid "Add label to selected"
 msgstr "Add label to selected"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Add member"
+msgstr "Add member"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Add passkey"
 msgstr "Add passkey"
@@ -226,6 +247,10 @@ msgstr "Add subtask"
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Admin"
 msgstr "Admin"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "All messages"
+msgstr "All messages"
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "All projects"
@@ -278,6 +303,10 @@ msgstr "Apply choices"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Archive"
 msgstr "Archive"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Archive channel"
+msgstr "Archive channel"
 
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
 msgid "Archive project"
@@ -335,6 +364,10 @@ msgstr "Assignees"
 msgid "At least 10 characters."
 msgstr "At least 10 characters."
 
+#: ../../apps/web/src/components/chat/composer.tsx
+msgid "Attach file"
+msgstr "Attach file"
+
 #: ../../apps/web/src/components/docs/nodes.tsx
 msgid "Attachment"
 msgstr "Attachment"
@@ -374,6 +407,7 @@ msgstr "Blank"
 msgid "Blocks"
 msgstr "Blocks"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Board"
 msgstr "Board"
@@ -399,6 +433,14 @@ msgstr "Bold"
 msgid "Broken at sequence {0}."
 msgstr "Broken at sequence {0}."
 
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Browse"
+msgstr "Browse"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Browse channels"
+msgstr "Browse channels"
+
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Bulk actions"
 msgstr "Bulk actions"
@@ -421,6 +463,7 @@ msgstr "Callout"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/chat/composer.tsx
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 #: ../../apps/web/src/components/task-panel/description.tsx
@@ -467,6 +510,19 @@ msgstr "Changes since the previous version"
 msgid "Changing these affects new sessions and the look of the app for everyone."
 msgstr "Changing these affects new sessions and the look of the app for everyone."
 
+#: ../../apps/web/src/components/chat/channel-view.tsx
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Channel settings"
+msgstr "Channel settings"
+
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Channels"
+msgstr "Channels"
+
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Chat"
+msgstr "Chat"
+
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Check the highlighted fields and try again."
 msgstr "Check the highlighted fields and try again."
@@ -480,13 +536,22 @@ msgstr "Checklist"
 msgid "Choose"
 msgstr "Choose"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Choose a board"
+msgstr "Choose a board"
+
 #: ../../apps/web/src/routes/reset-password.tsx
 msgid "Choose a new password for your account."
 msgstr "Choose a new password for your account."
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Choose a person"
 msgstr "Choose a person"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Choose a project"
+msgstr "Choose a project"
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 msgid "Clear"
@@ -504,6 +569,10 @@ msgstr "Clear selection"
 #: ../ui/src/components/ui/dialog.tsx
 msgid "Close"
 msgstr "Close"
+
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Close thread"
+msgstr "Close thread"
 
 #: ../../apps/web/src/routes/login.tsx
 msgid "Code"
@@ -623,6 +692,14 @@ msgstr "Create account and join"
 msgid "Create board"
 msgstr "Create board"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Create channel"
+msgstr "Create channel"
+
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Create doc"
+msgstr "Create doc"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Create invite"
 msgstr "Create invite"
@@ -638,6 +715,15 @@ msgstr "Create password reset link"
 #: ../../apps/web/src/components/project-create-dialog.tsx
 msgid "Create project"
 msgstr "Create project"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Create task"
+msgstr "Create task"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Create task from message"
+msgstr "Create task from message"
 
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Create team"
@@ -698,6 +784,7 @@ msgid "Defaults and policies for everyone in the workspace."
 msgstr "Defaults and policies for everyone in the workspace."
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
+#: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
@@ -760,6 +847,14 @@ msgstr "Description"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Devices currently signed in to your account."
 msgstr "Devices currently signed in to your account."
+
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Direct messages"
+msgstr "Direct messages"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Direct messages cannot be renamed."
+msgstr "Direct messages cannot be renamed."
 
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 msgid "Discard my changes"
@@ -854,6 +949,7 @@ msgstr "Due on or after"
 msgid "Duplicates"
 msgstr "Duplicates"
 
+#: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Edit"
 msgstr "Edit"
@@ -865,6 +961,10 @@ msgstr "Edit comment"
 #: ../../apps/web/src/components/task-panel/description.tsx
 msgid "Edit description"
 msgstr "Edit description"
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Edit message"
+msgstr "Edit message"
 
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "Edited a comment"
@@ -962,9 +1062,21 @@ msgstr "Filter tasks"
 msgid "Filters"
 msgstr "Filters"
 
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Follow"
+msgstr "Follow"
+
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Following"
+msgstr "Following"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "for example member.role.changed"
 msgstr "for example member.role.changed"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "general"
+msgstr "general"
 
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
@@ -1082,10 +1194,27 @@ msgstr "Invites"
 msgid "Italic"
 msgstr "Italic"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Join"
+msgstr "Join"
+
 #. placeholder {0}: invite.workspaceName
 #: ../../apps/web/src/routes/join.$token.tsx
 msgid "Join {0}"
 msgstr "Join {0}"
+
+#. placeholder {0}: channel.name
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Join #{0}"
+msgstr "Join #{0}"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Join a public channel to see its messages."
+msgstr "Join a public channel to see its messages."
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "Join channel"
+msgstr "Join channel"
 
 #: ../../apps/web/src/routes/join.$token.tsx
 msgid "Join workspace"
@@ -1138,6 +1267,10 @@ msgstr "Last updated"
 msgid "Lead"
 msgstr "Lead"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Leave channel"
+msgstr "Leave channel"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Leave the email empty to create a link anyone with it can use."
 msgstr "Leave the email empty to create a link anyone with it can use."
@@ -1164,6 +1297,10 @@ msgstr "List"
 msgid "Load more"
 msgstr "Load more"
 
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "Loading older messages…"
+msgstr "Loading older messages…"
+
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
@@ -1182,6 +1319,7 @@ msgstr "Main"
 msgid "Manage who belongs to this team."
 msgstr "Manage who belongs to this team."
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
 msgid "Manager"
@@ -1221,6 +1359,7 @@ msgid "Member role"
 msgstr "Member role"
 
 #: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Members"
@@ -1234,9 +1373,30 @@ msgstr "Members can invite others"
 msgid "Mentions me"
 msgstr "Mentions me"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Mentions only"
+msgstr "Mentions only"
+
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 msgid "Mentions or assigned to me"
 msgstr "Mentions or assigned to me"
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Message"
+msgstr "Message"
+
+#. placeholder {0}: channelTitle(data.channel)
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "Message {0}"
+msgstr "Message {0}"
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Message actions"
+msgstr "Message actions"
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "Messages"
+msgstr "Messages"
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Metadata only"
@@ -1313,6 +1473,7 @@ msgid "My tasks"
 msgstr "My tasks"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
@@ -1346,9 +1507,17 @@ msgstr "Nest under previous"
 msgid "Nested."
 msgstr "Nested."
 
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "New"
+msgstr "New"
+
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "New board name"
 msgstr "New board name"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "New channel"
+msgstr "New channel"
 
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "New column name"
@@ -1374,6 +1543,14 @@ msgstr "New label"
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 msgid "New label name"
 msgstr "New label name"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "New message"
+msgstr "New message"
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "New messages"
+msgstr "New messages"
 
 #: ../../apps/web/src/routes/reset-password.tsx
 msgid "New password"
@@ -1429,6 +1606,10 @@ msgstr "No longer over a drop target."
 msgid "No matches"
 msgstr "No matches"
 
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "No messages yet. Say hello."
+msgstr "No messages yet. Say hello."
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "No passkeys yet."
 msgstr "No passkeys yet."
@@ -1476,9 +1657,21 @@ msgstr "Not enabled"
 msgid "Note (optional)"
 msgstr "Note (optional)"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Nothing"
+msgstr "Nothing"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Nothing is pinned yet."
+msgstr "Nothing is pinned yet."
+
 #: ../../apps/web/src/components/docs/backlinks-panel.tsx
 msgid "Nothing links here yet."
 msgstr "Nothing links here yet."
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Notifications"
+msgstr "Notifications"
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
@@ -1503,6 +1696,7 @@ msgstr "On:"
 msgid "Only the people and teams listed below can see a restricted project."
 msgstr "Only the people and teams listed below can see a restricted project."
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Open"
 msgstr "Open"
@@ -1514,6 +1708,10 @@ msgstr "Open profile"
 #: ../../apps/web/src/routes/_app.index.tsx
 msgid "Open security"
 msgstr "Open security"
+
+#: ../../apps/web/src/routes/_app.dm.$userId.tsx
+msgid "Opening conversation…"
+msgstr "Opening conversation…"
 
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Optional"
@@ -1570,6 +1768,10 @@ msgstr "Password changed"
 msgid "Password reset link (share it privately)"
 msgstr "Password reset link (share it privately)"
 
+#: ../../apps/web/src/components/chat/composer.tsx
+msgid "People"
+msgstr "People"
+
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "People in this workspace and their access."
 msgstr "People in this workspace and their access."
@@ -1578,6 +1780,10 @@ msgstr "People in this workspace and their access."
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Person"
 msgstr "Person"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Pick one person for a direct message, or up to seven for a group (eight with you)."
+msgstr "Pick one person for a direct message, or up to seven for a group (eight with you)."
 
 #. placeholder {0}: keyOf(active)
 #. placeholder {1}: columnName(columnOfDropId(String(active.id)))
@@ -1589,6 +1795,23 @@ msgstr "Picked up {0} in {1}."
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 msgid "Picked up {0}."
 msgstr "Picked up {0}."
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Pin"
+msgstr "Pin"
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Pinned"
+msgstr "Pinned"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Pinned messages"
+msgstr "Pinned messages"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Pinned messages stay easy to find for everyone in this channel."
+msgstr "Pinned messages stay easy to find for everyone in this channel."
 
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Post comment"
@@ -1609,6 +1832,10 @@ msgstr "Principal"
 msgid "Priority"
 msgstr "Priority"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Private"
+msgstr "Private"
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Profile"
@@ -1617,6 +1844,10 @@ msgstr "Profile"
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Profile saved"
 msgstr "Profile saved"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Project"
+msgstr "Project"
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Project archived"
@@ -1666,6 +1897,14 @@ msgstr "Projects"
 msgid "Protect your account and manage sign-ins."
 msgstr "Protect your account and manage sign-ins."
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Public"
+msgstr "Public"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Public channels can be found and joined by anyone in the workspace."
+msgstr "Public channels can be found and joined by anyone in the workspace."
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "QR code for your authenticator app"
 msgstr "QR code for your authenticator app"
@@ -1673,6 +1912,10 @@ msgstr "QR code for your authenticator app"
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Quote"
 msgstr "Quote"
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "React with {emoji}"
+msgstr "React with {emoji}"
 
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reactivate"
@@ -1690,10 +1933,15 @@ msgstr "Relation type"
 msgid "Relations"
 msgstr "Relations"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Remove"
 msgstr "Remove"
+
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Remove from saved"
+msgstr "Remove from saved"
 
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Remove relation"
@@ -1708,10 +1956,16 @@ msgstr "Rename"
 msgid "Reopen"
 msgstr "Reopen"
 
+#: ../../apps/web/src/components/chat/message-item.tsx
+#: ../../apps/web/src/components/chat/thread-panel.tsx
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Reply"
 msgstr "Reply"
+
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Reply in thread"
+msgstr "Reply in thread"
 
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Required for admins"
@@ -1811,11 +2065,17 @@ msgid "Runbook"
 msgstr "Runbook"
 
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/docs/doc-view.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 msgid "Save"
 msgstr "Save"
+
+#: ../../apps/web/src/components/chat/saved-threads.tsx
+msgid "Save a message to find it here later."
+msgstr "Save a message to find it here later."
 
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 msgid "Save changes"
@@ -1844,6 +2104,14 @@ msgstr "Save version"
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "Save view"
 msgstr "Save view"
+
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Saved"
+msgstr "Saved"
+
+#: ../../apps/web/src/components/chat/saved-threads.tsx
+msgid "Saved messages"
+msgstr "Saved messages"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "Saved views"
@@ -1881,6 +2149,10 @@ msgstr "Select a document to read or edit it."
 msgid "Select a team."
 msgstr "Select a team."
 
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "Send"
+msgstr "Send"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Seq"
 msgstr "Seq"
@@ -1904,6 +2176,10 @@ msgstr "Settings"
 #: ../../apps/web/src/routes/setup.tsx
 msgid "Setup token"
 msgstr "Setup token"
+
+#: ../../apps/web/src/components/chat/typing.ts
+msgid "Several people are typing…"
+msgstr "Several people are typing…"
 
 #: ../../apps/web/src/routes/login.tsx
 msgid "Sign in"
@@ -1961,6 +2237,10 @@ msgstr "Sort by"
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 msgid "Sort descending"
 msgstr "Sort descending"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Start conversation"
+msgstr "Start conversation"
 
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
@@ -2066,6 +2346,10 @@ msgstr "The file could not be uploaded."
 msgid "The key prefixes task numbers, for example ABC-12."
 msgstr "The key prefixes task numbers, for example ABC-12."
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "The message stays in the channel and links to the new task."
+msgstr "The message stays in the channel and links to the new task."
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "The passkey could not be added."
 msgstr "The passkey could not be added."
@@ -2099,6 +2383,10 @@ msgstr "This device"
 msgid "This link is incomplete. Ask an admin for a new password-reset link."
 msgstr "This link is incomplete. Ask an admin for a new password-reset link."
 
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "This message was deleted."
+msgstr "This message was deleted."
+
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "This project does not exist or you cannot see it."
 msgstr "This project does not exist or you cannot see it."
@@ -2127,10 +2415,20 @@ msgstr "This task changed while you were editing"
 msgid "This workspace requires two-factor authentication. Set it up below to continue using audit."
 msgstr "This workspace requires two-factor authentication. Set it up below to continue using audit."
 
+#: ../../apps/web/src/components/chat/thread-panel.tsx
+msgid "Thread"
+msgstr "Thread"
+
+#: ../../apps/web/src/components/chat/saved-threads.tsx
+#: ../../apps/web/src/components/chat/sidebar.tsx
+msgid "Threads"
+msgstr "Threads"
+
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Time zone"
 msgstr "Time zone"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 #: ../../apps/web/src/components/task-panel/task-panel.tsx
@@ -2151,6 +2449,10 @@ msgstr "To move a task, press space or enter, use the arrow keys to choose a pos
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Too many attempts. Wait a moment and try again."
 msgstr "Too many attempts. Wait a moment and try again."
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Topic"
+msgstr "Topic"
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Turn off two-factor"
@@ -2194,6 +2496,10 @@ msgstr "Type {0} to confirm"
 msgid "Unarchive"
 msgstr "Unarchive"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
+msgid "Unarchive channel"
+msgstr "Unarchive channel"
+
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
 msgid "Unarchive project"
 msgstr "Unarchive project"
@@ -2214,6 +2520,11 @@ msgstr "Unknown user"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Unnamed passkey"
 msgstr "Unnamed passkey"
+
+#: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/components/chat/message-item.tsx
+msgid "Unpin"
+msgstr "Unpin"
 
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
@@ -2292,6 +2603,7 @@ msgstr "View saved."
 msgid "Viewer"
 msgstr "Viewer"
 
+#: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
@@ -2352,6 +2664,18 @@ msgstr "Workspace settings saved"
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Workspace teams"
 msgstr "Workspace teams"
+
+#: ../../apps/web/src/components/chat/saved-threads.tsx
+msgid "You are not following any threads yet."
+msgstr "You are not following any threads yet."
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "You are reading this private channel as an administrator. Access is logged."
+msgstr "You are reading this private channel as an administrator. Access is logged."
+
+#: ../../apps/web/src/components/chat/channel-view.tsx
+msgid "You are viewing this channel without joining it."
+msgstr "You are viewing this channel without joining it."
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "You can comment on this document but not edit it."

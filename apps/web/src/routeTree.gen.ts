@@ -16,6 +16,8 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppMyTasksRouteImport } from './routes/_app.my-tasks'
+import { Route as AppSavedRouteImport } from './routes/_app.saved'
+import { Route as AppThreadsRouteImport } from './routes/_app.threads'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppAdminAuditRouteImport } from './routes/_app.admin.audit'
@@ -24,6 +26,8 @@ import { Route as AppAdminMembersRouteImport } from './routes/_app.admin.members
 import { Route as AppAdminProjectsRouteImport } from './routes/_app.admin.projects'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app.admin.teams'
 import { Route as AppAdminWorkspaceRouteImport } from './routes/_app.admin.workspace'
+import { Route as AppCChannelIdRouteImport } from './routes/_app.c.$channelId'
+import { Route as AppDmUserIdRouteImport } from './routes/_app.dm.$userId'
 import { Route as AppDocsIndexRouteImport } from './routes/_app.docs.index'
 import { Route as AppDocsDocIdRouteImport } from './routes/_app.docs.$docId'
 import { Route as AppPKeyRouteImport } from './routes/_app.p.$key'
@@ -33,6 +37,7 @@ import { Route as AppPKeyBoardRouteImport } from './routes/_app.p.$key.board'
 import { Route as AppPKeyCalendarRouteImport } from './routes/_app.p.$key.calendar'
 import { Route as AppPKeyListRouteImport } from './routes/_app.p.$key.list'
 import { Route as AppPKeySettingsRouteImport } from './routes/_app.p.$key.settings'
+import { Route as AppCChannelIdTThreadIdRouteImport } from './routes/_app.c.$channelId.t.$threadId'
 import { Route as AppPKeyDocsIndexRouteImport } from './routes/_app.p.$key.docs.index'
 import { Route as AppPKeyDocsDocIdRouteImport } from './routes/_app.p.$key.docs.$docId'
 import { Route as AppPKeyTNumberRouteImport } from './routes/_app.p.$key.t.$number'
@@ -69,6 +74,16 @@ const AppAdminRoute = AppAdminRouteImport.update({
 const AppMyTasksRoute = AppMyTasksRouteImport.update({
   id: '/my-tasks',
   path: '/my-tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSavedRoute = AppSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppThreadsRoute = AppThreadsRouteImport.update({
+  id: '/threads',
+  path: '/threads',
   getParentRoute: () => AppRoute,
 } as any)
 const JoinTokenRoute = JoinTokenRouteImport.update({
@@ -110,6 +125,16 @@ const AppAdminWorkspaceRoute = AppAdminWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
   getParentRoute: () => AppAdminRoute,
+} as any)
+const AppCChannelIdRoute = AppCChannelIdRouteImport.update({
+  id: '/c/$channelId',
+  path: '/c/$channelId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDmUserIdRoute = AppDmUserIdRouteImport.update({
+  id: '/dm/$userId',
+  path: '/dm/$userId',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppDocsIndexRoute = AppDocsIndexRouteImport.update({
   id: '/docs/',
@@ -156,6 +181,11 @@ const AppPKeySettingsRoute = AppPKeySettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPKeyRoute,
 } as any)
+const AppCChannelIdTThreadIdRoute = AppCChannelIdTThreadIdRouteImport.update({
+  id: '/t/$threadId',
+  path: '/t/$threadId',
+  getParentRoute: () => AppCChannelIdRoute,
+} as any)
 const AppPKeyDocsIndexRoute = AppPKeyDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -179,6 +209,8 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/my-tasks': typeof AppMyTasksRoute
+  '/saved': typeof AppSavedRoute
+  '/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/invites': typeof AppAdminInvitesRoute
@@ -186,6 +218,8 @@ export interface FileRoutesByFullPath {
   '/admin/projects': typeof AppAdminProjectsRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/c/$channelId': typeof AppCChannelIdRouteWithChildren
+  '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/profile': typeof AppSettingsProfileRoute
@@ -196,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
+  '/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
   '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/p/$key/docs/': typeof AppPKeyDocsIndexRoute
@@ -205,6 +240,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/my-tasks': typeof AppMyTasksRoute
+  '/saved': typeof AppSavedRoute
+  '/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/': typeof AppIndexRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -213,6 +250,8 @@ export interface FileRoutesByTo {
   '/admin/projects': typeof AppAdminProjectsRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/c/$channelId': typeof AppCChannelIdRouteWithChildren
+  '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/profile': typeof AppSettingsProfileRoute
@@ -223,6 +262,7 @@ export interface FileRoutesByTo {
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
+  '/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
   '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/p/$key/docs': typeof AppPKeyDocsIndexRoute
@@ -235,6 +275,8 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/my-tasks': typeof AppMyTasksRoute
+  '/_app/saved': typeof AppSavedRoute
+  '/_app/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/_app/': typeof AppIndexRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
@@ -243,6 +285,8 @@ export interface FileRoutesById {
   '/_app/admin/projects': typeof AppAdminProjectsRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/_app/c/$channelId': typeof AppCChannelIdRouteWithChildren
+  '/_app/dm/$userId': typeof AppDmUserIdRoute
   '/_app/docs/$docId': typeof AppDocsDocIdRoute
   '/_app/p/$key': typeof AppPKeyRouteWithChildren
   '/_app/settings/profile': typeof AppSettingsProfileRoute
@@ -253,6 +297,7 @@ export interface FileRoutesById {
   '/_app/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/_app/p/$key/list': typeof AppPKeyListRoute
   '/_app/p/$key/settings': typeof AppPKeySettingsRoute
+  '/_app/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
   '/_app/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/_app/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/_app/p/$key/docs/': typeof AppPKeyDocsIndexRoute
@@ -266,6 +311,8 @@ export interface FileRouteTypes {
     | '/setup'
     | '/admin'
     | '/my-tasks'
+    | '/saved'
+    | '/threads'
     | '/join/$token'
     | '/admin/audit'
     | '/admin/invites'
@@ -273,6 +320,8 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/teams'
     | '/admin/workspace'
+    | '/c/$channelId'
+    | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/profile'
@@ -283,6 +332,7 @@ export interface FileRouteTypes {
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
+    | '/c/$channelId/t/$threadId'
     | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
     | '/p/$key/docs/'
@@ -292,6 +342,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/my-tasks'
+    | '/saved'
+    | '/threads'
     | '/join/$token'
     | '/'
     | '/admin/audit'
@@ -300,6 +352,8 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/teams'
     | '/admin/workspace'
+    | '/c/$channelId'
+    | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/profile'
@@ -310,6 +364,7 @@ export interface FileRouteTypes {
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
+    | '/c/$channelId/t/$threadId'
     | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
     | '/p/$key/docs'
@@ -321,6 +376,8 @@ export interface FileRouteTypes {
     | '/setup'
     | '/_app/admin'
     | '/_app/my-tasks'
+    | '/_app/saved'
+    | '/_app/threads'
     | '/join/$token'
     | '/_app/'
     | '/_app/admin/audit'
@@ -329,6 +386,8 @@ export interface FileRouteTypes {
     | '/_app/admin/projects'
     | '/_app/admin/teams'
     | '/_app/admin/workspace'
+    | '/_app/c/$channelId'
+    | '/_app/dm/$userId'
     | '/_app/docs/$docId'
     | '/_app/p/$key'
     | '/_app/settings/profile'
@@ -339,6 +398,7 @@ export interface FileRouteTypes {
     | '/_app/p/$key/calendar'
     | '/_app/p/$key/list'
     | '/_app/p/$key/settings'
+    | '/_app/c/$channelId/t/$threadId'
     | '/_app/p/$key/docs/$docId'
     | '/_app/p/$key/t/$number'
     | '/_app/p/$key/docs/'
@@ -403,6 +463,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMyTasksRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/saved': {
+      id: '/_app/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof AppSavedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/threads': {
+      id: '/_app/threads'
+      path: '/threads'
+      fullPath: '/threads'
+      preLoaderRoute: typeof AppThreadsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/join/$token': {
       id: '/join/$token'
       path: '/join/$token'
@@ -458,6 +532,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/workspace'
       preLoaderRoute: typeof AppAdminWorkspaceRouteImport
       parentRoute: typeof AppAdminRoute
+    }
+    '/_app/c/$channelId': {
+      id: '/_app/c/$channelId'
+      path: '/c/$channelId'
+      fullPath: '/c/$channelId'
+      preLoaderRoute: typeof AppCChannelIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dm/$userId': {
+      id: '/_app/dm/$userId'
+      path: '/dm/$userId'
+      fullPath: '/dm/$userId'
+      preLoaderRoute: typeof AppDmUserIdRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/docs/': {
       id: '/_app/docs/'
@@ -522,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPKeySettingsRouteImport
       parentRoute: typeof AppPKeyRoute
     }
+    '/_app/c/$channelId/t/$threadId': {
+      id: '/_app/c/$channelId/t/$threadId'
+      path: '/t/$threadId'
+      fullPath: '/c/$channelId/t/$threadId'
+      preLoaderRoute: typeof AppCChannelIdTThreadIdRouteImport
+      parentRoute: typeof AppCChannelIdRoute
+    }
     '/_app/p/$key/docs/': {
       id: '/_app/p/$key/docs/'
       path: '/docs'
@@ -570,6 +665,18 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
+interface AppCChannelIdRouteChildren {
+  AppCChannelIdTThreadIdRoute: typeof AppCChannelIdTThreadIdRoute
+}
+
+const AppCChannelIdRouteChildren: AppCChannelIdRouteChildren = {
+  AppCChannelIdTThreadIdRoute: AppCChannelIdTThreadIdRoute,
+}
+
+const AppCChannelIdRouteWithChildren = AppCChannelIdRoute._addFileChildren(
+  AppCChannelIdRouteChildren,
+)
+
 interface AppPKeyRouteChildren {
   AppPKeyBoardRoute: typeof AppPKeyBoardRoute
   AppPKeyCalendarRoute: typeof AppPKeyCalendarRoute
@@ -596,7 +703,11 @@ const AppPKeyRouteWithChildren =
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppMyTasksRoute: typeof AppMyTasksRoute
+  AppSavedRoute: typeof AppSavedRoute
+  AppThreadsRoute: typeof AppThreadsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCChannelIdRoute: typeof AppCChannelIdRouteWithChildren
+  AppDmUserIdRoute: typeof AppDmUserIdRoute
   AppDocsDocIdRoute: typeof AppDocsDocIdRoute
   AppPKeyRoute: typeof AppPKeyRouteWithChildren
   AppSettingsProfileRoute: typeof AppSettingsProfileRoute
@@ -607,7 +718,11 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppMyTasksRoute: AppMyTasksRoute,
+  AppSavedRoute: AppSavedRoute,
+  AppThreadsRoute: AppThreadsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCChannelIdRoute: AppCChannelIdRouteWithChildren,
+  AppDmUserIdRoute: AppDmUserIdRoute,
   AppDocsDocIdRoute: AppDocsDocIdRoute,
   AppPKeyRoute: AppPKeyRouteWithChildren,
   AppSettingsProfileRoute: AppSettingsProfileRoute,

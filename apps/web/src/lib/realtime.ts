@@ -7,6 +7,7 @@ import { useEffect, useSyncExternalStore } from "react"
 import { Effect, Layer, Stream } from "effect"
 import { RpcClient, RpcSerialization } from "effect/rpc"
 import { Socket } from "effect/socket"
+import { chatKeys, messageChangeKeys } from "./chat.ts"
 import { keys } from "./queries.ts"
 
 const MAX_BACKOFF_MS = 30_000
@@ -140,10 +141,15 @@ export const usePresence = (
   )
 }
 
+/** Tells the server this viewer is (or stopped) typing in `scope`; the server expires it on its own. */
+export const sendTyping = (scope: string, typing: boolean) => {
+  const focusEntityId = presenceSlots.get(scope)?.focusEntityId ?? null
+  live?.updatePresence(scope, focusEntityId, typing)
+}
 // --- Live connection --------------------------------------------------------
 
 interface LiveHandle {
-  updatePresence: (scope: string, focusEntityId: EntityId | null) => void
+  updatePresence: (scope: string, focusEntityId: EntityId | null, typing?: boolean) => void
 }
 
 let live: LiveHandle | null = null
@@ -189,6 +195,17 @@ export const invalidationsFor = (event: DomainEvent): ReadonlyArray<QueryKey> =>
         ["backlinks"],
         ["entity-refs"],
       ]
+    case "ChannelChanged":
+      return [
+        chatKeys.channels,
+        chatKeys.browse,
+        chatKeys.channel(event.channelId),
+        ["chat", "admin"],
+      ]
+    case "MessageChanged":
+      return messageChangeKeys(event.channelId)
+    case "ReadStateChanged":
+      return [chatKeys.channels, chatKeys.threads, ["chat", "thread"]]
   }
 }
 
@@ -305,9 +322,13 @@ const connectOnce = (
   Effect.gen(function* () {
     const client = yield* RpcClient.make(RealtimeRpcs)
     const handle: LiveHandle = {
-      updatePresence: (scope, focusEntityId) => {
+      updatePresence: (scope, focusEntityId, typing) => {
         void Effect.runPromise(
-          client["presence.update"]({ scope, focusEntityId }).pipe(Effect.ignore),
+          client["presence.update"]({
+            scope,
+            focusEntityId,
+            ...(typing === undefined ? {} : { typing }),
+          }).pipe(Effect.ignore),
         )
       },
     }

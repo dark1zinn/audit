@@ -22,6 +22,7 @@ import type { Me } from "@audit/domain/identity/schema"
 import { projectsQuery } from "../lib/queries.ts"
 import { ErrorMessage } from "./feedback.tsx"
 import { ProjectCreateDialog } from "./project-create-dialog.tsx"
+import { ChatNav } from "./chat/sidebar.tsx"
 
 const navLinkClass =
   "flex items-center rounded-md px-3 py-2 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -199,6 +200,7 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
             </>
           )}
         </nav>
+        <ChatNav meId={me.userId} />
         <ProjectsNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
