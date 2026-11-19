@@ -1,2 +1,16 @@
 # Nix environment
 .direnv
+
+# Dependencies and build output
+node_modules
+dist
+*.tsbuildinfo
+coverage
+
+# Local configuration and data
+.env
+.env.*
+!.env.example
+/data
+playwright-report
+test-results

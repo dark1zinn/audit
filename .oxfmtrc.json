@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "semi": false,
+  "ignorePatterns": ["packages/db/drizzle/**", "apps/web/src/routeTree.gen.ts", "bun.lock"]
+}

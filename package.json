@@ -1,0 +1,25 @@
+{
+  "name": "audit",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "typecheck": "effect-tsgo tsc -p tsconfig.json",
+    "lint": "oxlint",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@changesets/cli": "3.0.3",
+    "@effect/tsgo": "0.70.0",
+    "@types/bun": "1.4.4",
+    "oxfmt": "0.79.0",
+    "oxlint": "1.94.0",
+    "typescript": "7.0.2"
+  }
+}
