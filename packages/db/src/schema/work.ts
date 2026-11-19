@@ -42,10 +42,10 @@ export const notificationKinds = [
 export const boards = pgTable(
   "boards",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     projectId: uuid("project_id")
       .notNull()
-      .references(() => projects.id),
+      .references(() => projects.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     position: text("position").notNull(),
   },
@@ -74,16 +74,16 @@ export const boardColumns = pgTable(
 export const tasks = pgTable(
   "tasks",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     boardId: uuid("board_id")
       .notNull()
-      .references(() => boards.id),
+      .references(() => boards.id, { onDelete: "cascade" }),
     columnId: uuid("column_id")
       .notNull()
-      .references(() => boardColumns.id),
+      .references(() => boardColumns.id, { onDelete: "cascade" }),
     projectId: uuid("project_id")
       .notNull()
-      .references(() => projects.id),
+      .references(() => projects.id, { onDelete: "cascade" }),
     number: integer("number").notNull(),
     position: text("position").notNull(),
     priority: text("priority").notNull().$type<(typeof taskPriorities)[number]>().default("none"),
@@ -158,7 +158,7 @@ export const taskLabels = pgTable(
 export const comments = pgTable(
   "comments",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     targetId: uuid("target_id")
       .notNull()
       .references(() => entities.id, { onDelete: "cascade" }),
@@ -168,7 +168,9 @@ export const comments = pgTable(
     anchor: jsonb("anchor").$type<Record<string, unknown>>(),
     body: jsonb("body").notNull().$type<Record<string, unknown>>(),
     bodyText: text("body_text").notNull().default(""),
-    parentCommentId: uuid("parent_comment_id").references((): AnyPgColumn => comments.id),
+    parentCommentId: uuid("parent_comment_id").references((): AnyPgColumn => comments.id, {
+      onDelete: "cascade",
+    }),
     resolvedAt: timestamptz("resolved_at"),
     editedAt: timestamptz("edited_at"),
   },

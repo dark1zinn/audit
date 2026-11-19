@@ -46,8 +46,10 @@ export const entities = pgTable(
   {
     id: id(),
     type: text("type").notNull().$type<(typeof entityTypes)[number]>(),
-    projectId: uuid("project_id").references((): AnyPgColumn => entities.id),
-    parentId: uuid("parent_id").references((): AnyPgColumn => entities.id),
+    projectId: uuid("project_id").references((): AnyPgColumn => entities.id, {
+      onDelete: "cascade",
+    }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => entities.id, { onDelete: "cascade" }),
     title: text("title").notNull().default(""),
     searchText: text("search_text").notNull().default(""),
     restricted: boolean("restricted").notNull().default(false),
@@ -176,11 +178,13 @@ type ResourceRoleColumn = (typeof resourceRoles)[number]
 export const teams = pgTable(
   "teams",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     kind: text("kind").notNull().$type<"workspace" | "project">(),
-    projectId: uuid("project_id").references((): AnyPgColumn => projects.id),
+    projectId: uuid("project_id").references((): AnyPgColumn => projects.id, {
+      onDelete: "cascade",
+    }),
   },
   (t) => [
     check("teams_kind_check", inList(t.kind, ["workspace", "project"])),
@@ -210,7 +214,7 @@ export const teamMembers = pgTable(
 export const projects = pgTable(
   "projects",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     key: text("key").notNull().unique(),
     name: text("name").notNull(),
     leadUserId: uuid("lead_user_id").references(() => user.id),
@@ -326,7 +330,7 @@ export const watchers = pgTable(
 export const files = pgTable(
   "files",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     storageKey: text("storage_key").notNull(),
     thumbnailKey: text("thumbnail_key"),
     name: text("name").notNull(),

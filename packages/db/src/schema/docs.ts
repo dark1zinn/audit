@@ -30,8 +30,10 @@ export const docs = pgTable(
   "docs",
   {
     id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
-    parentDocId: uuid("parent_doc_id").references((): AnyPgColumn => docs.id),
-    projectId: uuid("project_id").references(() => projects.id),
+    parentDocId: uuid("parent_doc_id").references((): AnyPgColumn => docs.id, {
+      onDelete: "cascade",
+    }),
+    projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
     position: text("position").notNull(),
     icon: text("icon"),
     ydoc: bytea("ydoc"),

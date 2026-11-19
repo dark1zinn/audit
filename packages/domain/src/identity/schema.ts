@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { InviteId, ProjectId, TeamId, UserId } from "../ids.ts"
+import { FileId, InviteId, ProjectId, TeamId, UserId } from "../ids.ts"
 import { ResourceRole, TeamRole, WorkspaceRole } from "../roles.ts"
 
 export const Locale = Schema.Literals(["en", "pt-BR", "es"])
@@ -70,6 +70,12 @@ export const WorkspaceSettings = Schema.Struct({
   ),
   uploadLimitMb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 1024 })),
   storageQuotaGb: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 10_000 })),
+  /** Soft-deleted files are purged after this many days. */
+  softDeleteRetentionDays: Schema.optionalKey(
+    Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 3650 })),
+  ),
+  /** Rejects sign-up passwords that appear in known breach corpora. */
+  breachedPasswordCheck: Schema.optionalKey(Schema.Boolean),
 })
 export type WorkspaceSettings = typeof WorkspaceSettings.Type
 
@@ -85,6 +91,8 @@ export const defaultWorkspaceSettings: WorkspaceSettings = {
   messageRetentionDays: null,
   uploadLimitMb: 50,
   storageQuotaGb: 10,
+  softDeleteRetentionDays: 30,
+  breachedPasswordCheck: false,
 }
 
 /** Whether the workspace 2FA policy applies to someone with this role. */
@@ -93,6 +101,7 @@ export const policyRequiresTwoFactor = (policy: TwoFactorPolicy, role: Workspace
 
 export const Workspace = Schema.Struct({
   name: Schema.String,
+  logoFileId: Schema.optionalKey(FileId),
   settings: WorkspaceSettings,
   signupPolicy: SignupPolicy,
   searchConfig: Schema.Literals(["english", "portuguese", "spanish"]),

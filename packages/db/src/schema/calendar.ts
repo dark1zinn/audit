@@ -28,8 +28,8 @@ export const principalTypes = ["user", "team"] as const
 export const calendars = pgTable(
   "calendars",
   {
-    id: entityPk().references(() => entities.id),
-    projectId: uuid("project_id").references(() => projects.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
+    projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
     ownerUserId: uuid("owner_user_id").references(() => user.id, { onDelete: "cascade" }),
     teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
@@ -53,7 +53,7 @@ export const calendars = pgTable(
 export const events = pgTable(
   "events",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     calendarId: uuid("calendar_id")
       .notNull()
       .references(() => calendars.id, { onDelete: "cascade" }),

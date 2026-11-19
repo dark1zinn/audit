@@ -1,0 +1,664 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "210cc7ca-01f9-4be2-ad58-476763c24af3",
+  "prevIds": [
+    "6c9829c6-a29e-4afb-8e7e-ead655fec0e2"
+  ],
+  "footprints": [
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "entities"
+      ],
+      "writes": [
+        "s|fk|public.entities.entities_project_id_entities_id_fkey",
+        "n|fk|public.entities.entities_project_id_entities_id_fkey",
+        "e|fk|public.entities.entities_project_id_entities_id_fkey",
+        "n|con|public.entities.entities_project_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.entities.project_id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "21912ce6ed501323"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "entities"
+      ],
+      "writes": [
+        "s|fk|public.entities.entities_parent_id_entities_id_fkey",
+        "n|fk|public.entities.entities_parent_id_entities_id_fkey",
+        "e|fk|public.entities.entities_parent_id_entities_id_fkey",
+        "n|con|public.entities.entities_parent_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.entities.parent_id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "908d55507a4f0a58"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "files"
+      ],
+      "writes": [
+        "s|fk|public.files.files_id_entities_id_fkey",
+        "n|fk|public.files.files_id_entities_id_fkey",
+        "e|fk|public.files.files_id_entities_id_fkey",
+        "n|con|public.files.files_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.files",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.files.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "61ba7ce3c12af392"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "projects"
+      ],
+      "writes": [
+        "s|fk|public.projects.projects_id_entities_id_fkey",
+        "n|fk|public.projects.projects_id_entities_id_fkey",
+        "e|fk|public.projects.projects_id_entities_id_fkey",
+        "n|con|public.projects.projects_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.projects.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "bf7a195582bb64c8"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "teams"
+      ],
+      "writes": [
+        "s|fk|public.teams.teams_id_entities_id_fkey",
+        "n|fk|public.teams.teams_id_entities_id_fkey",
+        "e|fk|public.teams.teams_id_entities_id_fkey",
+        "n|con|public.teams.teams_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.teams",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.teams.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "70e36848eda72c9c"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "teams"
+      ],
+      "writes": [
+        "s|fk|public.teams.teams_project_id_projects_id_fkey",
+        "n|fk|public.teams.teams_project_id_projects_id_fkey",
+        "e|fk|public.teams.teams_project_id_projects_id_fkey",
+        "n|con|public.teams.teams_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.teams",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.teams.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ],
+      "sqlHash": "f5017a023e827b08"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "boards"
+      ],
+      "writes": [
+        "s|fk|public.boards.boards_id_entities_id_fkey",
+        "n|fk|public.boards.boards_id_entities_id_fkey",
+        "e|fk|public.boards.boards_id_entities_id_fkey",
+        "n|con|public.boards.boards_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.boards",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.boards.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "f13e9951870a347e"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "boards"
+      ],
+      "writes": [
+        "s|fk|public.boards.boards_project_id_projects_id_fkey",
+        "n|fk|public.boards.boards_project_id_projects_id_fkey",
+        "e|fk|public.boards.boards_project_id_projects_id_fkey",
+        "n|con|public.boards.boards_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.boards",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.boards.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ],
+      "sqlHash": "1c4224db8e756153"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "comments"
+      ],
+      "writes": [
+        "s|fk|public.comments.comments_id_entities_id_fkey",
+        "n|fk|public.comments.comments_id_entities_id_fkey",
+        "e|fk|public.comments.comments_id_entities_id_fkey",
+        "n|con|public.comments.comments_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.comments",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.comments.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "8e5966a057991a03"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "comments"
+      ],
+      "writes": [
+        "s|fk|public.comments.comments_parent_comment_id_comments_id_fkey",
+        "n|fk|public.comments.comments_parent_comment_id_comments_id_fkey",
+        "e|fk|public.comments.comments_parent_comment_id_comments_id_fkey",
+        "n|con|public.comments.comments_parent_comment_id_comments_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.comments",
+        "n|sch|public",
+        "n|tbl|public.comments",
+        "n|sch|public",
+        "n|col|public.comments.parent_comment_id",
+        "n|col|public.comments.id",
+        "e|uniqueness|public.comments.id"
+      ],
+      "sqlHash": "05cd6f71beb82ea3"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "tasks"
+      ],
+      "writes": [
+        "s|fk|public.tasks.tasks_id_entities_id_fkey",
+        "n|fk|public.tasks.tasks_id_entities_id_fkey",
+        "e|fk|public.tasks.tasks_id_entities_id_fkey",
+        "n|con|public.tasks.tasks_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.tasks",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.tasks.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "f0e0f4cee8383e4a"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "tasks"
+      ],
+      "writes": [
+        "s|fk|public.tasks.tasks_board_id_boards_id_fkey",
+        "n|fk|public.tasks.tasks_board_id_boards_id_fkey",
+        "e|fk|public.tasks.tasks_board_id_boards_id_fkey",
+        "n|con|public.tasks.tasks_board_id_boards_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.tasks",
+        "n|sch|public",
+        "n|tbl|public.boards",
+        "n|sch|public",
+        "n|col|public.tasks.board_id",
+        "n|col|public.boards.id",
+        "e|uniqueness|public.boards.id"
+      ],
+      "sqlHash": "d4d846ed5404552e"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "tasks"
+      ],
+      "writes": [
+        "s|fk|public.tasks.tasks_column_id_board_columns_id_fkey",
+        "n|fk|public.tasks.tasks_column_id_board_columns_id_fkey",
+        "e|fk|public.tasks.tasks_column_id_board_columns_id_fkey",
+        "n|con|public.tasks.tasks_column_id_board_columns_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.tasks",
+        "n|sch|public",
+        "n|tbl|public.board_columns",
+        "n|sch|public",
+        "n|col|public.tasks.column_id",
+        "n|col|public.board_columns.id",
+        "e|uniqueness|public.board_columns.id"
+      ],
+      "sqlHash": "155b6c5f836b7483"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "tasks"
+      ],
+      "writes": [
+        "s|fk|public.tasks.tasks_project_id_projects_id_fkey",
+        "n|fk|public.tasks.tasks_project_id_projects_id_fkey",
+        "e|fk|public.tasks.tasks_project_id_projects_id_fkey",
+        "n|con|public.tasks.tasks_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.tasks",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.tasks.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ],
+      "sqlHash": "35183a62c0b2a711"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "docs"
+      ],
+      "writes": [
+        "s|fk|public.docs.docs_parent_doc_id_docs_id_fkey",
+        "n|fk|public.docs.docs_parent_doc_id_docs_id_fkey",
+        "e|fk|public.docs.docs_parent_doc_id_docs_id_fkey",
+        "n|con|public.docs.docs_parent_doc_id_docs_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.docs",
+        "n|sch|public",
+        "n|tbl|public.docs",
+        "n|sch|public",
+        "n|col|public.docs.parent_doc_id",
+        "n|col|public.docs.id",
+        "e|uniqueness|public.docs.id"
+      ],
+      "sqlHash": "c18cb62b659a4680"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "docs"
+      ],
+      "writes": [
+        "s|fk|public.docs.docs_project_id_projects_id_fkey",
+        "n|fk|public.docs.docs_project_id_projects_id_fkey",
+        "e|fk|public.docs.docs_project_id_projects_id_fkey",
+        "n|con|public.docs.docs_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.docs",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.docs.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ],
+      "sqlHash": "00f34592fc2e697e"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channels"
+      ],
+      "writes": [
+        "s|fk|public.channels.channels_id_entities_id_fkey",
+        "n|fk|public.channels.channels_id_entities_id_fkey",
+        "e|fk|public.channels.channels_id_entities_id_fkey",
+        "n|con|public.channels.channels_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channels",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.channels.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "92846773c3b24a3a"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_id_entities_id_fkey",
+        "n|fk|public.messages.messages_id_entities_id_fkey",
+        "e|fk|public.messages.messages_id_entities_id_fkey",
+        "n|con|public.messages.messages_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.messages.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "6e315d1ad75f4685"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "calendars"
+      ],
+      "writes": [
+        "s|fk|public.calendars.calendars_id_entities_id_fkey",
+        "n|fk|public.calendars.calendars_id_entities_id_fkey",
+        "e|fk|public.calendars.calendars_id_entities_id_fkey",
+        "n|con|public.calendars.calendars_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.calendars",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.calendars.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "0091c058976ac568"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "calendars"
+      ],
+      "writes": [
+        "s|fk|public.calendars.calendars_project_id_projects_id_fkey",
+        "n|fk|public.calendars.calendars_project_id_projects_id_fkey",
+        "e|fk|public.calendars.calendars_project_id_projects_id_fkey",
+        "n|con|public.calendars.calendars_project_id_projects_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.calendars",
+        "n|sch|public",
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|col|public.calendars.project_id",
+        "n|col|public.projects.id",
+        "e|uniqueness|public.projects.id"
+      ],
+      "sqlHash": "e7095607ea54a0e5"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "events"
+      ],
+      "writes": [
+        "s|fk|public.events.events_id_entities_id_fkey",
+        "n|fk|public.events.events_id_entities_id_fkey",
+        "e|fk|public.events.events_id_entities_id_fkey",
+        "n|con|public.events.events_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.events",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.events.id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ],
+      "sqlHash": "d4f33cb01455733d"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"entities\",\"entities_project_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"entities\",\"entities_parent_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"files\",\"files_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"projects\",\"projects_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"teams\",\"teams_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"teams\",\"teams_project_id_projects_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"boards\",\"boards_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"boards\",\"boards_project_id_projects_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"comments\",\"comments_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"comments\",\"comments_parent_comment_id_comments_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"tasks\",\"tasks_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"tasks\",\"tasks_board_id_boards_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"tasks\",\"tasks_column_id_board_columns_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"tasks\",\"tasks_project_id_projects_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"docs\",\"docs_parent_doc_id_docs_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"docs\",\"docs_project_id_projects_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"channels\",\"channels_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"messages\",\"messages_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"calendars\",\"calendars_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"calendars\",\"calendars_project_id_projects_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"events\",\"events_id_entities_id_fkey\"]",
+      "set": {
+        "onDelete": "CASCADE"
+      }
+    }
+  ]
+}

@@ -29,7 +29,7 @@ export const notifyLevels = ["all", "mentions", "none"] as const
 export const channels = pgTable(
   "channels",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     kind: text("kind").notNull().$type<(typeof channelKinds)[number]>(),
     projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
     name: text("name").notNull().default(""),
@@ -83,7 +83,7 @@ export const channelMembers = pgTable(
 export const messages = pgTable(
   "messages",
   {
-    id: entityPk().references(() => entities.id),
+    id: entityPk().references(() => entities.id, { onDelete: "cascade" }),
     channelId: uuid("channel_id")
       .notNull()
       .references(() => channels.id, { onDelete: "cascade" }),
