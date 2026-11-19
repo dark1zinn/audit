@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import { Context, Schema } from "effect"
 import { UserId } from "./ids.ts"
 import { WorkspaceRole } from "./roles.ts"
 
@@ -24,6 +24,11 @@ export type SystemActor = typeof SystemActor.Type
 
 export const Actor = Schema.Union([UserActor, AiActor, SystemActor])
 export type Actor = typeof Actor.Type
+
+/** Who is acting in the current request, job or AI tool call. */
+export class CurrentActor extends Context.Service<CurrentActor, Actor>()(
+  "@audit/domain/CurrentActor",
+) {}
 
 /** The user whose permissions apply, or `null` for the system. */
 export const actorUserId = (actor: Actor): UserId | null => {
