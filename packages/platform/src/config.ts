@@ -24,6 +24,9 @@ export interface AppConfigShape {
   readonly setupToken: Option.Option<Redacted.Redacted>
   readonly smtpUrl: Option.Option<Redacted.Redacted>
   readonly mailFrom: Option.Option<string>
+  readonly vapidPublicKey: Option.Option<string>
+  readonly vapidPrivateKey: Option.Option<Redacted.Redacted>
+  readonly vapidSubject: Option.Option<string>
   readonly storage: StorageConfig
   readonly dataDir: string
   readonly trustProxy: boolean
@@ -70,6 +73,9 @@ export const readAppConfig = Effect.gen(function* () {
     setupToken: yield* Config.Redacted("SETUP_TOKEN").pipe(Config.option),
     smtpUrl: yield* Config.Redacted("SMTP_URL").pipe(Config.option),
     mailFrom: yield* Config.String("MAIL_FROM").pipe(Config.option),
+    vapidPublicKey: yield* Config.String("VAPID_PUBLIC_KEY").pipe(Config.option),
+    vapidPrivateKey: yield* Config.Redacted("VAPID_PRIVATE_KEY").pipe(Config.option),
+    vapidSubject: yield* Config.String("VAPID_SUBJECT").pipe(Config.option),
     storage: yield* readStorage(dataDir),
     dataDir,
     trustProxy: yield* Config.Boolean("TRUST_PROXY").pipe(Config.withDefault(false)),

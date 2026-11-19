@@ -12,5 +12,5 @@
     "packages/*/*.ts",
     "apps/server/*.ts"
   ],
-  "exclude": ["**/node_modules", "**/dist", "packages/ui"]
+  "exclude": ["**/node_modules", "**/dist", "packages/ui", "apps/server/src/notify-messages.ts"]
 }

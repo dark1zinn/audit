@@ -3,6 +3,9 @@
  */
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
+import { type MailMessage, Mailer } from "@audit/core/notifications/mail"
+import { type PostFn, PushTransport } from "@audit/core/notifications/push"
+import { vapidConfig } from "@audit/core/notifications/vapid"
 import type { AppConfigShape } from "@audit/platform/config"
 import { AppConfig } from "@audit/platform/config"
 import { BlobStore } from "@audit/platform/blob-store"
@@ -26,6 +29,9 @@ export const testConfig = (databaseUrl: string, dataDir: string): AppConfigShape
   setupToken: Option.none(),
   smtpUrl: Option.none(),
   mailFrom: Option.none(),
+  vapidPublicKey: Option.none(),
+  vapidPrivateKey: Option.none(),
+  vapidSubject: Option.none(),
   storage: { driver: "local", root: join(dataDir, "files") },
   dataDir,
   trustProxy: false,
@@ -44,17 +50,36 @@ export type TestServices =
   | BlobStore
   | Secrets
   | Jobs
+  | Mailer
+  | PushTransport
+
+export interface PushRequest {
+  readonly url: string
+  readonly init: RequestInit
+}
+
+/** The stubbed push service: records every request and answers with `status`. */
+export interface PushStub {
+  readonly requests: PushRequest[]
+  status: number
+}
 
 export interface TestDatabase {
   readonly runtime: ManagedRuntime.ManagedRuntime<TestServices, never>
   readonly jobs: RecordingJobs
   readonly config: AppConfigShape
+  /** Every email the app sent, in order. */
+  readonly mail: MailMessage[]
+  readonly push: PushStub
   /** Login-role connection for fixtures and assertions that bypass the app role. */
   readonly superuser: SQL
   readonly drop: () => Promise<void>
 }
 
-/** Creates and migrates a database, returning a runtime with the core services over it. */
+/**
+ * Creates and migrates a database, returning a runtime with the core services over it. Web push
+ * uses the real lazily generated VAPID keys; only the HTTP boundary is stubbed.
+ */
 export const makeTestDatabase = async (): Promise<TestDatabase> => {
   const name = `audit_test_${Bun.randomUUIDv7().replaceAll("-", "")}`
   const admin = new SQL(adminUrl)
@@ -67,6 +92,12 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
   const dataDir = await mkdtemp(join(tmpdir(), "audit-test-"))
   const config = testConfig(databaseUrl, dataDir)
   const jobs = recordingJobs()
+  const mail: MailMessage[] = []
+  const push: PushStub = { requests: [], status: 201 }
+  const post: PostFn = async (url, init) => {
+    push.requests.push({ url, init })
+    return new Response(null, { status: push.status })
+  }
   const base = Layer.mergeAll(
     Layer.succeed(AppConfig, config),
     databaseLayer({ url: config.databaseUrl, role: APP_ROLE, maxConnections: 4 }),
@@ -77,6 +108,8 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
     BlobStore.layer,
     Secrets.layer,
     jobs.layer,
+    Mailer.recording(mail),
+    PushTransport.live(vapidConfig, post).pipe(Layer.provide(Secrets.layer)),
   ).pipe(Layer.provideMerge(base))
   const runtime = ManagedRuntime.make(layer.pipe(Layer.orDie))
 
@@ -85,6 +118,8 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
     runtime,
     jobs,
     config,
+    mail,
+    push,
     superuser,
     drop: async () => {
       await runtime.dispose()
