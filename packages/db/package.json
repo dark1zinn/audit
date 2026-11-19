@@ -1,0 +1,24 @@
+{
+  "name": "@audit/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./schema": "./src/schema/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "generate": "bunx --bun drizzle-kit generate",
+    "generate:custom": "bunx --bun drizzle-kit generate --custom --name",
+    "check": "bunx --bun drizzle-kit check"
+  },
+  "dependencies": {
+    "@effect/sql-pg": "4.1.4",
+    "drizzle-orm": "1.0.0-rc.5",
+    "effect": "4.1.4"
+  },
+  "devDependencies": {
+    "drizzle-kit": "1.0.0-rc.5"
+  }
+}
