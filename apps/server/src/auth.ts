@@ -25,9 +25,11 @@ export interface AuthOptions {
   readonly trail: TrailWriter
 }
 
-const requestMeta = (request: Request | undefined) => ({
-  ...(request?.headers.get("user-agent") ? { userAgent: request.headers.get("user-agent")! } : {}),
-})
+const requestMeta = (request: Request | undefined) => {
+  const userAgent = request?.headers.get("user-agent")
+  const ip = request?.headers.get(CLIENT_IP_HEADER)
+  return { ...(userAgent ? { userAgent } : {}), ...(ip ? { ip } : {}) }
+}
 
 /** Paths whose successful calls change the account's security and are audited. */
 const auditedPaths: Record<string, string> = {
