@@ -15,6 +15,7 @@ export const containerTypes: ReadonlyArray<ContainerType> = [
   "board",
   "channel",
   "calendar",
+  "space",
 ]
 const containers = sql.raw(containerTypes.map((t) => `'${t}'`).join(", "))
 

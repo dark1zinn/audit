@@ -10,9 +10,11 @@
   "dependencies": {
     "@audit/db": "workspace:*",
     "@audit/domain": "workspace:*",
+    "@audit/editor": "workspace:*",
     "@audit/platform": "workspace:*",
     "drizzle-orm": "1.0.0-rc.5",
-    "effect": "4.1.4"
+    "effect": "4.1.4",
+    "file-type": "22.3.0"
   },
   "devDependencies": {
     "@audit/testkit": "workspace:*"

@@ -15,7 +15,7 @@ export interface NotifyInput {
   readonly userId: UserId
   readonly kind: NotificationKind
   readonly entityId: EntityId
-  readonly projectId: ProjectId
+  readonly projectId: ProjectId | null
   readonly actorId: UserId | null
   readonly payload: Record<string, unknown>
   /** Notifications with the same group key are folded together in the inbox. */
