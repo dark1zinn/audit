@@ -22,6 +22,7 @@ import type { Me } from "@audit/domain/identity/schema"
 import { projectsQuery } from "../lib/queries.ts"
 import { ErrorMessage } from "./feedback.tsx"
 import { ProjectCreateDialog } from "./project-create-dialog.tsx"
+import { InboxNavLink } from "./inbox/nav-link.tsx"
 import { ChatNav } from "./chat/sidebar.tsx"
 
 const navLinkClass =
@@ -164,14 +165,21 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
           <NavLink to="/">
             <Trans>Home</Trans>
           </NavLink>
+          <InboxNavLink />
           <NavLink to="/docs">
             <Trans>Docs</Trans>
+          </NavLink>
+          <NavLink to="/calendar">
+            <Trans>Calendar</Trans>
           </NavLink>
           <NavLink to="/settings/profile">
             <Trans>Profile</Trans>
           </NavLink>
           <NavLink to="/settings/security">
             <Trans>Security</Trans>
+          </NavLink>
+          <NavLink to="/settings/notifications">
+            <Trans>Notifications</Trans>
           </NavLink>
           {admin && (
             <>

@@ -1,12 +1,12 @@
 import { useLingui, Trans } from "@lingui/react/macro"
-import { useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router"
 import { useState, type FormEvent } from "react"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { AuthLayout } from "../components/auth-layout.tsx"
 import { formValue, TextField } from "../components/form.tsx"
 import { authClient } from "../lib/auth.ts"
-import { keys, sessionQuery } from "../lib/queries.ts"
+import { keys, sessionQuery, setupStatusQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async ({ context }) => {
@@ -25,6 +25,7 @@ function LoginPage() {
   const [step, setStep] = useState<Step>("credentials")
   const [pending, setPending] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
+  const setup = useQuery(setupStatusQuery)
 
   const finish = async () => {
     queryClient.removeQueries({ queryKey: keys.session })
@@ -150,6 +151,13 @@ function LoginPage() {
       >
         <Trans>Sign in with a passkey</Trans>
       </Button>
+      {setup.data?.emailEnabled === true && (
+        <p className="text-center text-sm">
+          <Link to="/forgot-password" className="underline underline-offset-4">
+            <Trans>Forgot password?</Trans>
+          </Link>
+        </p>
+      )}
     </AuthLayout>
   )
 }

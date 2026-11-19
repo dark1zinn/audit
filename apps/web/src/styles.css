@@ -28,3 +28,10 @@
   user-select: none;
   pointer-events: none;
 }
+
+/* Schedule-X keeps event times on one line, which clips them in narrow week columns. The theme
+   is loaded after this file, so the selector is more specific than the theme's. */
+.sx__time-grid-event .sx__time-grid-event-time {
+  white-space: normal;
+  line-height: 1.2;
+}

@@ -31,6 +31,11 @@ export const keys = {
   calendar: (projectId: ProjectId, query: CalendarQuery) => ["calendar", projectId, query] as const,
   task: (taskId: TaskId) => ["task", taskId] as const,
   savedFilters: (projectId: ProjectId) => ["saved-filters", projectId] as const,
+  calendars: ["calendars"] as const,
+  calendarEvents: (from: string, to: string) => ["calendar-events", from, to] as const,
+  notifications: ["notifications"] as const,
+  notificationList: (archived: boolean) => ["notifications", "list", archived] as const,
+  notificationSettings: ["notifications", "settings"] as const,
 }
 
 /** The signed-in user, or `null` when there is no session. Never throws on 401. */
@@ -149,6 +154,17 @@ export const calendarQuery = (projectId: ProjectId, query: CalendarQuery) =>
     queryFn: () => callApi((api) => api.tasks.calendar({ params: { projectId }, query })),
   })
 
+export const calendarsQuery = queryOptions({
+  queryKey: keys.calendars,
+  queryFn: () => callApi((api) => api.calendar.calendars()),
+})
+
+export const calendarEventsQuery = (from: string, to: string) =>
+  queryOptions({
+    queryKey: keys.calendarEvents(from, to),
+    queryFn: () => callApi((api) => api.calendar.events({ query: { from, to } })),
+  })
+
 export const myTasksQuery = queryOptions({
   queryKey: keys.mine,
   queryFn: () => callApi((api) => api.tasks.mine()),
@@ -159,3 +175,18 @@ export const taskDetailQuery = (taskId: TaskId) =>
     queryKey: keys.task(taskId),
     queryFn: () => callApi((api) => api.tasks.get({ params: { taskId } })),
   })
+
+/** Inbox entries: unarchived by default, or the archived list. Realtime invalidates the prefix. */
+export const notificationsQuery = (archived: boolean) =>
+  queryOptions({
+    queryKey: keys.notificationList(archived),
+    queryFn: () =>
+      callApi((api) =>
+        api.notifications.list({ query: { archived: archived ? "true" : "false" } }),
+      ),
+  })
+
+export const notificationSettingsQuery = queryOptions({
+  queryKey: keys.notificationSettings,
+  queryFn: () => callApi((api) => api.notifications.settings()),
+})

@@ -22,6 +22,11 @@ msgstr "{0, plural, one {# assignee} other {# assignees}}"
 msgid "{0, plural, one {# event checked.} other {# events checked.}}"
 msgstr "{0, plural, one {# event checked.} other {# events checked.}}"
 
+#. placeholder {0}: group.items.length
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "{0, plural, one {# notification} other {# notifications}}"
+msgstr "{0, plural, one {# notification} other {# notifications}}"
+
 #. placeholder {0}: project.openTaskCount
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "{0, plural, one {# open task} other {# open tasks}}"
@@ -94,11 +99,37 @@ msgstr "{0} was dropped in {1}."
 msgid "{0} was dropped without moving."
 msgstr "{0} was dropped without moving."
 
+#. placeholder {0}: kindText(kind)
+#. placeholder {1}: channel.label
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "{0}: {1}"
+msgstr "{0}: {1}"
+
 #. placeholder {0}: task.subtasksDone
 #. placeholder {1}: task.subtaskCount
 #: ../../apps/web/src/components/list/task-rows.tsx
 msgid "{0}/{1} subtasks"
 msgstr "{0}/{1} subtasks"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.invite_accepted"
+msgstr "{actor} accepted their invitation"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.task_assigned"
+msgstr "{actor} assigned you {title}"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.mention"
+msgstr "{actor} mentioned you on {title}"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.task_unassigned"
+msgstr "{actor} removed you from {title}"
 
 #: ../../apps/web/src/components/chat/typing.ts
 msgid "{first} and {second} are typing…"
@@ -107,6 +138,34 @@ msgstr "{first} and {second} are typing…"
 #: ../../apps/web/src/components/chat/typing.ts
 msgid "{first} is typing…"
 msgstr "{first} is typing…"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "{imported, plural, one {# event imported.} other {# events imported.}}"
+msgstr "{imported, plural, one {# event imported.} other {# events imported.}}"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.task_due_soon"
+msgstr "{title} is due soon"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.task_overdue"
+msgstr "{title} is overdue"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.doc_review_due"
+msgstr "{title} needs review"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.task_changed"
+msgstr "{title} was updated"
+
+#: ../../apps/web/src/components/inbox/nav-link.tsx
+msgid "{unread} unread"
+msgstr "{unread} unread"
 
 #: ../../apps/web/src/components/docs/nodes.tsx
 msgid "@restricted"
@@ -120,9 +179,25 @@ msgstr "@unavailable"
 msgid "1 day"
 msgstr "1 day"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "1 day before"
+msgstr "1 day before"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "1 hour before"
+msgstr "1 hour before"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "1 week"
 msgstr "1 week"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "1 week before"
+msgstr "1 week before"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "15 minutes before"
+msgstr "15 minutes before"
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
 msgid "2 to 6 letters. Stored in uppercase."
@@ -136,6 +211,14 @@ msgstr "3 days"
 msgid "30 days"
 msgstr "30 days"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "30 minutes before"
+msgstr "30 minutes before"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "5 minutes before"
+msgstr "5 minutes before"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "6-digit code"
 msgstr "6-digit code"
@@ -147,6 +230,19 @@ msgstr "A tamper-evident record of changes in this workspace."
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Accent color"
 msgstr "Accent color"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Accept"
+msgstr "Accept"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "email.invite_body"
+msgstr "Accept your invitation: {url}"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Accepted"
+msgstr "Accepted"
 
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 msgid "Access"
@@ -173,7 +269,9 @@ msgstr "Action"
 msgid "Actions"
 msgstr "Actions"
 
+#. placeholder {0}: calendar.name
 #. placeholder {0}: member.displayName
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Actions for {0}"
 msgstr "Actions for {0}"
@@ -242,15 +340,32 @@ msgstr "Add passkey"
 msgid "Add subtask"
 msgstr "Add subtask"
 
+#. placeholder {0}: calendar.name
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Adds the events from an .ics file to {0}."
+msgstr "Adds the events from an .ics file to {0}."
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Admin"
 msgstr "Admin"
 
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "All"
+msgstr "All"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "All day"
+msgstr "All day"
+
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "All messages"
 msgstr "All messages"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "All occurrences"
+msgstr "All occurrences"
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "All projects"
@@ -291,6 +406,10 @@ msgstr "Anyone"
 msgid "Anyone with the link"
 msgstr "Anyone with the link"
 
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Anyone with this link can read your calendars. Regenerate it to revoke access."
+msgstr "Anyone with this link can read your calendars. Regenerate it to revoke access."
+
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Appearance"
 msgstr "Appearance"
@@ -299,6 +418,7 @@ msgstr "Appearance"
 msgid "Apply choices"
 msgstr "Apply choices"
 
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Archive"
@@ -319,6 +439,7 @@ msgstr "Archive project {0}?"
 
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
+#: ../../apps/web/src/routes/_app.inbox.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Archived"
 msgstr "Archived"
@@ -364,6 +485,10 @@ msgstr "Assignees"
 msgid "At least 10 characters."
 msgstr "At least 10 characters."
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "At start"
+msgstr "At start"
+
 #: ../../apps/web/src/components/chat/composer.tsx
 msgid "Attach file"
 msgstr "Attach file"
@@ -371,6 +496,10 @@ msgstr "Attach file"
 #: ../../apps/web/src/components/docs/nodes.tsx
 msgid "Attachment"
 msgstr "Attachment"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Attendees"
+msgstr "Attendees"
 
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
@@ -384,6 +513,10 @@ msgstr "Audit log retention (days)"
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "B"
 msgstr "B"
+
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "Back to sign in"
+msgstr "Back to sign in"
 
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Backlinks"
@@ -453,9 +586,20 @@ msgstr "Bullet list"
 msgid "Bulleted list"
 msgstr "Bulleted list"
 
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+#: ../../apps/web/src/routes/_app.calendar.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Calendar"
 msgstr "Calendar"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Calendar settings"
+msgstr "Calendar settings"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Calendars"
+msgstr "Calendars"
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Callout"
@@ -463,6 +607,9 @@ msgstr "Callout"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/components/chat/composer.tsx
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
@@ -527,6 +674,10 @@ msgstr "Chat"
 msgid "Check the highlighted fields and try again."
 msgstr "Check the highlighted fields and try again."
 
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "Check your email"
+msgstr "Check your email"
+
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "Checklist"
@@ -552,6 +703,10 @@ msgstr "Choose a person"
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Choose a project"
 msgstr "Choose a project"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Choose what you hear about and where it reaches you."
+msgstr "Choose what you hear about and where it reaches you."
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 msgid "Clear"
@@ -589,6 +744,15 @@ msgstr "Collapse"
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 msgid "Color"
 msgstr "Color"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Colour"
+msgstr "Colour"
+
+#. placeholder {0}: calendar.name
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Colour of {0}"
+msgstr "Colour of {0}"
 
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Column"
@@ -656,9 +820,14 @@ msgstr "Confirm delete"
 msgid "Copied"
 msgstr "Copied"
 
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Copy"
 msgstr "Copy"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Could not copy the link"
+msgstr "Could not copy the link"
 
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "Could not create the task."
@@ -676,6 +845,14 @@ msgstr "Could not move the task."
 msgid "Could not save the view."
 msgstr "Could not save the view."
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Could not turn off push notifications. Try again."
+msgstr "Could not turn off push notifications. Try again."
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Could not turn on push notifications. Try again."
+msgstr "Could not turn on push notifications. Try again."
+
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "Could not update the task."
 msgstr "Could not update the task."
@@ -691,6 +868,10 @@ msgstr "Create account and join"
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Create board"
 msgstr "Create board"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Create calendar"
+msgstr "Create calendar"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Create channel"
@@ -749,11 +930,23 @@ msgstr "Current password"
 msgid "Current version"
 msgstr "Current version"
 
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Custom rule"
+msgstr "Custom rule"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Daily"
+msgstr "Daily"
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Dark"
 msgstr "Dark"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Days of the week"
+msgstr "Days of the week"
 
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Deactivate"
@@ -766,6 +959,14 @@ msgstr "Deactivated"
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "Decision record"
 msgstr "Decision record"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Decline"
+msgstr "Decline"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Declined"
+msgstr "Declined"
 
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Default language"
@@ -784,6 +985,8 @@ msgid "Defaults and policies for everyone in the workspace."
 msgstr "Defaults and policies for everyone in the workspace."
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
@@ -793,9 +996,22 @@ msgstr "Defaults and policies for everyone in the workspace."
 msgid "Delete"
 msgstr "Delete"
 
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Delete all occurrences"
+msgstr "Delete all occurrences"
+
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Delete board"
 msgstr "Delete board"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Delete calendar"
+msgstr "Delete calendar"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Delete event"
+msgstr "Delete event"
 
 #: ../../apps/web/src/components/project-settings/lifecycle-section.tsx
 msgid "Delete project"
@@ -809,6 +1025,14 @@ msgstr "Delete project {0}?"
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Delete selected tasks?"
 msgstr "Delete selected tasks?"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Delete this and following"
+msgstr "Delete this and following"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Delete this occurrence"
+msgstr "Delete this occurrence"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "Delete view"
@@ -830,6 +1054,10 @@ msgstr "Deleted the task"
 msgid "Deleting removes the project, its boards and tasks. Type the project key to confirm."
 msgstr "Deleting removes the project, its boards and tasks. Type the project key to confirm."
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Delivery"
+msgstr "Delivery"
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Density"
@@ -839,6 +1067,7 @@ msgstr "Density"
 msgid "Descending"
 msgstr "Descending"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 #: ../../apps/web/src/components/task-panel/description.tsx
 msgid "Description"
@@ -847,6 +1076,10 @@ msgstr "Description"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Devices currently signed in to your account."
 msgstr "Devices currently signed in to your account."
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Direct message"
+msgstr "Direct message"
 
 #: ../../apps/web/src/components/chat/sidebar.tsx
 msgid "Direct messages"
@@ -872,7 +1105,16 @@ msgstr "Display name"
 msgid "Divider"
 msgstr "Divider"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Doc"
+msgstr "Doc"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Doc review due"
+msgstr "Doc review due"
+
 #: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/components/calendar/linked-items.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Docs"
 msgstr "Docs"
@@ -893,6 +1135,10 @@ msgstr "Document title"
 #: ../../apps/web/src/components/docs/docs-page.tsx
 msgid "Documents"
 msgstr "Documents"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Does not repeat"
+msgstr "Does not repeat"
 
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
@@ -962,9 +1208,17 @@ msgstr "Edit comment"
 msgid "Edit description"
 msgstr "Edit description"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Edit event"
+msgstr "Edit event"
+
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "Edit message"
 msgstr "Edit message"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Edit recurring event"
+msgstr "Edit recurring event"
 
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "Edited a comment"
@@ -975,6 +1229,8 @@ msgstr "Edited a comment"
 msgid "Editor"
 msgstr "Editor"
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+#: ../../apps/web/src/routes/forgot-password.tsx
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/login.tsx
 #: ../../apps/web/src/routes/setup.tsx
@@ -984,6 +1240,10 @@ msgstr "Email"
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Email (optional)"
 msgstr "Email (optional)"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Email notifications are unavailable because this server has no mail delivery configured."
+msgstr "Email notifications are unavailable because this server has no mail delivery configured."
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Embed"
@@ -1001,13 +1261,50 @@ msgstr "Embed task"
 msgid "Enabled"
 msgstr "Enabled"
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "End"
+msgstr "End"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "End date"
+msgstr "End date"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "End time"
+msgstr "End time"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Ends"
+msgstr "Ends"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Ends after occurrences"
+msgstr "Ends after occurrences"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Ends on date"
+msgstr "Ends on date"
+
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "Enter a name up to 80 characters."
 msgstr "Enter a name up to 80 characters."
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Enter a title."
+msgstr "Enter a title."
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Enter a valid start and end."
+msgstr "Enter a valid start and end."
+
 #: ../../apps/web/src/routes/login.tsx
 msgid "Enter the 6-digit code from your authenticator app, or a backup code."
 msgstr "Enter the 6-digit code from your authenticator app, or a backup code."
+
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "Enter your email and we will send you a reset link."
+msgstr "Enter your email and we will send you a reset link."
 
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Entity"
@@ -1017,6 +1314,22 @@ msgstr "Entity"
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
 msgid "Estimate"
 msgstr "Estimate"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Event changed"
+msgstr "Event changed"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Event invitation"
+msgstr "Event invitation"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Event reminder"
+msgstr "Event reminder"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Events in a calendar appear for everyone who can see it."
+msgstr "Events in a calendar appear for everyone who can see it."
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Every project in the workspace, including archived and deleted ones."
@@ -1046,11 +1359,20 @@ msgstr "Export HTML"
 msgid "Export Markdown"
 msgstr "Export Markdown"
 
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Feed link"
+msgstr "Feed link"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Feed link copied"
+msgstr "Feed link copied"
+
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "File attachment"
 msgstr "File attachment"
 
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
+#: ../../apps/web/src/routes/_app.inbox.tsx
 msgid "Filter"
 msgstr "Filter"
 
@@ -1074,6 +1396,14 @@ msgstr "Following"
 msgid "for example member.role.changed"
 msgstr "for example member.role.changed"
 
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "Forgot password"
+msgstr "Forgot password"
+
+#: ../../apps/web/src/routes/login.tsx
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "general"
 msgstr "general"
@@ -1082,6 +1412,10 @@ msgstr "general"
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "General"
 msgstr "General"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Generate link"
+msgstr "Generate link"
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Generate new backup codes"
@@ -1147,23 +1481,56 @@ msgstr "How you appear in the workspace."
 msgid "I"
 msgstr "I"
 
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "iCalendar file"
+msgstr "iCalendar file"
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Idle timeout (days)"
 msgstr "Idle timeout (days)"
+
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "If an account exists for that address, a password-reset link is on its way. The link expires soon."
+msgstr "If an account exists for that address, a password-reset link is on its way. The link expires soon."
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Image"
 msgstr "Image"
 
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Import"
+msgstr "Import"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Import .ics"
+msgstr "Import .ics"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Import events"
+msgstr "Import events"
+
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "Import Markdown file"
 msgstr "Import Markdown file"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "In app"
+msgstr "In app"
 
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/project-settings/options.ts
 msgid "In progress"
 msgstr "In progress"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "In-app notifications are always on."
+msgstr "In-app notifications are always on."
+
+#: ../../apps/web/src/components/inbox/nav-link.tsx
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "Inbox"
+msgstr "Inbox"
 
 #: ../../apps/web/src/components/docs/slash-menu.tsx
 msgid "Insert block"
@@ -1172,6 +1539,10 @@ msgstr "Insert block"
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Invite"
 msgstr "Invite"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Invite accepted"
+msgstr "Invite accepted"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Invite link"
@@ -1193,6 +1564,10 @@ msgstr "Invites"
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "Italic"
 msgstr "Italic"
+
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Item type"
+msgstr "Item type"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Join"
@@ -1224,6 +1599,10 @@ msgstr "Join workspace"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Key"
 msgstr "Key"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Keys: j/k move, Enter open, r read or unread, e archive or unarchive."
+msgstr "Keys: j/k move, Enter open, r read or unread, e archive or unarchive."
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
@@ -1281,6 +1660,15 @@ msgstr "Leave the email empty to create a link anyone with it can use."
 msgid "Light"
 msgstr "Light"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Link"
+msgstr "Link"
+
+#. placeholder {0}: candidate.title
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Link {0}"
+msgstr "Link {0}"
+
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Link task"
 msgstr "Link task"
@@ -1288,6 +1676,10 @@ msgstr "Link task"
 #: ../../apps/web/src/components/task-panel/task-panel.tsx
 msgid "Linked from"
 msgstr "Linked from"
+
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Linked items"
+msgstr "Linked items"
 
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "List"
@@ -1300,6 +1692,10 @@ msgstr "Load more"
 #: ../../apps/web/src/components/chat/channel-view.tsx
 msgid "Loading older messages…"
 msgstr "Loading older messages…"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Location"
+msgstr "Location"
 
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
@@ -1329,6 +1725,26 @@ msgstr "Manager"
 msgid "Manual order"
 msgstr "Manual order"
 
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "Mark all read"
+msgstr "Mark all read"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Mark as read"
+msgstr "Mark as read"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Mark as unread"
+msgstr "Mark as unread"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Mark read"
+msgstr "Mark read"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Mark unread"
+msgstr "Mark unread"
+
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Mark verified"
 msgstr "Mark verified"
@@ -1336,6 +1752,10 @@ msgstr "Mark verified"
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Maximum uses"
 msgstr "Maximum uses"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Maybe"
+msgstr "Maybe"
 
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
@@ -1369,6 +1789,10 @@ msgstr "Members"
 msgid "Members can invite others"
 msgstr "Members can invite others"
 
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Mention"
+msgstr "Mention"
+
 #: ../../apps/web/src/components/board/filters-bar.tsx
 msgid "Mentions me"
 msgstr "Mentions me"
@@ -1380,6 +1804,10 @@ msgstr "Mentions only"
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 msgid "Mentions or assigned to me"
 msgstr "Mentions or assigned to me"
+
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "Mentions, assignments, due dates, and replies that concern you."
+msgstr "Mentions, assignments, due dates, and replies that concern you."
 
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "Message"
@@ -1401,6 +1829,10 @@ msgstr "Messages"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Metadata only"
 msgstr "Metadata only"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Monthly"
+msgstr "Monthly"
 
 #. placeholder {0}: card.key
 #. placeholder {0}: doc.title || t`Untitled`
@@ -1473,6 +1905,7 @@ msgid "My tasks"
 msgstr "My tasks"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
 #: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/project-create-dialog.tsx
 #: ../../apps/web/src/components/project-settings/general-section.tsx
@@ -1507,6 +1940,10 @@ msgstr "Nest under previous"
 msgid "Nested."
 msgstr "Nested."
 
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Never ends"
+msgstr "Never ends"
+
 #: ../../apps/web/src/components/chat/sidebar.tsx
 msgid "New"
 msgstr "New"
@@ -1514,6 +1951,11 @@ msgstr "New"
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "New board name"
 msgstr "New board name"
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "New calendar"
+msgstr "New calendar"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "New channel"
@@ -1524,13 +1966,23 @@ msgid "New column name"
 msgstr "New column name"
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
+#: ../../apps/web/src/components/inbox/kind.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "New comment"
 msgstr "New comment"
 
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.comment_added"
+msgstr "New comment on {title}"
+
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 msgid "New document"
 msgstr "New document"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "New event"
+msgstr "New event"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "New invite"
@@ -1548,6 +2000,11 @@ msgstr "New label name"
 msgid "New message"
 msgstr "New message"
 
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.direct_message"
+msgstr "New message from {actor}"
+
 #: ../../apps/web/src/components/chat/channel-view.tsx
 msgid "New messages"
 msgstr "New messages"
@@ -1561,6 +2018,11 @@ msgstr "New password"
 msgid "New project"
 msgstr "New project"
 
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.thread_reply"
+msgstr "New reply from {actor}"
+
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "New subtask title"
 msgstr "New subtask title"
@@ -1572,6 +2034,14 @@ msgstr "New team"
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "No activity yet."
 msgstr "No activity yet."
+
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "No archived notifications."
+msgstr "No archived notifications."
+
+#: ../../apps/web/src/components/calendar/calendar-workspace.tsx
+msgid "No calendars yet. Create one to start adding events."
+msgstr "No calendars yet. Create one to start adding events."
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
@@ -1606,6 +2076,10 @@ msgstr "No longer over a drop target."
 msgid "No matches"
 msgstr "No matches"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "No matching items."
+msgstr "No matching items."
+
 #: ../../apps/web/src/components/chat/channel-view.tsx
 msgid "No messages yet. Say hello."
 msgstr "No messages yet. Say hello."
@@ -1623,6 +2097,10 @@ msgstr "No priority"
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "No relations yet."
 msgstr "No relations yet."
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "No response"
+msgstr "No response"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "No saved view"
@@ -1665,13 +2143,33 @@ msgstr "Nothing"
 msgid "Nothing is pinned yet."
 msgstr "Nothing is pinned yet."
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Nothing linked yet."
+msgstr "Nothing linked yet."
+
 #: ../../apps/web/src/components/docs/backlinks-panel.tsx
 msgid "Nothing links here yet."
 msgstr "Nothing links here yet."
 
+#: ../../apps/web/src/components/inbox/kind.tsx
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Notification"
+msgstr "Notification"
+
+#: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
 msgid "Notifications"
 msgstr "Notifications"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Notifications are blocked for this site. Allow them in your browser settings."
+msgstr "Notifications are blocked for this site. Allow them in your browser settings."
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Number of occurrences"
+msgstr "Number of occurrences"
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
@@ -1683,6 +2181,7 @@ msgstr "Numbered list"
 msgid "Off"
 msgstr "Off"
 
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "On"
@@ -1692,14 +2191,31 @@ msgstr "On"
 msgid "On:"
 msgstr "On:"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "One-time event."
+msgstr "One-time event."
+
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "Only me"
+msgstr "Only me"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Only the occurrence you picked."
+msgstr "Only the occurrence you picked."
+
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 msgid "Only the people and teams listed below can see a restricted project."
 msgstr "Only the people and teams listed below can see a restricted project."
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Open"
 msgstr "Open"
+
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
+msgid "Open {title}"
+msgstr "Open {title}"
 
 #: ../../apps/web/src/routes/_app.index.tsx
 msgid "Open profile"
@@ -1733,10 +2249,15 @@ msgstr "Over a drop target."
 msgid "Over WIP limit"
 msgstr "Over WIP limit"
 
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
 #: ../../apps/web/src/components/project-settings/options.ts
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Owner"
 msgstr "Owner"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Owners and admins can read private channels and direct messages for moderation. Other members see only what they are part of."
+msgstr "Owners and admins can read private channels and direct messages for moderation. Other members see only what they are part of."
 
 #: ../../apps/web/src/routes/__root.tsx
 msgid "Page not found"
@@ -1745,6 +2266,10 @@ msgstr "Page not found"
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 msgid "Parent"
 msgstr "Parent"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Part of a repeating series."
+msgstr "Part of a repeating series."
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Passkey added"
@@ -1905,9 +2430,38 @@ msgstr "Public"
 msgid "Public channels can be found and joined by anyone in the workspace."
 msgstr "Public channels can be found and joined by anyone in the workspace."
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push"
+msgstr "Push"
+
+#. placeholder {0}: settings.timezone
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push and email are held during these hours. Times use your time zone: {0}."
+msgstr "Push and email are held during these hours. Times use your time zone: {0}."
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push notifications are not configured on this server."
+msgstr "Push notifications are not configured on this server."
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push notifications are off for this device."
+msgstr "Push notifications are off for this device."
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push notifications are on for this device."
+msgstr "Push notifications are on for this device."
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Push on this device"
+msgstr "Push on this device"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "QR code for your authenticator app"
 msgstr "QR code for your authenticator app"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Quiet hours"
+msgstr "Quiet hours"
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Quote"
@@ -1921,6 +2475,18 @@ msgstr "React with {emoji}"
 msgid "Reactivate"
 msgstr "Reactivate"
 
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "Read"
+msgstr "Read"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Recurrence rule (RFC 5545)"
+msgstr "Recurrence rule (RFC 5545)"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Regenerate link"
+msgstr "Regenerate link"
+
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Relates to"
 msgstr "Relates to"
@@ -1932,6 +2498,10 @@ msgstr "Relation type"
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Relations"
 msgstr "Relations"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Reminders"
+msgstr "Reminders"
 
 #: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
@@ -1955,6 +2525,10 @@ msgstr "Rename"
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Reopen"
 msgstr "Reopen"
+
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Repeat"
+msgstr "Repeat"
 
 #: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/chat/thread-panel.tsx
@@ -1982,6 +2556,11 @@ msgstr "Reset password"
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reset two-factor"
 msgstr "Reset two-factor"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "email.reset_subject"
+msgstr "Reset your password"
 
 #: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
@@ -2016,6 +2595,7 @@ msgstr "Restored the task"
 msgid "Restricted"
 msgstr "Restricted"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Restricted item"
 msgstr "Restricted item"
@@ -2065,6 +2645,8 @@ msgid "Runbook"
 msgstr "Runbook"
 
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/chat/message-item.tsx
 #: ../../apps/web/src/components/docs/doc-view.tsx
@@ -2077,6 +2659,7 @@ msgstr "Save"
 msgid "Save a message to find it here later."
 msgstr "Save a message to find it here later."
 
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 msgid "Save changes"
 msgstr "Save changes"
@@ -2093,9 +2676,17 @@ msgstr "Save description"
 msgid "Save profile"
 msgstr "Save profile"
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Save quiet hours"
+msgstr "Save quiet hours"
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Save settings"
 msgstr "Save settings"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Save the event first to link tasks and docs."
+msgstr "Save the event first to link tasks and docs."
 
 #: ../../apps/web/src/components/docs/versions-panel.tsx
 msgid "Save version"
@@ -2121,11 +2712,16 @@ msgstr "Saved views"
 msgid "Scan the code with your authenticator app, or enter this key:"
 msgstr "Scan the code with your authenticator app, or enter this key:"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Search docs to link"
+msgstr "Search docs to link"
+
 #: ../../apps/web/src/components/board/filters-bar.tsx
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 msgid "Search tasks"
 msgstr "Search tasks"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Search tasks to link"
 msgstr "Search tasks to link"
@@ -2153,6 +2749,10 @@ msgstr "Select a team."
 msgid "Send"
 msgstr "Send"
 
+#: ../../apps/web/src/routes/forgot-password.tsx
+msgid "Send reset link"
+msgstr "Send reset link"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Seq"
 msgstr "Seq"
@@ -2160,6 +2760,10 @@ msgstr "Seq"
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Session length (days)"
 msgstr "Session length (days)"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Set both a start and an end time, or clear both."
+msgstr "Set both a start and an end time, or clear both."
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Set up two-factor"
@@ -2169,6 +2773,7 @@ msgstr "Set up two-factor"
 msgid "Set up your workspace"
 msgstr "Set up your workspace"
 
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Settings"
 msgstr "Settings"
@@ -2180,6 +2785,15 @@ msgstr "Setup token"
 #: ../../apps/web/src/components/chat/typing.ts
 msgid "Several people are typing…"
 msgstr "Several people are typing…"
+
+#. placeholder {0}: calendar.name
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Show {0}"
+msgstr "Show {0}"
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Show task due dates"
+msgstr "Show task due dates"
 
 #: ../../apps/web/src/routes/login.tsx
 msgid "Sign in"
@@ -2223,6 +2837,7 @@ msgid "Someone else saved a newer version. Choose which version to keep for each
 msgstr "Someone else saved a newer version. Choose which version to keep for each field."
 
 #: ../../apps/web/src/components/feedback.tsx
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
 msgid "Something went wrong. Try again."
 msgstr "Something went wrong. Try again."
 
@@ -2238,6 +2853,10 @@ msgstr "Sort by"
 msgid "Sort descending"
 msgstr "Sort descending"
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Start"
+msgstr "Start"
+
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "Start conversation"
 msgstr "Start conversation"
@@ -2251,6 +2870,14 @@ msgstr "Start date"
 msgid "Start from a blank page or a template, or import a Markdown file."
 msgstr "Start from a blank page or a template, or import a Markdown file."
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Start time"
+msgstr "Start time"
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Starts"
+msgstr "Starts"
+
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
@@ -2261,6 +2888,10 @@ msgstr "Status"
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Stored on this device only."
 msgstr "Stored on this device only."
+
+#: ../../apps/web/src/components/calendar/calendar-list.tsx
+msgid "Subscribe in another app"
+msgstr "Subscribe in another app"
 
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Subtasks"
@@ -2280,6 +2911,22 @@ msgstr "Table"
 msgid "Target column"
 msgstr "Target column"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Task"
+msgstr "Task"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Task assigned"
+msgstr "Task assigned"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Task changed"
+msgstr "Task changed"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Task due soon"
+msgstr "Task due soon"
+
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Task key"
 msgstr "Task key"
@@ -2292,10 +2939,19 @@ msgstr "Task not found."
 msgid "Task number"
 msgstr "Task number"
 
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Task overdue"
+msgstr "Task overdue"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Task unassigned"
+msgstr "Task unassigned"
+
 #: ../../apps/web/src/components/docs/nodes.tsx
 msgid "Task unavailable"
 msgstr "Task unavailable"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Tasks"
 msgstr "Tasks"
@@ -2312,6 +2968,11 @@ msgstr "Team"
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Team role"
 msgstr "Team role"
+
+#. placeholder {0}: team.name
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Team: {0}"
+msgstr "Team: {0}"
 
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
@@ -2338,6 +2999,18 @@ msgstr "That item no longer exists."
 msgid "The bulk action failed. Nothing was changed."
 msgstr "The bulk action failed. Nothing was changed."
 
+#: ../../apps/web/src/components/calendar/calendar-dialogs.tsx
+msgid "The calendar and all of its events will be removed."
+msgstr "The calendar and all of its events will be removed."
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "The end cannot be before the start."
+msgstr "The end cannot be before the start."
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "The end date cannot be before the start date."
+msgstr "The end date cannot be before the start date."
+
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "The file could not be uploaded."
 msgstr "The file could not be uploaded."
@@ -2349,6 +3022,10 @@ msgstr "The key prefixes task numbers, for example ABC-12."
 #: ../../apps/web/src/components/chat/dialogs.tsx
 msgid "The message stays in the channel and links to the new task."
 msgstr "The message stays in the channel and links to the new task."
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "The occurrence you picked and every later one."
+msgstr "The occurrence you picked and every later one."
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "The passkey could not be added."
@@ -2370,10 +3047,31 @@ msgstr "The project becomes editable again."
 msgid "The project disappears from every list except this page. Type the project key to confirm."
 msgstr "The project disappears from every list except this page. Type the project key to confirm."
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "The repeat end date is before the start."
+msgstr "The repeat end date is before the start."
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "The whole series."
+msgstr "The whole series."
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Theme"
 msgstr "Theme"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "This action cannot be undone."
+msgstr "This action cannot be undone."
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "This and following"
+msgstr "This and following"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "This browser does not support push notifications."
+msgstr "This browser does not support push notifications."
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "This device"
@@ -2386,6 +3084,10 @@ msgstr "This link is incomplete. Ask an admin for a new password-reset link."
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "This message was deleted."
 msgstr "This message was deleted."
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "This occurrence"
+msgstr "This occurrence"
 
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "This project does not exist or you cannot see it."
@@ -2415,19 +3117,26 @@ msgstr "This task changed while you were editing"
 msgid "This workspace requires two-factor authentication. Set it up below to continue using audit."
 msgstr "This workspace requires two-factor authentication. Set it up below to continue using audit."
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
 #: ../../apps/web/src/components/chat/thread-panel.tsx
 msgid "Thread"
 msgstr "Thread"
+
+#: ../../apps/web/src/components/inbox/kind.tsx
+msgid "Thread reply"
+msgstr "Thread reply"
 
 #: ../../apps/web/src/components/chat/saved-threads.tsx
 #: ../../apps/web/src/components/chat/sidebar.tsx
 msgid "Threads"
 msgstr "Threads"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
 msgid "Time zone"
 msgstr "Time zone"
 
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
 #: ../../apps/web/src/components/chat/dialogs.tsx
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
@@ -2454,9 +3163,17 @@ msgstr "Too many attempts. Wait a moment and try again."
 msgid "Topic"
 msgstr "Topic"
 
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Turn off push on this device"
+msgstr "Turn off push on this device"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Turn off two-factor"
 msgstr "Turn off two-factor"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Turn on push on this device"
+msgstr "Turn on push on this device"
 
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Two-factor"
@@ -2492,6 +3209,7 @@ msgstr "Type"
 msgid "Type {0} to confirm"
 msgstr "Type {0} to confirm"
 
+#: ../../apps/web/src/components/inbox/inbox-list.tsx
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Unarchive"
 msgstr "Unarchive"
@@ -2517,6 +3235,14 @@ msgstr "Unknown device"
 msgid "Unknown user"
 msgstr "Unknown user"
 
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Unlink"
+msgstr "Unlink"
+
+#: ../../apps/web/src/components/calendar/linked-items.tsx
+msgid "Unlink {title}"
+msgstr "Unlink {title}"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Unnamed passkey"
 msgstr "Unnamed passkey"
@@ -2525,6 +3251,10 @@ msgstr "Unnamed passkey"
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "Unpin"
 msgstr "Unpin"
+
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "Unread"
+msgstr "Unread"
 
 #: ../../apps/web/src/components/docs/doc-tree.tsx
 #: ../../apps/web/src/components/docs/new-doc-dialog.tsx
@@ -2552,6 +3282,11 @@ msgstr "Urgent"
 #: ../../apps/web/src/routes/setup.tsx
 msgid "Use the setup token printed by the server when it first started."
 msgstr "Use the setup token printed by the server when it first started."
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "email.reset_body"
+msgstr "Use this link to reset your password: {url}"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Used"
@@ -2618,9 +3353,21 @@ msgstr "Watch"
 msgid "Watching"
 msgstr "Watching"
 
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Weekly"
+msgstr "Weekly"
+
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "When"
 msgstr "When"
+
+#: ../../apps/web/src/components/calendar/confirm-dialogs.tsx
+msgid "Which occurrences should this change apply to?"
+msgstr "Which occurrences should this change apply to?"
+
+#: ../../apps/web/src/routes/_app.settings.notifications.tsx
+msgid "Who can read what"
+msgstr "Who can read what"
 
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 msgid "Who can see and manage this project."
@@ -2665,6 +3412,14 @@ msgstr "Workspace settings saved"
 msgid "Workspace teams"
 msgstr "Workspace teams"
 
+#: ../../apps/web/src/components/calendar/recurrence-fields.tsx
+msgid "Yearly"
+msgstr "Yearly"
+
+#: ../../apps/web/src/routes/_app.inbox.tsx
+msgid "You are all caught up."
+msgstr "You are all caught up."
+
 #: ../../apps/web/src/components/chat/saved-threads.tsx
 msgid "You are not following any threads yet."
 msgstr "You are not following any threads yet."
@@ -2701,9 +3456,28 @@ msgstr "You cannot open this document."
 msgid "You do not have permission to do that."
 msgstr "You do not have permission to do that."
 
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "notify.fallback"
+msgstr "You have a new notification"
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "email.footer"
+msgstr "You receive this email because email notifications are on. Change this in your settings."
+
+#. js-lingui-explicit-id
+#: ../../apps/server/src/notify-messages.ts
+msgid "email.invite_subject"
+msgstr "You were invited to {workspace}"
+
 #: ../../apps/web/src/routes/_app.index.tsx
 msgid "Your account"
 msgstr "Your account"
+
+#: ../../apps/web/src/routes/_app.calendar.tsx
+msgid "Your events, shared calendars and task due dates."
+msgstr "Your events, shared calendars and task due dates."
 
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/setup.tsx
@@ -2713,6 +3487,10 @@ msgstr "Your name"
 #: ../../apps/web/src/routes/reset-password.tsx
 msgid "Your password was changed. You can now sign in with it."
 msgstr "Your password was changed. You can now sign in with it."
+
+#: ../../apps/web/src/components/calendar/event-dialog.tsx
+msgid "Your response"
+msgstr "Your response"
 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "Your session has ended. Sign in again."

@@ -206,6 +206,10 @@ export const invalidationsFor = (event: DomainEvent): ReadonlyArray<QueryKey> =>
       return messageChangeKeys(event.channelId)
     case "ReadStateChanged":
       return [chatKeys.channels, chatKeys.threads, ["chat", "thread"]]
+    case "EventChanged":
+      return [["calendar-events"]]
+    case "CalendarChanged":
+      return [["calendars"], ["calendar-events"]]
   }
 }
 
@@ -300,6 +304,48 @@ const applyMessage = (queryClient: QueryClient, message: RealtimeMessage) => {
   }
 }
 
+/**
+ * Query families the per-event handlers above patch. A fresh subscription (no resume) does not
+ * replay events committed before it, so the cache is refetched across all of them.
+ */
+const LIVE_KEY_FAMILIES: ReadonlyArray<QueryKey> = [
+  keys.session,
+  keys.members,
+  keys.invites,
+  keys.teams,
+  keys.workspace,
+  keys.projects,
+  keys.adminProjects,
+  ["project"],
+  ["access"],
+  ["boards"],
+  ["board"],
+  ["tasks"],
+  ["task"],
+  ["calendar"],
+  ["calendars"],
+  ["calendar-events"],
+  ["mine"],
+  ["labels"],
+  ["notifications"],
+  ["docs"],
+  ["doc"],
+  ["doc-versions"],
+  ["doc-comments"],
+  ["backlinks"],
+  ["entity-refs"],
+  chatKeys.channels,
+  chatKeys.browse,
+  ["chat", "channel"],
+  ["chat", "admin"],
+  chatKeys.threads,
+  ["chat", "thread"],
+]
+
+const invalidateLiveKeys = (queryClient: QueryClient) => {
+  for (const key of LIVE_KEY_FAMILIES) void queryClient.invalidateQueries({ queryKey: key })
+}
+
 // --- Connection loop --------------------------------------------------------
 
 interface Resume {
@@ -344,7 +390,11 @@ const connectOnce = (
     }).pipe(
       Stream.runForEach((message) =>
         Effect.sync(() => {
-          if (message._tag === "Hello") onConnected(message.connectionId)
+          if (message._tag === "Hello") {
+            onConnected(message.connectionId)
+            // A resumed connection replays what it missed, or the server sends a `Resync`.
+            if (resume === undefined) invalidateLiveKeys(queryClient)
+          }
           if (message._tag === "Event") onSeq(message.seq)
           if (message._tag !== "Hello") applyMessage(queryClient, message)
         }),

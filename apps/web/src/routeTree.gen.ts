@@ -10,11 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
+import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
+import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppMyTasksRouteImport } from './routes/_app.my-tasks'
 import { Route as AppSavedRouteImport } from './routes/_app.saved'
 import { Route as AppThreadsRouteImport } from './routes/_app.threads'
@@ -31,6 +34,7 @@ import { Route as AppDmUserIdRouteImport } from './routes/_app.dm.$userId'
 import { Route as AppDocsIndexRouteImport } from './routes/_app.docs.index'
 import { Route as AppDocsDocIdRouteImport } from './routes/_app.docs.$docId'
 import { Route as AppPKeyRouteImport } from './routes/_app.p.$key'
+import { Route as AppSettingsNotificationsRouteImport } from './routes/_app.settings.notifications'
 import { Route as AppSettingsProfileRouteImport } from './routes/_app.settings.profile'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app.settings.security'
 import { Route as AppPKeyBoardRouteImport } from './routes/_app.p.$key.board'
@@ -44,6 +48,11 @@ import { Route as AppPKeyTNumberRouteImport } from './routes/_app.p.$key.t.$numb
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -69,6 +78,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMyTasksRoute = AppMyTasksRouteImport.update({
@@ -151,6 +170,12 @@ const AppPKeyRoute = AppPKeyRouteImport.update({
   path: '/p/$key',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsNotificationsRoute =
+  AppSettingsNotificationsRouteImport.update({
+    id: '/settings/notifications',
+    path: '/settings/notifications',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppSettingsProfileRoute = AppSettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
@@ -204,10 +229,13 @@ const AppPKeyTNumberRoute = AppPKeyTNumberRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/admin': typeof AppAdminRouteWithChildren
+  '/calendar': typeof AppCalendarRoute
+  '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
   '/saved': typeof AppSavedRoute
   '/threads': typeof AppThreadsRoute
@@ -222,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
+  '/settings/notifications': typeof AppSettingsNotificationsRoute
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin/': typeof AppAdminIndexRoute
@@ -236,9 +265,12 @@ export interface FileRoutesByFullPath {
   '/p/$key/docs/': typeof AppPKeyDocsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/calendar': typeof AppCalendarRoute
+  '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
   '/saved': typeof AppSavedRoute
   '/threads': typeof AppThreadsRoute
@@ -254,6 +286,7 @@ export interface FileRoutesByTo {
   '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
+  '/settings/notifications': typeof AppSettingsNotificationsRoute
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin': typeof AppAdminIndexRoute
@@ -270,10 +303,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
+  '/_app/calendar': typeof AppCalendarRoute
+  '/_app/inbox': typeof AppInboxRoute
   '/_app/my-tasks': typeof AppMyTasksRoute
   '/_app/saved': typeof AppSavedRoute
   '/_app/threads': typeof AppThreadsRoute
@@ -289,6 +325,7 @@ export interface FileRoutesById {
   '/_app/dm/$userId': typeof AppDmUserIdRoute
   '/_app/docs/$docId': typeof AppDocsDocIdRoute
   '/_app/p/$key': typeof AppPKeyRouteWithChildren
+  '/_app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/_app/settings/profile': typeof AppSettingsProfileRoute
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/_app/admin/': typeof AppAdminIndexRoute
@@ -306,10 +343,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/setup'
     | '/admin'
+    | '/calendar'
+    | '/inbox'
     | '/my-tasks'
     | '/saved'
     | '/threads'
@@ -324,6 +364,7 @@ export interface FileRouteTypes {
     | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
+    | '/settings/notifications'
     | '/settings/profile'
     | '/settings/security'
     | '/admin/'
@@ -338,9 +379,12 @@ export interface FileRouteTypes {
     | '/p/$key/docs/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/calendar'
+    | '/inbox'
     | '/my-tasks'
     | '/saved'
     | '/threads'
@@ -356,6 +400,7 @@ export interface FileRouteTypes {
     | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
+    | '/settings/notifications'
     | '/settings/profile'
     | '/settings/security'
     | '/admin'
@@ -371,10 +416,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/setup'
     | '/_app/admin'
+    | '/_app/calendar'
+    | '/_app/inbox'
     | '/_app/my-tasks'
     | '/_app/saved'
     | '/_app/threads'
@@ -390,6 +438,7 @@ export interface FileRouteTypes {
     | '/_app/dm/$userId'
     | '/_app/docs/$docId'
     | '/_app/p/$key'
+    | '/_app/settings/notifications'
     | '/_app/settings/profile'
     | '/_app/settings/security'
     | '/_app/admin/'
@@ -406,6 +455,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
@@ -419,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -454,6 +511,20 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/calendar': {
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inbox': {
+      id: '/_app/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/my-tasks': {
@@ -566,6 +637,13 @@ declare module '@tanstack/react-router' {
       path: '/p/$key'
       fullPath: '/p/$key'
       preLoaderRoute: typeof AppPKeyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/notifications': {
+      id: '/_app/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AppSettingsNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings/profile': {
@@ -702,6 +780,8 @@ const AppPKeyRouteWithChildren =
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
+  AppCalendarRoute: typeof AppCalendarRoute
+  AppInboxRoute: typeof AppInboxRoute
   AppMyTasksRoute: typeof AppMyTasksRoute
   AppSavedRoute: typeof AppSavedRoute
   AppThreadsRoute: typeof AppThreadsRoute
@@ -710,6 +790,7 @@ interface AppRouteChildren {
   AppDmUserIdRoute: typeof AppDmUserIdRoute
   AppDocsDocIdRoute: typeof AppDocsDocIdRoute
   AppPKeyRoute: typeof AppPKeyRouteWithChildren
+  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
   AppSettingsProfileRoute: typeof AppSettingsProfileRoute
   AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
   AppDocsIndexRoute: typeof AppDocsIndexRoute
@@ -717,6 +798,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
+  AppCalendarRoute: AppCalendarRoute,
+  AppInboxRoute: AppInboxRoute,
   AppMyTasksRoute: AppMyTasksRoute,
   AppSavedRoute: AppSavedRoute,
   AppThreadsRoute: AppThreadsRoute,
@@ -725,6 +808,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDmUserIdRoute: AppDmUserIdRoute,
   AppDocsDocIdRoute: AppDocsDocIdRoute,
   AppPKeyRoute: AppPKeyRouteWithChildren,
+  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
   AppSettingsProfileRoute: AppSettingsProfileRoute,
   AppSettingsSecurityRoute: AppSettingsSecurityRoute,
   AppDocsIndexRoute: AppDocsIndexRoute,
@@ -734,6 +818,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,

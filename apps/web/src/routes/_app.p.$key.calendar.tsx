@@ -19,7 +19,6 @@ function CalendarPage() {
 }
 
 function CalendarView({ project }: { readonly project: ProjectSummary }) {
-  const { key } = Route.useParams()
   const { me } = Route.useRouteContext()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
@@ -38,8 +37,8 @@ function CalendarView({ project }: { readonly project: ProjectSummary }) {
       />
       <ProjectCalendar
         projectId={project.id}
-        projectKey={key}
         timezone={me.timezone}
+        userId={me.userId}
         filter={search}
       />
     </div>
