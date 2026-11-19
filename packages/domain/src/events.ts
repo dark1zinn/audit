@@ -62,7 +62,10 @@ export const SubscribeInput = Schema.Struct({
   resume: Schema.optionalKey(Schema.Struct({ connectionId: Schema.String, lastSeq: Schema.Int })),
 })
 
+export type SubscribeInput = typeof SubscribeInput.Type
+
 export const Hello = Schema.TaggedStruct("Hello", { connectionId: Schema.String })
+export type Hello = typeof Hello.Type
 
 export class RealtimeRpcs extends RpcGroup.make(
   Rpc.make("realtime.subscribe", {
