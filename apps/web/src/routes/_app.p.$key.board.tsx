@@ -2,6 +2,7 @@ import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useCallback, useMemo, useState } from "react"
+import type { ListTasksQuery } from "@audit/domain/tasks/schema"
 import type { BoardId, ColumnId, TaskId } from "@audit/domain/ids"
 import type { ProjectSummary } from "@audit/domain/projects/schema"
 import type { TaskCard as TaskCardModel } from "@audit/domain/tasks/schema"
@@ -20,6 +21,7 @@ import { useCreateTask, useMoveTask } from "../components/board/board-mutations.
 import { FiltersBar } from "../components/board/filters-bar.tsx"
 import { useBoardShortcuts, useReducedMotion } from "../components/board/hooks.ts"
 import { SavedFilters } from "../components/board/saved-filters.tsx"
+import { NewTaskDialog } from "../components/board/new-task-dialog.tsx"
 import { initials } from "../components/board/task-card.tsx"
 import { TaskQuickEdit, type QuickEditMode } from "../components/board/task-quick-edit.tsx"
 import { ErrorMessage, LoadingRows } from "../components/feedback.tsx"
@@ -27,8 +29,17 @@ import { useMe } from "../components/use-me.ts"
 import { boardViewQuery, labelsQuery, membersQuery, projectsQuery } from "../lib/queries.ts"
 import { usePresence, useRealtimeScopes } from "../lib/realtime.ts"
 
+/** Filters plus `new=task`, a one-shot request to open the new-task entry in the first column. */
+type BoardRouteSearch = ListTasksQuery & { readonly new?: "task" }
+
+/** Drops the one-shot `new` request so a refresh does not reopen the entry. */
+const withoutNewRequest = ({ new: _request, ...rest }: BoardRouteSearch): ListTasksQuery => rest
+
 export const Route = createFileRoute("/_app/p/$key/board")({
-  validateSearch: validateBoardSearch,
+  validateSearch: (search: Record<string, unknown>): BoardRouteSearch => ({
+    ...validateBoardSearch(search),
+    ...(search["new"] === "task" ? { new: "task" as const } : {}),
+  }),
   component: BoardPage,
 })
 
@@ -55,7 +66,7 @@ interface BoardScreenProps {
 function BoardScreen({ project, boardId }: BoardScreenProps) {
   const { t } = useLingui()
   const navigate = Route.useNavigate()
-  const query = Route.useSearch()
+  const { new: newRequest, ...query } = Route.useSearch()
   const me = useMe()
   const reduced = useReducedMotion()
   const scope = `project:${project.key}`
@@ -221,6 +232,14 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
           onClose={() => setQuick(null)}
         />
       ) : null}
+      <NewTaskDialog
+        open={newRequest === "task"}
+        columns={board.columns}
+        onOpenChange={(open) => {
+          if (!open) void navigate({ search: withoutNewRequest, replace: true })
+        }}
+        onCreate={(title, columnId) => create.mutate({ title, columnId: columnId as ColumnId })}
+      />
     </div>
   )
 }

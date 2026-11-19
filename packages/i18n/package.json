@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./detect": "./src/detect.ts",
     "./catalogs": "./src/catalogs.ts",
+    "./pseudo": "./src/locales/pseudo/messages.ts",
     "./server": "./src/server.ts"
   },
   "scripts": {

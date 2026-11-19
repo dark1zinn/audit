@@ -26,7 +26,6 @@ import { messageChangeKeys } from "../../lib/chat.ts"
 import { ErrorMessage } from "../feedback.tsx"
 import { Composer } from "./composer.tsx"
 import { MessageBody } from "./message-body.tsx"
-import type { MentionCandidate } from "./mention-suggest.ts"
 
 export const REACTION_EMOJIS = ["👍", "❤️", "🎉", "👀", "😂", "🙏"] as const
 
@@ -35,7 +34,6 @@ interface MessageItemProps {
   readonly channelId: ChannelId
   readonly meId: string
   readonly canPin: boolean
-  readonly candidates: ReadonlyArray<MentionCandidate>
   readonly onOpenThread?: (messageId: MessageId) => void
   readonly onCreateTask?: (message: Message) => void
 }
@@ -46,7 +44,6 @@ export function MessageItem({
   channelId,
   meId,
   canPin,
-  candidates,
   onOpenThread,
   onCreateTask,
 }: MessageItemProps) {
@@ -111,7 +108,6 @@ export function MessageItem({
         <div className="mt-1">
           <Composer
             channelId={channelId}
-            candidates={candidates}
             placeholder={t`Edit message`}
             submitLabel={t`Save`}
             initial={message.body as RichDoc}

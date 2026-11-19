@@ -14,19 +14,28 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppMyTasksRouteImport } from './routes/_app.my-tasks'
 import { Route as AppSavedRouteImport } from './routes/_app.saved'
+import { Route as AppSearchRouteImport } from './routes/_app.search'
 import { Route as AppThreadsRouteImport } from './routes/_app.threads'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
+import { Route as AppAdminAccessRouteImport } from './routes/_app.admin.access'
 import { Route as AppAdminAuditRouteImport } from './routes/_app.admin.audit'
+import { Route as AppAdminBrandingRouteImport } from './routes/_app.admin.branding'
+import { Route as AppAdminEmailRouteImport } from './routes/_app.admin.email'
 import { Route as AppAdminInvitesRouteImport } from './routes/_app.admin.invites'
+import { Route as AppAdminMaintenanceRouteImport } from './routes/_app.admin.maintenance'
 import { Route as AppAdminMembersRouteImport } from './routes/_app.admin.members'
 import { Route as AppAdminProjectsRouteImport } from './routes/_app.admin.projects'
+import { Route as AppAdminRetentionRouteImport } from './routes/_app.admin.retention'
+import { Route as AppAdminSecurityRouteImport } from './routes/_app.admin.security'
+import { Route as AppAdminStorageRouteImport } from './routes/_app.admin.storage'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app.admin.teams'
 import { Route as AppAdminWorkspaceRouteImport } from './routes/_app.admin.workspace'
 import { Route as AppCChannelIdRouteImport } from './routes/_app.c.$channelId'
@@ -35,8 +44,10 @@ import { Route as AppDocsIndexRouteImport } from './routes/_app.docs.index'
 import { Route as AppDocsDocIdRouteImport } from './routes/_app.docs.$docId'
 import { Route as AppPKeyRouteImport } from './routes/_app.p.$key'
 import { Route as AppSettingsNotificationsRouteImport } from './routes/_app.settings.notifications'
+import { Route as AppSettingsPrivacyRouteImport } from './routes/_app.settings.privacy'
 import { Route as AppSettingsProfileRouteImport } from './routes/_app.settings.profile'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app.settings.security'
+import { Route as AppAdminChannelsChannelIdRouteImport } from './routes/_app.admin.channels.$channelId'
 import { Route as AppPKeyBoardRouteImport } from './routes/_app.p.$key.board'
 import { Route as AppPKeyCalendarRouteImport } from './routes/_app.p.$key.calendar'
 import { Route as AppPKeyListRouteImport } from './routes/_app.p.$key.list'
@@ -70,6 +81,11 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -100,6 +116,11 @@ const AppSavedRoute = AppSavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppThreadsRoute = AppThreadsRouteImport.update({
   id: '/threads',
   path: '/threads',
@@ -115,14 +136,34 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminAccessRoute = AppAdminAccessRouteImport.update({
+  id: '/access',
+  path: '/access',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminAuditRoute = AppAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminBrandingRoute = AppAdminBrandingRouteImport.update({
+  id: '/branding',
+  path: '/branding',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminEmailRoute = AppAdminEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminInvitesRoute = AppAdminInvitesRouteImport.update({
   id: '/invites',
   path: '/invites',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminMaintenanceRoute = AppAdminMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminMembersRoute = AppAdminMembersRouteImport.update({
@@ -133,6 +174,21 @@ const AppAdminMembersRoute = AppAdminMembersRouteImport.update({
 const AppAdminProjectsRoute = AppAdminProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminRetentionRoute = AppAdminRetentionRouteImport.update({
+  id: '/retention',
+  path: '/retention',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminSecurityRoute = AppAdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminStorageRoute = AppAdminStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminTeamsRoute = AppAdminTeamsRouteImport.update({
@@ -176,6 +232,11 @@ const AppSettingsNotificationsRoute =
     path: '/settings/notifications',
     getParentRoute: () => AppRoute,
   } as any)
+const AppSettingsPrivacyRoute = AppSettingsPrivacyRouteImport.update({
+  id: '/settings/privacy',
+  path: '/settings/privacy',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsProfileRoute = AppSettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
@@ -186,6 +247,12 @@ const AppSettingsSecurityRoute = AppSettingsSecurityRouteImport.update({
   path: '/settings/security',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminChannelsChannelIdRoute =
+  AppAdminChannelsChannelIdRouteImport.update({
+    id: '/channels/$channelId',
+    path: '/channels/$channelId',
+    getParentRoute: () => AppAdminRoute,
+  } as any)
 const AppPKeyBoardRoute = AppPKeyBoardRouteImport.update({
   id: '/board',
   path: '/board',
@@ -233,17 +300,26 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/signup': typeof SignupRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
   '/saved': typeof AppSavedRoute
+  '/search': typeof AppSearchRoute
   '/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
+  '/admin/access': typeof AppAdminAccessRoute
   '/admin/audit': typeof AppAdminAuditRoute
+  '/admin/branding': typeof AppAdminBrandingRoute
+  '/admin/email': typeof AppAdminEmailRoute
   '/admin/invites': typeof AppAdminInvitesRoute
+  '/admin/maintenance': typeof AppAdminMaintenanceRoute
   '/admin/members': typeof AppAdminMembersRoute
   '/admin/projects': typeof AppAdminProjectsRoute
+  '/admin/retention': typeof AppAdminRetentionRoute
+  '/admin/security': typeof AppAdminSecurityRoute
+  '/admin/storage': typeof AppAdminStorageRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
   '/c/$channelId': typeof AppCChannelIdRouteWithChildren
@@ -251,10 +327,12 @@ export interface FileRoutesByFullPath {
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/settings/privacy': typeof AppSettingsPrivacyRoute
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin/': typeof AppAdminIndexRoute
   '/docs/': typeof AppDocsIndexRoute
+  '/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
@@ -269,17 +347,26 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/signup': typeof SignupRoute
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
   '/saved': typeof AppSavedRoute
+  '/search': typeof AppSearchRoute
   '/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/': typeof AppIndexRoute
+  '/admin/access': typeof AppAdminAccessRoute
   '/admin/audit': typeof AppAdminAuditRoute
+  '/admin/branding': typeof AppAdminBrandingRoute
+  '/admin/email': typeof AppAdminEmailRoute
   '/admin/invites': typeof AppAdminInvitesRoute
+  '/admin/maintenance': typeof AppAdminMaintenanceRoute
   '/admin/members': typeof AppAdminMembersRoute
   '/admin/projects': typeof AppAdminProjectsRoute
+  '/admin/retention': typeof AppAdminRetentionRoute
+  '/admin/security': typeof AppAdminSecurityRoute
+  '/admin/storage': typeof AppAdminStorageRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
   '/c/$channelId': typeof AppCChannelIdRouteWithChildren
@@ -287,10 +374,12 @@ export interface FileRoutesByTo {
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/settings/privacy': typeof AppSettingsPrivacyRoute
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin': typeof AppAdminIndexRoute
   '/docs': typeof AppDocsIndexRoute
+  '/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
@@ -307,18 +396,27 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/signup': typeof SignupRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/my-tasks': typeof AppMyTasksRoute
   '/_app/saved': typeof AppSavedRoute
+  '/_app/search': typeof AppSearchRoute
   '/_app/threads': typeof AppThreadsRoute
   '/join/$token': typeof JoinTokenRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/admin/access': typeof AppAdminAccessRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
+  '/_app/admin/branding': typeof AppAdminBrandingRoute
+  '/_app/admin/email': typeof AppAdminEmailRoute
   '/_app/admin/invites': typeof AppAdminInvitesRoute
+  '/_app/admin/maintenance': typeof AppAdminMaintenanceRoute
   '/_app/admin/members': typeof AppAdminMembersRoute
   '/_app/admin/projects': typeof AppAdminProjectsRoute
+  '/_app/admin/retention': typeof AppAdminRetentionRoute
+  '/_app/admin/security': typeof AppAdminSecurityRoute
+  '/_app/admin/storage': typeof AppAdminStorageRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/workspace': typeof AppAdminWorkspaceRoute
   '/_app/c/$channelId': typeof AppCChannelIdRouteWithChildren
@@ -326,10 +424,12 @@ export interface FileRoutesById {
   '/_app/docs/$docId': typeof AppDocsDocIdRoute
   '/_app/p/$key': typeof AppPKeyRouteWithChildren
   '/_app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/_app/settings/privacy': typeof AppSettingsPrivacyRoute
   '/_app/settings/profile': typeof AppSettingsProfileRoute
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/docs/': typeof AppDocsIndexRoute
+  '/_app/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/_app/p/$key/board': typeof AppPKeyBoardRoute
   '/_app/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/_app/p/$key/list': typeof AppPKeyListRoute
@@ -347,17 +447,26 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/signup'
     | '/admin'
     | '/calendar'
     | '/inbox'
     | '/my-tasks'
     | '/saved'
+    | '/search'
     | '/threads'
     | '/join/$token'
+    | '/admin/access'
     | '/admin/audit'
+    | '/admin/branding'
+    | '/admin/email'
     | '/admin/invites'
+    | '/admin/maintenance'
     | '/admin/members'
     | '/admin/projects'
+    | '/admin/retention'
+    | '/admin/security'
+    | '/admin/storage'
     | '/admin/teams'
     | '/admin/workspace'
     | '/c/$channelId'
@@ -365,10 +474,12 @@ export interface FileRouteTypes {
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/notifications'
+    | '/settings/privacy'
     | '/settings/profile'
     | '/settings/security'
     | '/admin/'
     | '/docs/'
+    | '/admin/channels/$channelId'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
@@ -383,17 +494,26 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/signup'
     | '/calendar'
     | '/inbox'
     | '/my-tasks'
     | '/saved'
+    | '/search'
     | '/threads'
     | '/join/$token'
     | '/'
+    | '/admin/access'
     | '/admin/audit'
+    | '/admin/branding'
+    | '/admin/email'
     | '/admin/invites'
+    | '/admin/maintenance'
     | '/admin/members'
     | '/admin/projects'
+    | '/admin/retention'
+    | '/admin/security'
+    | '/admin/storage'
     | '/admin/teams'
     | '/admin/workspace'
     | '/c/$channelId'
@@ -401,10 +521,12 @@ export interface FileRouteTypes {
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/notifications'
+    | '/settings/privacy'
     | '/settings/profile'
     | '/settings/security'
     | '/admin'
     | '/docs'
+    | '/admin/channels/$channelId'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
@@ -420,18 +542,27 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/signup'
     | '/_app/admin'
     | '/_app/calendar'
     | '/_app/inbox'
     | '/_app/my-tasks'
     | '/_app/saved'
+    | '/_app/search'
     | '/_app/threads'
     | '/join/$token'
     | '/_app/'
+    | '/_app/admin/access'
     | '/_app/admin/audit'
+    | '/_app/admin/branding'
+    | '/_app/admin/email'
     | '/_app/admin/invites'
+    | '/_app/admin/maintenance'
     | '/_app/admin/members'
     | '/_app/admin/projects'
+    | '/_app/admin/retention'
+    | '/_app/admin/security'
+    | '/_app/admin/storage'
     | '/_app/admin/teams'
     | '/_app/admin/workspace'
     | '/_app/c/$channelId'
@@ -439,10 +570,12 @@ export interface FileRouteTypes {
     | '/_app/docs/$docId'
     | '/_app/p/$key'
     | '/_app/settings/notifications'
+    | '/_app/settings/privacy'
     | '/_app/settings/profile'
     | '/_app/settings/security'
     | '/_app/admin/'
     | '/_app/docs/'
+    | '/_app/admin/channels/$channelId'
     | '/_app/p/$key/board'
     | '/_app/p/$key/calendar'
     | '/_app/p/$key/list'
@@ -459,6 +592,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  SignupRoute: typeof SignupRoute
   JoinTokenRoute: typeof JoinTokenRoute
 }
 
@@ -497,6 +631,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -541,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSavedRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/search': {
+      id: '/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/threads': {
       id: '/_app/threads'
       path: '/threads'
@@ -562,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/access': {
+      id: '/_app/admin/access'
+      path: '/access'
+      fullPath: '/admin/access'
+      preLoaderRoute: typeof AppAdminAccessRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/audit': {
       id: '/_app/admin/audit'
       path: '/audit'
@@ -569,11 +724,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminAuditRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/branding': {
+      id: '/_app/admin/branding'
+      path: '/branding'
+      fullPath: '/admin/branding'
+      preLoaderRoute: typeof AppAdminBrandingRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/email': {
+      id: '/_app/admin/email'
+      path: '/email'
+      fullPath: '/admin/email'
+      preLoaderRoute: typeof AppAdminEmailRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/invites': {
       id: '/_app/admin/invites'
       path: '/invites'
       fullPath: '/admin/invites'
       preLoaderRoute: typeof AppAdminInvitesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/maintenance': {
+      id: '/_app/admin/maintenance'
+      path: '/maintenance'
+      fullPath: '/admin/maintenance'
+      preLoaderRoute: typeof AppAdminMaintenanceRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/members': {
@@ -588,6 +764,27 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/admin/projects'
       preLoaderRoute: typeof AppAdminProjectsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/retention': {
+      id: '/_app/admin/retention'
+      path: '/retention'
+      fullPath: '/admin/retention'
+      preLoaderRoute: typeof AppAdminRetentionRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/security': {
+      id: '/_app/admin/security'
+      path: '/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AppAdminSecurityRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/storage': {
+      id: '/_app/admin/storage'
+      path: '/storage'
+      fullPath: '/admin/storage'
+      preLoaderRoute: typeof AppAdminStorageRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/teams': {
@@ -646,6 +843,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/privacy': {
+      id: '/_app/settings/privacy'
+      path: '/settings/privacy'
+      fullPath: '/settings/privacy'
+      preLoaderRoute: typeof AppSettingsPrivacyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/profile': {
       id: '/_app/settings/profile'
       path: '/settings/profile'
@@ -659,6 +863,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/security'
       preLoaderRoute: typeof AppSettingsSecurityRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/admin/channels/$channelId': {
+      id: '/_app/admin/channels/$channelId'
+      path: '/channels/$channelId'
+      fullPath: '/admin/channels/$channelId'
+      preLoaderRoute: typeof AppAdminChannelsChannelIdRouteImport
+      parentRoute: typeof AppAdminRoute
     }
     '/_app/p/$key/board': {
       id: '/_app/p/$key/board'
@@ -720,23 +931,39 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppAdminRouteChildren {
+  AppAdminAccessRoute: typeof AppAdminAccessRoute
   AppAdminAuditRoute: typeof AppAdminAuditRoute
+  AppAdminBrandingRoute: typeof AppAdminBrandingRoute
+  AppAdminEmailRoute: typeof AppAdminEmailRoute
   AppAdminInvitesRoute: typeof AppAdminInvitesRoute
+  AppAdminMaintenanceRoute: typeof AppAdminMaintenanceRoute
   AppAdminMembersRoute: typeof AppAdminMembersRoute
   AppAdminProjectsRoute: typeof AppAdminProjectsRoute
+  AppAdminRetentionRoute: typeof AppAdminRetentionRoute
+  AppAdminSecurityRoute: typeof AppAdminSecurityRoute
+  AppAdminStorageRoute: typeof AppAdminStorageRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
   AppAdminWorkspaceRoute: typeof AppAdminWorkspaceRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminChannelsChannelIdRoute: typeof AppAdminChannelsChannelIdRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminAccessRoute: AppAdminAccessRoute,
   AppAdminAuditRoute: AppAdminAuditRoute,
+  AppAdminBrandingRoute: AppAdminBrandingRoute,
+  AppAdminEmailRoute: AppAdminEmailRoute,
   AppAdminInvitesRoute: AppAdminInvitesRoute,
+  AppAdminMaintenanceRoute: AppAdminMaintenanceRoute,
   AppAdminMembersRoute: AppAdminMembersRoute,
   AppAdminProjectsRoute: AppAdminProjectsRoute,
+  AppAdminRetentionRoute: AppAdminRetentionRoute,
+  AppAdminSecurityRoute: AppAdminSecurityRoute,
+  AppAdminStorageRoute: AppAdminStorageRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
   AppAdminWorkspaceRoute: AppAdminWorkspaceRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminChannelsChannelIdRoute: AppAdminChannelsChannelIdRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
@@ -784,6 +1011,7 @@ interface AppRouteChildren {
   AppInboxRoute: typeof AppInboxRoute
   AppMyTasksRoute: typeof AppMyTasksRoute
   AppSavedRoute: typeof AppSavedRoute
+  AppSearchRoute: typeof AppSearchRoute
   AppThreadsRoute: typeof AppThreadsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCChannelIdRoute: typeof AppCChannelIdRouteWithChildren
@@ -791,6 +1019,7 @@ interface AppRouteChildren {
   AppDocsDocIdRoute: typeof AppDocsDocIdRoute
   AppPKeyRoute: typeof AppPKeyRouteWithChildren
   AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
+  AppSettingsPrivacyRoute: typeof AppSettingsPrivacyRoute
   AppSettingsProfileRoute: typeof AppSettingsProfileRoute
   AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
   AppDocsIndexRoute: typeof AppDocsIndexRoute
@@ -802,6 +1031,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppInboxRoute: AppInboxRoute,
   AppMyTasksRoute: AppMyTasksRoute,
   AppSavedRoute: AppSavedRoute,
+  AppSearchRoute: AppSearchRoute,
   AppThreadsRoute: AppThreadsRoute,
   AppIndexRoute: AppIndexRoute,
   AppCChannelIdRoute: AppCChannelIdRouteWithChildren,
@@ -809,6 +1039,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocsDocIdRoute: AppDocsDocIdRoute,
   AppPKeyRoute: AppPKeyRouteWithChildren,
   AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
+  AppSettingsPrivacyRoute: AppSettingsPrivacyRoute,
   AppSettingsProfileRoute: AppSettingsProfileRoute,
   AppSettingsSecurityRoute: AppSettingsSecurityRoute,
   AppDocsIndexRoute: AppDocsIndexRoute,
@@ -822,6 +1053,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  SignupRoute: SignupRoute,
   JoinTokenRoute: JoinTokenRoute,
 }
 export const routeTree = rootRouteImport

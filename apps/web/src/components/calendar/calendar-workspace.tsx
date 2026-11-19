@@ -51,11 +51,13 @@ export function CalendarWorkspace({
   timezone,
   userId,
   filter,
+  newRequest,
 }: {
   readonly scope: CalendarScope
   readonly timezone: string
   readonly userId: string
   readonly filter?: ListTasksQuery
+  readonly newRequest?: string | undefined
 }) {
   const navigate = useNavigate()
   const prefs = useCalendarPrefs()
@@ -64,7 +66,9 @@ export function CalendarWorkspace({
     const week = weekRange(new Date(), timezone)
     return { from: week.from.toISOString(), to: week.to.toISOString() }
   })
-  const [eventTarget, setEventTarget] = useState<EventDialogTarget | null>(null)
+  const [eventTarget, setEventTarget] = useState<EventDialogTarget | null>(() =>
+    newRequest === undefined ? null : { kind: "create", start: new Date(), allDay: false },
+  )
   const [calendarTarget, setCalendarTarget] = useState<CalendarDialogTarget | null>(null)
   const [importing, setImporting] = useState<CalendarSummary | null>(null)
 
@@ -194,7 +198,7 @@ export function CalendarWorkspace({
         onImport={setImporting}
       />
 
-      <div className="grid gap-3">
+      <div className="isolate grid gap-3">
         {calendarsResult.isError && <ErrorMessage error={calendarsResult.error} />}
         {events.isError && <ErrorMessage error={events.error} />}
         {events.isPending && range !== null && <LoadingRows rows={1} />}

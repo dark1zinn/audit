@@ -4,7 +4,8 @@ import { formatter } from "@lingui/format-po"
 export default defineConfig({
   sourceLocale: "en",
   compileNamespace: "ts",
-  locales: ["en", "pt-BR", "es"],
+  locales: ["en", "pt-BR", "es", "pseudo"],
+  pseudoLocale: { locale: "pseudo", prepend: "⟦ ", append: " ⟧", extend: 0.4 },
   fallbackLocales: { default: "en" },
   catalogs: [
     {

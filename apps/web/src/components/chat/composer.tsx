@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react"
 import { Paperclip, Send } from "lucide-react"
@@ -9,7 +9,8 @@ import { baseExtensions } from "../docs/editor-extensions.ts"
 import { emptyDoc } from "../task-panel/rich-text.ts"
 import { uploadFile } from "../../lib/upload.ts"
 import { ErrorMessage } from "../feedback.tsx"
-import { MentionSuggest, type MentionCandidate, type MentionState } from "./mention-suggest.ts"
+import { MentionPickerMenu, useMentionPicker } from "../mentions/mention-picker-menu.tsx"
+import { MentionShortcuts } from "../mentions/mention-shortcuts.ts"
 
 const TYPING_REFRESH_MS = 2000
 
@@ -27,7 +28,6 @@ export const isBlankDoc = (doc: RichDoc): boolean => {
 
 interface ComposerProps {
   readonly channelId: ChannelId
-  readonly candidates: ReadonlyArray<MentionCandidate>
   readonly placeholder: string
   readonly submitLabel: string
   readonly onSubmit: (body: RichDoc) => Promise<void>
@@ -39,7 +39,6 @@ interface ComposerProps {
 /** Chat message composer. Enter sends, Shift+Enter inserts a newline, `@` opens the people picker. */
 export function Composer({
   channelId,
-  candidates,
   placeholder,
   submitLabel,
   onSubmit,
@@ -48,27 +47,19 @@ export function Composer({
   initial,
 }: ComposerProps) {
   const { t } = useLingui()
-  const [mention, setMention] = useState<MentionState | null>(null)
   const [error, setError] = useState<unknown>(null)
   const [busy, setBusy] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
-  const readCandidates = useEffectEvent(() => candidates)
-  const onMentionState = useEffectEvent((state: MentionState | null) => {
-    mentionOpen.current = state !== null
-    setMention(state)
+  const picker = useMentionPicker()
+  useEffect(() => {
+    mentionOpen.current = picker.trigger !== null
   })
   const typingAt = useRef(0)
   const mentionOpen = useRef(false)
   const submitRef = useRef<() => void>(() => undefined)
 
   const editor = useEditor({
-    extensions: [
-      ...baseExtensions,
-      MentionSuggest.configure({
-        candidates: readCandidates,
-        onState: onMentionState,
-      }),
-    ],
+    extensions: [...baseExtensions, picker.extension, MentionShortcuts],
     content: (initial ?? emptyDoc) as JSONContent,
     immediatelyRender: false,
     editorProps: {
@@ -137,9 +128,7 @@ export function Composer({
 
   return (
     <div className="space-y-1">
-      {mention !== null && mention.items.length > 0 ? (
-        <MentionMenu state={mention} label={t`People`} />
-      ) : null}
+      <MentionPickerMenu picker={picker} />
       <div className="rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
         <EditorContent editor={editor} />
         <div className="flex items-center justify-between gap-2 border-t px-2 py-1">
@@ -179,30 +168,5 @@ export function Composer({
       </div>
       {error === null ? null : <ErrorMessage error={error} />}
     </div>
-  )
-}
-
-function MentionMenu({ state, label }: { readonly state: MentionState; readonly label: string }) {
-  return (
-    <ul
-      aria-label={label}
-      className="max-h-56 w-64 overflow-y-auto rounded-md border bg-popover p-1 text-sm shadow-md"
-    >
-      {state.items.map((item, index) => (
-        <li key={item.id}>
-          <button
-            type="button"
-            data-active={index === state.index}
-            className={`w-full rounded px-2 py-1 text-left ${index === state.index ? "bg-accent" : ""}`}
-            onMouseDown={(event) => {
-              event.preventDefault()
-              state.select(item)
-            }}
-          >
-            @{item.label}
-          </button>
-        </li>
-      ))}
-    </ul>
   )
 }

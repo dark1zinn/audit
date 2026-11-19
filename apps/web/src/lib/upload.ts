@@ -17,7 +17,18 @@ export const uploadFile = async (file: File, parentId: EntityId): Promise<FileRe
   const form = new FormData()
   form.append("file", file)
   form.append("parentId", parentId)
-  const response = await fetch("/api/files", {
+  return postFile("/api/files", form)
+}
+
+/** Uploads the workspace logo; the server stores it and points the workspace at the new file. */
+export const uploadBrandingLogo = async (file: File): Promise<FileRef> => {
+  const form = new FormData()
+  form.append("file", file)
+  return postFile("/api/admin/branding/logo", form)
+}
+
+const postFile = async (url: string, form: FormData): Promise<FileRef> => {
+  const response = await fetch(url, {
     method: "POST",
     body: form,
     credentials: "same-origin",

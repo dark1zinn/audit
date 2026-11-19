@@ -1,5 +1,6 @@
 import { Extension, type Editor, type Range } from "@tiptap/core"
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion"
+import { PluginKey } from "@tiptap/pm/state"
 
 /** One entry of the `/` menu. `run` replaces the typed `/query` range with its content. */
 export interface SlashItem {
@@ -56,6 +57,7 @@ export const SlashCommand = Extension.create<SlashOptions, SlashStorage>({
     const storage = this.storage
     return [
       Suggestion<SlashItem, SlashItem>({
+        pluginKey: new PluginKey("slashCommand"),
         editor: this.editor,
         char: "/",
         allowSpaces: false,

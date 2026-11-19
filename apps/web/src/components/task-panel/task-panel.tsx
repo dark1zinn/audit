@@ -21,6 +21,7 @@ import { Subtasks } from "./subtasks.tsx"
 import { TaskFields } from "./task-fields.tsx"
 import { useTaskUpdate } from "./use-task-update.ts"
 import { BacklinksPanel } from "../docs/backlinks-panel.tsx"
+import { useRecordRecent } from "../../lib/search.ts"
 
 interface TaskPanelProps {
   readonly projectId: ProjectId
@@ -35,6 +36,7 @@ export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
     ...(initial?.id === taskId ? { initialData: initial } : {}),
   })
   useRealtimeScopes([`entity:${taskId}`])
+  useRecordRecent(taskId)
 
   if (task.isError) return <ErrorMessage error={task.error} />
   if (task.data === undefined) return <LoadingRows />

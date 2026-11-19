@@ -25,6 +25,7 @@ import { DocEditor } from "./collab-editor.tsx"
 import { docQuery, commentsQuery, invalidateDoc } from "./queries.ts"
 import { VersionsPanel } from "./versions-panel.tsx"
 import { BacklinksPanel } from "./backlinks-panel.tsx"
+import { useRecordRecent } from "../../lib/search.ts"
 
 interface DocViewProps {
   readonly docId: DocId
@@ -36,6 +37,7 @@ interface DocViewProps {
 /** Loads the doc and the caller's identity, then renders the page. */
 export const DocView = ({ docId, projectId, projectKey, template }: DocViewProps) => {
   const detail = useQuery(docQuery(docId))
+  useRecordRecent(docId)
   const session = useQuery(sessionQuery)
   if (detail.isPending || session.isPending) return <LoadingRows />
   if (detail.isError) return <ErrorMessage error={detail.error} />

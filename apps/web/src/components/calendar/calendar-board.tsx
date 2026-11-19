@@ -114,5 +114,28 @@ function CalendarBoardInner({
     calendarApp?.events.set([...events])
   }, [calendarApp, events])
 
-  return <ScheduleXCalendar calendarApp={calendarApp} />
+  // Schedule-X sets aria-label on role-less day grids and on the view picker, where it conflicts with axe rules; strip them.
+  // Re-applied on each DOM change because the library re-creates the grid on view changes.
+  const boardRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = boardRef.current
+    if (root === null) return
+    const strip = () => {
+      for (const el of root.querySelectorAll(
+        ".sx__date-grid[aria-label], [data-time-grid-date][aria-label], .sx__view-selection-selected-item[aria-label]",
+      )) {
+        el.removeAttribute("aria-label")
+      }
+    }
+    strip()
+    const observer = new MutationObserver(strip)
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div ref={boardRef}>
+      <ScheduleXCalendar calendarApp={calendarApp} />
+    </div>
+  )
 }

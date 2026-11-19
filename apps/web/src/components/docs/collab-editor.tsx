@@ -25,6 +25,8 @@ import { SlashCommand, type SlashItem, type SlashState } from "./slash.ts"
 import { SlashMenu } from "./slash-menu.tsx"
 import { anchorFor, CommentHighlight, type AnchorRange } from "./comments-anchor.ts"
 import { findTemplate } from "@audit/editor/templates"
+import { MentionShortcuts } from "../mentions/mention-shortcuts.ts"
+import { MentionPickerMenu, useMentionPicker } from "../mentions/mention-picker-menu.tsx"
 
 /** Hocuspocus endpoint on the page's own origin; the session cookie authenticates it. */
 const collabUrl = () => {
@@ -249,10 +251,13 @@ const LiveEditor = (
     },
   ]
 
+  const picker = useMentionPicker()
   const editor = useEditor(
     {
       extensions: [
         ...collabExtensions(ydoc, provider, user),
+        picker.extension,
+        MentionShortcuts,
         SlashCommand.configure({
           onState: setSlash,
         }),
@@ -375,6 +380,7 @@ const LiveEditor = (
       />
       <EditorContent editor={editor} />
       {slash !== null && <SlashMenu state={slash} />}
+      <MentionPickerMenu picker={picker} />
       {selectionState !== null && !selectionState.empty && props.onSelectionComment && (
         <Button
           size="sm"

@@ -15,14 +15,12 @@ interface DocsPageProps {
   readonly docId: DocId | null
   /** Template chosen when the doc was created; applied by the editor on first open. */
   readonly template?: string | undefined
+  /** Id of a new-doc request from elsewhere (for example the command palette). */
+  readonly newRequest?: string | undefined
 }
 
-/** Route search for doc pages: only the template hint survives. */
-export const docSearch = (search: Record<string, unknown>): { readonly template?: string } =>
-  typeof search["template"] === "string" ? { template: search["template"] } : {}
-
 /** Doc tree beside the selected doc. The same page serves the space and each project. */
-export const DocsPage = ({ projectId, projectKey, docId, template }: DocsPageProps) => {
+export const DocsPage = ({ projectId, projectKey, docId, template, newRequest }: DocsPageProps) => {
   const { t } = useLingui()
   const tree = useQuery(docTreeQuery(projectId))
   const hrefFor = (id: DocId) =>
@@ -32,7 +30,7 @@ export const DocsPage = ({ projectId, projectKey, docId, template }: DocsPagePro
   return (
     <div className="grid gap-6 md:grid-cols-[16rem_minmax(0,1fr)] print:block">
       <aside aria-label={t`Documents`} className="min-w-0 space-y-3 print:hidden">
-        <NewDocDialog parentId={parentId} hrefFor={hrefFor} />
+        <NewDocDialog parentId={parentId} hrefFor={hrefFor} requestId={newRequest} />
         {tree.isPending && <LoadingRows />}
         {tree.isError && <ErrorMessage error={tree.error} />}
         {tree.isSuccess && <DocTree docs={tree.data} activeDocId={docId} hrefFor={hrefFor} />}

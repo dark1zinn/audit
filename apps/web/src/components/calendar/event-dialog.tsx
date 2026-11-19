@@ -52,6 +52,7 @@ import { RichEditor } from "../task-panel/rich-editor.tsx"
 import { ConfirmDialog, ScopeDialog } from "./confirm-dialogs.tsx"
 import { RecurrenceFields } from "./recurrence-fields.tsx"
 import { LinkedItems } from "./linked-items.tsx"
+import { useRecordRecent } from "../../lib/search.ts"
 
 export type EventDialogTarget =
   | { readonly kind: "create"; readonly start: Date; readonly allDay: boolean }
@@ -195,6 +196,7 @@ function EventForm({
   const [problem, setProblem] = useState<string | null>(null)
   const [scopeAction, setScopeAction] = useState<"edit" | "delete" | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  useRecordRecent(target?.kind === "edit" ? target.occurrence.eventId : null)
   const members = useQuery(membersQuery)
   const teams = useQuery(teamsQuery)
 
@@ -408,7 +410,7 @@ function EventForm({
       </DialogHeader>
 
       <form id="event-form" className="grid gap-4" onSubmit={onSubmit}>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="event-title">
               <span>{t`Title`}</span>
@@ -458,10 +460,11 @@ function EventForm({
             <Label htmlFor="event-start-date">
               <span>{t`Starts`}</span>
             </Label>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-wrap gap-2">
               <Input
                 id="event-start-date"
                 type="date"
+                className="min-w-0 flex-1"
                 required
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.currentTarget.value })}
@@ -470,6 +473,7 @@ function EventForm({
                 <Input
                   aria-label={t`Start time`}
                   type="time"
+                  className="min-w-0 flex-1"
                   required
                   value={form.startTime}
                   onChange={(e) => setForm({ ...form, startTime: e.currentTarget.value })}
@@ -482,10 +486,11 @@ function EventForm({
             <Label htmlFor="event-end-date">
               <span>{t`Ends`}</span>
             </Label>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-wrap gap-2">
               <Input
                 id="event-end-date"
                 type="date"
+                className="min-w-0 flex-1"
                 required
                 value={form.endDate}
                 onChange={(e) => setForm({ ...form, endDate: e.currentTarget.value })}
@@ -494,6 +499,7 @@ function EventForm({
                 <Input
                   aria-label={t`End time`}
                   type="time"
+                  className="min-w-0 flex-1"
                   required
                   value={form.endTime}
                   onChange={(e) => setForm({ ...form, endTime: e.currentTarget.value })}

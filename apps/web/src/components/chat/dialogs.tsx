@@ -288,7 +288,6 @@ interface PinsDialogProps {
   readonly onOpenChange: (open: boolean) => void
   readonly channelId: ChannelId
   readonly meId: string
-  readonly candidates: ReadonlyArray<{ id: string; label: string }>
 }
 
 /** Pinned messages in a channel, newest pin first. */

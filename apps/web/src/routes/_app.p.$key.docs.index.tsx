@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { WithProject } from "../components/list/with-project.tsx"
-import { DocsPage, docSearch } from "../components/docs/docs-page.tsx"
+import { DocsPage } from "../components/docs/docs-page.tsx"
+import { docSearch } from "../components/docs/doc-search.ts"
 
 export const Route = createFileRoute("/_app/p/$key/docs/")({
   validateSearch: docSearch,

@@ -9,7 +9,7 @@ import { channelsQuery } from "../../lib/chat.ts"
 import { useRealtimeScopes } from "../../lib/realtime.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { BrowseChannelsDialog, CreateChannelDialog, NewDmDialog } from "./dialogs.tsx"
-import { channelTitle } from "./channel-view.tsx"
+import { channelTitle } from "./channel-title.ts"
 
 const linkClass =
   "flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"

@@ -71,12 +71,18 @@ export const messagesQuery = (channelId: ChannelId) =>
   })
 
 export const adminMessagesQuery = (channelId: ChannelId) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: chatKeys.adminMessages(channelId),
-    queryFn: () =>
-      callApi((api) =>
-        api.chat.adminMessages({ params: { channelId }, query: { limit: MESSAGE_PAGE } }),
-      ),
+    queryFn: ({ pageParam }) =>
+      callApi((api) => api.chat.adminMessages({ params: { channelId }, query: pageParam })),
+    initialPageParam: { limit: MESSAGE_PAGE } as MessagePageQuery,
+    getPreviousPageParam: (first) => {
+      const oldest = first.messages[0]
+      return first.hasOlder && oldest !== undefined
+        ? { before: oldest.id, limit: MESSAGE_PAGE }
+        : undefined
+    },
+    getNextPageParam: () => undefined,
   })
 
 export const threadQuery = (messageId: MessageId) =>

@@ -21,10 +21,12 @@ import { ErrorMessage } from "../feedback.tsx"
 interface NewDocDialogProps {
   readonly parentId: EntityId
   readonly hrefFor: (docId: DocId) => string
+  /** Changes for each request from elsewhere (for example the command palette); each opens once. */
+  readonly requestId?: string | undefined
 }
 
 /** Creates a blank or template doc, or imports a Markdown file as a new doc. */
-export const NewDocDialog = ({ parentId, hrefFor }: NewDocDialogProps) => {
+export const NewDocDialog = ({ parentId, hrefFor, requestId }: NewDocDialogProps) => {
   const { t } = useLingui()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -32,6 +34,11 @@ export const NewDocDialog = ({ parentId, hrefFor }: NewDocDialogProps) => {
   const [title, setTitle] = useState("")
   const [template, setTemplate] = useState("blank")
   const [error, setError] = useState<unknown>(null)
+  const [handledRequest, setHandledRequest] = useState<string | undefined>(undefined)
+  if (requestId !== undefined && requestId !== handledRequest) {
+    setHandledRequest(requestId)
+    setOpen(true)
+  }
 
   const templateLabels: Record<string, string> = {
     "meeting-notes": t`Meeting notes`,

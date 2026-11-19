@@ -5,8 +5,8 @@ import type { JSONContent } from "@tiptap/react"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { emptyDoc } from "./rich-text.ts"
-
-const extensions = baseExtensions
+import { MentionShortcuts } from "../mentions/mention-shortcuts.ts"
+import { MentionPickerMenu, useMentionPicker } from "../mentions/mention-picker-menu.tsx"
 
 interface RichEditorProps {
   readonly value: RichDoc | null
@@ -18,8 +18,9 @@ interface RichEditorProps {
 /** Tiptap editor with a minimal, keyboard-operable toolbar. Content is read once at mount. */
 export function RichEditor({ value, editable, label, onChange }: RichEditorProps) {
   const { t } = useLingui()
+  const picker = useMentionPicker()
   const editor = useEditor({
-    extensions,
+    extensions: [...baseExtensions, picker.extension, MentionShortcuts],
     content: (value ?? emptyDoc) as JSONContent,
     editable,
     immediatelyRender: false,
@@ -55,6 +56,7 @@ export function RichEditor({ value, editable, label, onChange }: RichEditorProps
 
   return (
     <div className="rounded-md border bg-background">
+      <MentionPickerMenu picker={picker} />
       {editable && (
         <div role="toolbar" aria-label={label} className="flex flex-wrap gap-1 border-b p-1">
           <Button

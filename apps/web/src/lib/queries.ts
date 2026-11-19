@@ -36,6 +36,11 @@ export const keys = {
   notifications: ["notifications"] as const,
   notificationList: (archived: boolean) => ["notifications", "list", archived] as const,
   notificationSettings: ["notifications", "settings"] as const,
+  adminOverview: ["admin", "overview"] as const,
+  adminEmail: ["admin", "email"] as const,
+  adminStorage: ["admin", "storage"] as const,
+  adminAccessItem: (entityId: string) => ["admin", "access", "items", entityId] as const,
+  adminAccessPerson: (userId: string) => ["admin", "access", "people", userId] as const,
 }
 
 /** The signed-in user, or `null` when there is no session. Never throws on 401. */
@@ -64,6 +69,22 @@ export const workspaceQuery = queryOptions({
 export const membersQuery = queryOptions({
   queryKey: keys.members,
   queryFn: () => callApi((api) => api.members.list()),
+})
+
+/** Admin dashboard counts, storage and sign-up posture. Owners and admins only. */
+export const adminOverviewQuery = queryOptions({
+  queryKey: keys.adminOverview,
+  queryFn: () => callApi((api) => api.admin.overview()),
+})
+
+export const adminEmailQuery = queryOptions({
+  queryKey: keys.adminEmail,
+  queryFn: () => callApi((api) => api.admin.emailStatus()),
+})
+
+export const adminStorageQuery = queryOptions({
+  queryKey: keys.adminStorage,
+  queryFn: () => callApi((api) => api.admin.storage()),
 })
 
 export const invitesQuery = queryOptions({

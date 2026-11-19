@@ -4,7 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useNavigate } from "@tanstack/react-router"
 import { Pin, Settings } from "lucide-react"
-import type { ChannelSummary, Message } from "@audit/domain/chat/schema"
+import type { Message } from "@audit/domain/chat/schema"
 import type { ChannelId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
@@ -17,6 +17,8 @@ import { Composer } from "./composer.tsx"
 import { MessageItem } from "./message-item.tsx"
 import { ChannelSettingsDialog, MessageToTaskDialog, PinsDialog } from "./dialogs.tsx"
 import { typingLabel } from "./typing.ts"
+import { channelTitle } from "./channel-title.ts"
+import { useRecordRecent } from "../../lib/search.ts"
 
 type Row = { readonly kind: "divider" } | { readonly kind: "message"; readonly message: Message }
 
@@ -30,11 +32,6 @@ const buildRows = (messages: ReadonlyArray<Message>, lastReadId: string | null):
   return rows
 }
 
-export const channelTitle = (channel: ChannelSummary): string =>
-  channel.kind === "dm" || channel.kind === "group_dm"
-    ? channel.people.map((person) => person.name).join(", ")
-    : `#${channel.name}`
-
 interface ChannelViewProps {
   readonly channelId: ChannelId
   readonly meId: string
@@ -46,6 +43,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const scope = `channel:${channelId}`
+  useRecordRecent(channelId)
   useRealtimeScopes([scope])
 
   const header = useQuery(channelQuery(channelId))
@@ -178,10 +176,6 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   })
 
   const typing = viewers.filter((viewer) => viewer.typing && viewer.userId !== meId)
-  const candidates = (header.data?.members ?? []).map((member) => ({
-    id: member.userId,
-    label: member.name,
-  }))
 
   if (header.isPending) return <LoadingRows />
   if (header.isError) return <ErrorMessage error={header.error} />
@@ -270,7 +264,6 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
                     channelId={channelId}
                     meId={meId}
                     canPin
-                    candidates={candidates}
                     onOpenThread={(messageId) =>
                       void navigate({
                         to: "/c/$channelId/t/$threadId",
@@ -298,7 +291,6 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
         {isMember ? (
           <Composer
             channelId={channelId}
-            candidates={candidates}
             placeholder={t`Message ${channelTitle(data.channel)}`}
             submitLabel={t`Send`}
             onTyping={(typingNow) => sendTyping(scope, typingNow)}
@@ -325,7 +317,6 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
         onOpenChange={(open) => setDialog(open ? "pins" : null)}
         channelId={channelId}
         meId={meId}
-        candidates={candidates}
       />
       <MessageToTaskDialog
         message={taskFrom}

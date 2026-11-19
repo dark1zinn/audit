@@ -7,7 +7,7 @@ import type { ChannelId, MessageId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { callApi } from "../../lib/api.ts"
-import { channelQuery, chatKeys, messageChangeKeys, threadQuery } from "../../lib/chat.ts"
+import { chatKeys, messageChangeKeys, threadQuery } from "../../lib/chat.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { Composer } from "./composer.tsx"
 import { MessageItem } from "./message-item.tsx"
@@ -24,11 +24,6 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const thread = useQuery(threadQuery(rootId))
-  const header = useQuery(channelQuery(channelId))
-  const candidates = (header.data?.members ?? []).map((member) => ({
-    id: member.userId,
-    label: member.name,
-  }))
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastSent = useRef<string | null>(null)
   const [error, setError] = useState<unknown>(null)
@@ -137,13 +132,7 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
         {thread.data === undefined ? null : (
           <>
             <div className="border-b bg-muted/30">
-              <MessageItem
-                message={thread.data.root}
-                channelId={channelId}
-                meId={meId}
-                canPin
-                candidates={candidates}
-              />
+              <MessageItem message={thread.data.root} channelId={channelId} meId={meId} canPin />
             </div>
             <p className="px-4 py-2 text-xs text-muted-foreground">
               <Trans>{replies.length} replies</Trans>
@@ -155,7 +144,6 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
                 channelId={channelId}
                 meId={meId}
                 canPin
-                candidates={candidates}
               />
             ))}
           </>
@@ -164,7 +152,6 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
       <div className="border-t p-3">
         <Composer
           channelId={channelId}
-          candidates={candidates}
           placeholder={t`Reply in thread`}
           submitLabel={t`Reply`}
           onSubmit={async (body: RichDoc) => {
