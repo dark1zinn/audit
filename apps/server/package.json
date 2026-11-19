@@ -1,0 +1,27 @@
+{
+  "name": "@audit/server",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "bin": {
+    "audit": "./src/cli.ts"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/cli.ts serve",
+    "start": "bun src/cli.ts serve"
+  },
+  "dependencies": {
+    "@audit/core": "workspace:*",
+    "@audit/db": "workspace:*",
+    "@audit/domain": "workspace:*",
+    "@audit/platform": "workspace:*",
+    "@better-auth/passkey": "1.7.26",
+    "@effect/platform-bun": "4.1.4",
+    "@effect/sql-pg": "4.1.4",
+    "better-auth": "1.7.26",
+    "drizzle-orm": "1.0.0-rc.5",
+    "effect": "4.1.4",
+    "pg-boss": "12.38.2"
+  }
+}
