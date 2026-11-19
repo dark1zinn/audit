@@ -13,8 +13,31 @@
         "typescript": "7.0.2",
       },
     },
+    "packages/db": {
+      "name": "@audit/db",
+      "version": "0.0.0",
+      "dependencies": {
+        "@effect/sql-pg": "4.1.4",
+        "drizzle-orm": "1.0.0-rc.5",
+        "effect": "4.1.4",
+      },
+      "devDependencies": {
+        "drizzle-kit": "1.0.0-rc.5",
+      },
+    },
+    "packages/domain": {
+      "name": "@audit/domain",
+      "version": "0.0.0",
+      "dependencies": {
+        "effect": "4.1.4",
+      },
+    },
   },
   "packages": {
+    "@audit/db": ["@audit/db@workspace:packages/db"],
+
+    "@audit/domain": ["@audit/domain@workspace:packages/domain"],
+
     "@changesets/apply-release-plan": ["@changesets/apply-release-plan@8.1.1", "", { "dependencies": { "@changesets/config": "^4.0.1", "@changesets/format": "^0.1.2", "@changesets/git": "^4.0.1", "@changesets/should-skip-package": "^1.0.0", "@changesets/types": "^7.0.0", "import-meta-resolve": "^4.2.0", "jsonc-parser": "^3.3.1", "semver": "^7.8.1" } }, "sha512-nk2Hbq3M9NeHMdaIRBDvawKrQJzXB9sGyBUE5yWnIKtvdcNCPj75zBekJYr0gTT2ecJH3eFeTrc8eisPImcv0Q=="],
 
     "@changesets/assemble-release-plan": ["@changesets/assemble-release-plan@7.0.0", "", { "dependencies": { "@changesets/errors": "^1.0.0", "@changesets/get-dependents-graph": "^3.0.0", "@changesets/should-skip-package": "^1.0.0", "@changesets/types": "^7.0.0", "semver": "^7.8.1" } }, "sha512-oEW8BxdA604kGGtDSCiHr5w9Tv4UWe9I2k61IBNZzCOE1kbYaJj4v+lFQNgcEZFkUc2pV/+hASErGDvpJOZCTg=="],
@@ -48,6 +71,8 @@
     "@clack/core": ["@clack/core@1.6.0", "", { "dependencies": { "fast-string-width": "^3.0.2", "fast-wrap-ansi": "^0.2.0", "sisteransi": "^2.0.0" } }, "sha512-4GZynIB2IIe431odxesswvWTCP6orvqd6e2b07b3VFWBQRqUqIHc/EPIZwFoKS692QBp+ooPuXKaJV8g4kXuYA=="],
 
     "@clack/prompts": ["@clack/prompts@1.9.0", "", { "dependencies": { "@clack/core": "1.6.0", "fast-string-width": "^3.0.2", "fast-wrap-ansi": "^0.2.0", "sisteransi": "^2.0.0" } }, "sha512-tEj8X2No2A1c9NDnZECxiiJ8TP3vmFlN9tLlLeSaMqVW4tUmVG2R4qpv/eP4zymWxnymYLkLcIYVV0VcWj3RCQ=="],
+
+    "@effect/sql-pg": ["@effect/sql-pg@4.1.4", "", { "peerDependencies": { "effect": "^4.1.4" } }, "sha512-DHsmpIfJeCYiJVk3JwMQFAWaQAmKV/elUbBCjHFP7qeZtJ8dViUV/y/AHdUaZ+OmMwtr8J7ZXA7AlsKZ9hPiQA=="],
 
     "@effect/tsgo": ["@effect/tsgo@0.70.0", "", { "optionalDependencies": { "@effect/tsgo-darwin-arm64": "0.70.0", "@effect/tsgo-darwin-x64": "0.70.0", "@effect/tsgo-linux-arm": "0.70.0", "@effect/tsgo-linux-arm64": "0.70.0", "@effect/tsgo-linux-x64": "0.70.0", "@effect/tsgo-win32-arm64": "0.70.0", "@effect/tsgo-win32-x64": "0.70.0" }, "bin": { "effect-tsgo": "dist/effect-tsgo.cjs" } }, "sha512-kZwLZaAT4of8wu1sTRnk2IZpbjHGQSBKGvfw+nYw2iuvJlkIS0BNYcwA0ohoLPRffUKUP6PY7iBW5Ag4DUxh+Q=="],
 
@@ -196,6 +221,12 @@
     "bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
     "cac": ["cac@7.1.0", "", {}, "sha512-LMDU/U2yA4IPIY8KT0NsNPWEYZvAMkbgyspxJ6btJaYV+WMDOHAZCmB0lsTObiHaRS1V/ztKAl7+TSkTqXyeoA=="],
+
+    "drizzle-kit": ["drizzle-kit@1.0.0-rc.5", "", { "peerDependencies": { "drizzle-orm": ">=1.0.0-rc.5" }, "optionalPeers": ["drizzle-orm"], "bin": { "drizzle-kit": "bin.cjs" } }, "sha512-8glQN7iFK3e1aOIoRit1NtslcsqE/rnlqNw/1jUC5Ph4RFVh/E5Jricxd6Nu2ugj2HlFZlZ6O4006AwqJ9e24g=="],
+
+    "drizzle-orm": ["drizzle-orm@1.0.0-rc.5", "", { "peerDependencies": { "@aws-sdk/client-rds-data": ">=3", "@aws/aurora-dsql-node-postgres-connector": ">=0.1.9", "@aws/aurora-dsql-postgresjs-connector": ">=0.3.0", "@cloudflare/workers-types": ">=4", "@drizzle-team/minipg": ">=0.4.2", "@effect/sql-d1": ">=4.0.0", "@effect/sql-libsql": ">=4.0.0", "@effect/sql-mysql2": ">=4.0.0", "@effect/sql-pg": ">=4.0.0", "@effect/sql-pglite": ">=4.0.0", "@effect/sql-sqlite-bun": ">=4.0.0", "@effect/sql-sqlite-do": ">=4.0.0", "@effect/sql-sqlite-node": ">=4.0.0", "@effect/sql-sqlite-wasm": ">=4.0.0", "@electric-sql/pglite": ">=0.2.0", "@libsql/client": ">=0.10.0", "@libsql/client-wasm": ">=0.10.0", "@neondatabase/serverless": ">=0.10.0", "@op-engineering/op-sqlite": ">=17", "@opentelemetry/api": "^1.4.1", "@planetscale/database": ">=1.13", "@sinclair/typebox": ">=0.34.8", "@sqlitecloud/drivers": ">=1.0.653", "@tidbcloud/serverless": "*", "@tursodatabase/database": ">=0.7.1", "@tursodatabase/database-common": ">=0.7.1", "@tursodatabase/database-wasm": ">=0.7.1", "@tursodatabase/serverless": ">=1.4.0", "@tursodatabase/sync": ">=0.7.1", "@types/better-sqlite3": "*", "@types/mssql": "^9.1.4", "@types/pg": "*", "@types/sql.js": "*", "@upstash/redis": ">=1.34.7", "@vercel/postgres": ">=0.8.0", "@xata.io/client": "*", "arktype": ">=2.0.0", "better-sqlite3": ">=9.3.0", "bun-types": "*", "effect": ">=4.0.0", "expo-sqlite": ">=14.0.0", "mssql": "^11.0.1", "mysql2": ">=2", "pg": ">=8", "postgres": ">=3", "sql.js": ">=1", "sqlite3": ">=5", "typebox": ">=1.2.0", "valibot": ">=1.0.0-beta.7", "zod": "^3.25.0 || ^4.0.0" }, "optionalPeers": ["@aws-sdk/client-rds-data", "@aws/aurora-dsql-node-postgres-connector", "@aws/aurora-dsql-postgresjs-connector", "@cloudflare/workers-types", "@drizzle-team/minipg", "@effect/sql-d1", "@effect/sql-libsql", "@effect/sql-mysql2", "@effect/sql-pg", "@effect/sql-pglite", "@effect/sql-sqlite-bun", "@effect/sql-sqlite-do", "@effect/sql-sqlite-node", "@effect/sql-sqlite-wasm", "@electric-sql/pglite", "@libsql/client", "@libsql/client-wasm", "@neondatabase/serverless", "@op-engineering/op-sqlite", "@opentelemetry/api", "@planetscale/database", "@sinclair/typebox", "@sqlitecloud/drivers", "@tidbcloud/serverless", "@tursodatabase/database", "@tursodatabase/database-common", "@tursodatabase/database-wasm", "@tursodatabase/serverless", "@tursodatabase/sync", "@types/better-sqlite3", "@types/mssql", "@types/pg", "@types/sql.js", "@upstash/redis", "@vercel/postgres", "@xata.io/client", "arktype", "better-sqlite3", "bun-types", "effect", "expo-sqlite", "mssql", "mysql2", "pg", "postgres", "sql.js", "sqlite3", "typebox", "valibot", "zod"] }, "sha512-7BMYTsAZbQ9DcQCtLG4G202Hq6nc/e8o1EBKN6nBweRI8EGPFe/VdyvWQCsU9fuZSiRjNpELolUSi//JFBq+lw=="],
+
+    "effect": ["effect@4.1.4", "", {}, "sha512-Tgrv/9FN+TZYyOn8XSli+fVqAfwDrDAkiX5Uu9vztINb675VTQdhD0gWI5Kzvhlh9QqzjZvw72iugqw5pwoghQ=="],
 
     "fast-string-truncated-width": ["fast-string-truncated-width@3.0.3", "", {}, "sha512-0jjjIEL6+0jag3l2XWWizO64/aZVtpiGE3t0Zgqxv0DPuxiMjvB3M24fCyhZUO4KomJQPj3LTSUnDP3GpdwC0g=="],
 
