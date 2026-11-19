@@ -30,6 +30,7 @@ interface Sequenced {
 /** Events about the workspace itself go to every `workspace` subscriber. */
 const workspaceEvents: Partial<Record<DomainEvent["_tag"], true>> = {
   MembersChanged: true,
+  DocChanged: true,
   InvitesChanged: true,
   TeamsChanged: true,
   WorkspaceUpdated: true,

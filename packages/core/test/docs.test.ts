@@ -1,0 +1,102 @@
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { createDoc } from "@audit/core/docs/commands"
+import { createDocComment } from "@audit/core/docs/comments"
+import { getDoc, spaceTree } from "@audit/core/docs/queries"
+import { resolveEntities } from "@audit/core/references"
+import { WORKSPACE_SPACE_ID } from "@audit/domain/docs/schema"
+import type { DocId, EntityId } from "@audit/domain/ids"
+import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
+import { addPerson, exitAs, type Person, runAs, setupWorkspace } from "@audit/testkit/fixtures"
+import { Cause, Exit, Option } from "effect"
+
+let database: TestDatabase
+let owner: Person
+let member: Person
+let guest: Person
+
+const failureTag = (exit: Exit.Exit<unknown, unknown>) =>
+  Exit.isFailure(exit)
+    ? Cause.findErrorOption(exit.cause).pipe(
+        Option.map((error) =>
+          typeof error === "object" && error !== null && "_tag" in error
+            ? String(error._tag)
+            : "unknown",
+        ),
+        Option.getOrElse(() => "defect"),
+      )
+    : "success"
+
+const spaceId = WORKSPACE_SPACE_ID as EntityId
+
+const createSpaceDoc = (actor: Person, title: string) =>
+  runAs(
+    database,
+    actor.actor,
+  )(createDoc.execute({ parentId: spaceId, title })).then((doc) => doc.id as DocId)
+
+const restrict = (docId: DocId) =>
+  database.superuser`update entities set restricted = true where id = ${docId}`
+
+beforeAll(async () => {
+  database = await makeTestDatabase()
+  owner = await setupWorkspace(database)
+  member = await addPerson(database, owner, "Mia", "member")
+  guest = await addPerson(database, owner, "Gus", "guest")
+})
+
+afterAll(() => database.drop())
+
+describe("space docs", () => {
+  test("members with editor on the space can create docs, guests cannot", async () => {
+    const exit = await exitAs(
+      database,
+      guest.actor,
+    )(createDoc.execute({ parentId: spaceId, title: "Nope" }))
+    expect(failureTag(exit)).not.toBe("success")
+    const docId = await createSpaceDoc(member, "Member doc")
+    const tree = await runAs(database, member.actor)(spaceTree())
+    expect(tree.some((node) => node.id === docId)).toBe(true)
+  })
+
+  test("restricted docs are hidden from members without a grant", async () => {
+    const docId = await createSpaceDoc(owner, "Secret")
+    await restrict(docId)
+    const memberTree = await runAs(database, member.actor)(spaceTree())
+    expect(memberTree.some((node) => node.id === docId)).toBe(false)
+    const ownerTree = await runAs(database, owner.actor)(spaceTree())
+    expect(ownerTree.some((node) => node.id === docId)).toBe(false)
+  })
+
+  test("reading a restricted doc fails for members", async () => {
+    const docId = await createSpaceDoc(owner, "Hidden")
+    await restrict(docId)
+    const exit = await exitAs(database, member.actor)(getDoc(docId))
+    expect(failureTag(exit)).not.toBe("success")
+  })
+
+  test("deleted docs resolve as deleted and restricted docs as masked", async () => {
+    const hiddenId = await createSpaceDoc(owner, "Masked")
+    await restrict(hiddenId)
+    const goneId = await createSpaceDoc(owner, "Gone")
+    await database.superuser`update entities set deleted_at = now() where id = ${goneId}`
+
+    const refs = await runAs(
+      database,
+      member.actor,
+    )(resolveEntities([hiddenId as EntityId, goneId as EntityId]))
+    expect(refs[hiddenId]).toMatchObject({ restricted: true, deleted: false })
+    expect(refs[hiddenId]?.title).toBeUndefined()
+    expect(refs[goneId]).toMatchObject({ deleted: true })
+  })
+})
+
+describe("doc comments", () => {
+  test("guests cannot comment on a space doc, members can", async () => {
+    const docId = await createSpaceDoc(owner, "Discuss")
+    const body = { type: "doc", content: [] }
+    const guestExit = await exitAs(database, guest.actor)(createDocComment.execute({ docId, body }))
+    expect(failureTag(guestExit)).not.toBe("success")
+    const comment = await runAs(database, member.actor)(createDocComment.execute({ docId, body }))
+    expect(comment.docId).toBe(docId)
+  })
+})

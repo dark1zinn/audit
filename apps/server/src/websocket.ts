@@ -18,7 +18,7 @@ export const upgradeWaiters = new WeakMap<Request, () => void>()
 
 export const withBunUpgrade = (
   request: HttpServerRequest.HttpServerRequest,
-  server: Bun.Server<RpcSocketData>,
+  server: Pick<Bun.Server<RpcSocketData>, "upgrade">,
 ): HttpServerRequest.HttpServerRequest => {
   const upgrade = Effect.gen(function* () {
     const queue = yield* Queue.make<Uint8Array | string, Socket.SocketError>()

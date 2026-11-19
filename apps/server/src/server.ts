@@ -4,6 +4,7 @@
  *   /api/auth/*  → Better Auth
  *   /api/*       → Effect HttpApi
  *   /rpc         → Effect RPC over WebSocket
+ *   /collab      → Hocuspocus co-editing over WebSocket
  *   /healthz, /readyz
  *   /*           → the built SPA
  */
@@ -23,9 +24,12 @@ import { Context, Effect, Layer, ManagedRuntime } from "effect"
 import { HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { SqlClient } from "effect/sql"
+import type { ServerWebSocket } from "bun"
 import { type AuthHandle, makeAuth } from "./auth.ts"
+import { type CollabSocketData, createCollab } from "./collab.ts"
 import { withClientIp } from "./client-ip.ts"
 import { HttpApiLive } from "./http-api.ts"
+import { FilesHttpLive } from "./files-http.ts"
 import { jobDefinitions, jobWorkersLayer } from "./jobs.ts"
 import { Presence } from "./presence.ts"
 import { rateLimiterLayer } from "./rate-limit.ts"
@@ -40,7 +44,15 @@ import {
   withBunUpgrade,
 } from "./websocket.ts"
 
-class BunServer extends Context.Service<BunServer, Bun.Server<RpcSocketData>>()(
+type SocketData = RpcSocketData | CollabSocketData
+
+const isRpcSocket = (ws: ServerWebSocket<SocketData>): ws is ServerWebSocket<RpcSocketData> =>
+  ws.data.kind === "rpc"
+
+const isCollabSocket = (ws: ServerWebSocket<SocketData>): ws is ServerWebSocket<CollabSocketData> =>
+  ws.data.kind === "collab"
+
+class BunServer extends Context.Service<BunServer, Bun.Server<SocketData>>()(
   "@audit/server/BunServer",
 ) {}
 
@@ -76,7 +88,7 @@ export const makeCoreLayer = (config: AppConfigShape) => {
 }
 
 export interface RunningServer {
-  readonly server: Bun.Server<RpcSocketData>
+  readonly server: Bun.Server<SocketData>
   readonly stop: () => Promise<void>
 }
 
@@ -99,14 +111,23 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     trail: makeTrailWriter(runtime),
   })
 
+  const sessions = sessionsLayer(auth)
+
   const serverLayer = Layer.mergeAll(
-    sessionsLayer(auth),
+    sessions,
     SetupToken.layer,
     rateLimiterLayer({ join: { max: 20, windowMs: 10 * 60_000 } }),
     Presence.layer,
     Realtime.layer,
     jobWorkersLayer,
   ).pipe(Layer.provideMerge(core))
+
+  // Shares the memo map so Db, Authz and EventBus are the same instances as in `runtime`.
+  const collabRuntime = ManagedRuntime.make(sessions.pipe(Layer.provideMerge(core)), {
+    memoMap: runtime.memoMap,
+  })
+  const collab = createCollab({ runtime: collabRuntime })
+  await collab.start()
 
   const RpcAuthenticationLive = Layer.effect(
     RpcAuthentication,
@@ -129,7 +150,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   )
 
   const app = HttpRouter.toWebHandler(
-    Layer.mergeAll(HttpApiLive, rpcLayer).pipe(
+    Layer.mergeAll(HttpApiLive, rpcLayer, FilesHttpLive).pipe(
       Layer.provide(serverLayer),
       Layer.provide(HttpServer.layerServices),
     ),
@@ -166,7 +187,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     return new Response("The web app is not built. Run `bun run build:web`.", { status: 404 })
   }
 
-  const server: Bun.Server<RpcSocketData> = Bun.serve<RpcSocketData>({
+  const server: Bun.Server<SocketData> = Bun.serve<SocketData>({
     port: config.port,
     async fetch(request, bunServer) {
       const url = new URL(request.url)
@@ -175,12 +196,20 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       if (pathname.startsWith("/api/auth/")) {
         return withHeaders(await auth.handler(withClientIp(request, bunServer, config.trustProxy)))
       }
+      if (pathname === "/collab") {
+        if (collab.handleUpgrade(request, bunServer)) return undefined
+        return new Response("Unauthorized", { status: 401 })
+      }
       if (pathname === "/rpc") {
         const { promise: upgraded, resolve } = Promise.withResolvers<undefined>()
         upgradeWaiters.set(request, () => resolve(undefined))
         return Promise.race([app.handler(request, context), upgraded])
       }
       if (pathname.startsWith("/api/")) {
+        const forwarded = withClientIp(request, bunServer, config.trustProxy)
+        return withHeaders(await app.handler(forwarded, context))
+      }
+      if (pathname.startsWith("/files/")) {
         const forwarded = withClientIp(request, bunServer, config.trustProxy)
         return withHeaders(await app.handler(forwarded, context))
       }
@@ -201,14 +230,30 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       }
       return withHeaders(await serveStatic(pathname))
     },
-    websocket: rpcSocketHandlers,
+    websocket: {
+      open(ws) {
+        if (isCollabSocket(ws)) collab.open(ws)
+        else if (isRpcSocket(ws)) rpcSocketHandlers.open(ws)
+      },
+      message(ws, message) {
+        if (isCollabSocket(ws)) collab.message(ws, message)
+        else if (isRpcSocket(ws)) rpcSocketHandlers.message(ws, message)
+      },
+      close(ws, code, reason) {
+        if (isCollabSocket(ws)) collab.close(ws, code, reason)
+        else if (isRpcSocket(ws)) rpcSocketHandlers.close(ws, code, reason)
+      },
+    },
   })
 
   return {
     server,
     stop: async () => {
       await server.stop()
+      // Collab stores must land while the runtime that runs them is still alive.
+      await collab.shutdown()
       await app.dispose()
+      await collabRuntime.dispose()
       await runtime.dispose()
       await auth.close()
     },

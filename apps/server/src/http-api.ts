@@ -6,6 +6,10 @@ import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import * as identity from "@audit/core/identity/commands"
 import * as identityQueries from "@audit/core/identity/queries"
+import * as docCommands from "@audit/core/docs/commands"
+import * as docComments from "@audit/core/docs/comments"
+import * as docQueries from "@audit/core/docs/queries"
+import { backlinks, resolveEntities } from "@audit/core/references"
 import * as projectCommands from "@audit/core/projects/commands"
 import * as projectQueries from "@audit/core/projects/queries"
 import { RequestMeta } from "@audit/core/request"
@@ -33,7 +37,7 @@ const coreContext = Effect.context<Db | SqlClient.SqlClient | Authz | EventBus |
 const systemActor = (reason: string) =>
   Effect.provideService(CurrentActor, { _tag: "system", reason } as const)
 
-const clientMeta = Effect.gen(function* () {
+export const clientMeta = Effect.gen(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest
   const headers = request.headers
   const ip = headers[CLIENT_IP_HEADER]
@@ -490,6 +494,120 @@ const NotificationsLive = HttpApiBuilder.group(AuditApi, "notifications", (handl
   }),
 )
 
+const DocsLive = HttpApiBuilder.group(AuditApi, "docs", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("projectTree", ({ params }) =>
+        docQueries.projectTree(params.projectId).pipe(Effect.provide(core)),
+      )
+      .handle("spaceTree", () => docQueries.spaceTree().pipe(Effect.provide(core)))
+      .handle("get", ({ params }) => docQueries.getDoc(params.docId).pipe(Effect.provide(core)))
+      .handle("create", ({ payload }) =>
+        docCommands.createDoc.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("import", ({ payload }) =>
+        docCommands.importDoc.execute(payload).pipe(Effect.provide(core)),
+      )
+      .handle("rename", ({ params, payload }) =>
+        docCommands.renameDoc
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("setIcon", ({ params, payload }) =>
+        docCommands.setDocIcon
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("move", ({ params, payload }) =>
+        docCommands.moveDoc.execute({ docId: params.docId, ...payload }).pipe(Effect.provide(core)),
+      )
+      .handle("delete", ({ params, payload }) =>
+        docCommands.deleteDoc
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("setRestricted", ({ params, payload }) =>
+        docCommands.setDocRestricted
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("setReview", ({ params, payload }) =>
+        docCommands.setDocReview
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("verify", ({ params }) =>
+        docCommands.verifyDoc.execute({ docId: params.docId }).pipe(Effect.provide(core)),
+      )
+      .handle("grant", ({ params, payload }) =>
+        docCommands.grantDocAccess
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("revoke", ({ params, payload }) =>
+        docCommands.revokeDocAccess
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.asVoid, Effect.provide(core)),
+      )
+      .handle("versions", ({ params }) =>
+        docQueries.listVersions(params.docId).pipe(Effect.provide(core)),
+      )
+      .handle("createVersion", ({ params, payload }) =>
+        docCommands.createDocVersion
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("version", ({ params }) =>
+        docQueries.getVersion(params.docId, params.versionId).pipe(Effect.provide(core)),
+      )
+      .handle("restoreVersion", ({ params }) =>
+        docCommands.restoreDocVersion
+          .execute({ docId: params.docId, versionId: params.versionId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("comments", ({ params }) =>
+        docComments.listDocComments(params.docId).pipe(Effect.provide(core)),
+      )
+      .handle("createComment", ({ params, payload }) =>
+        docComments.createDocComment
+          .execute({ docId: params.docId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("updateComment", ({ params, payload }) =>
+        docComments.updateDocComment
+          .execute({ commentId: params.commentId, ...payload })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("deleteComment", ({ params }) =>
+        docComments.deleteDocComment
+          .execute({ commentId: params.commentId })
+          .pipe(Effect.provide(core)),
+      )
+      .handle("exportMarkdown", ({ params }) =>
+        docQueries.exportDoc(params.docId, "md").pipe(
+          Effect.map((exported) => exported.body),
+          Effect.provide(core),
+        ),
+      )
+      .handle("exportHtml", ({ params }) =>
+        docQueries.exportDoc(params.docId, "html").pipe(
+          Effect.map((exported) => exported.body),
+          Effect.provide(core),
+        ),
+      )
+  }),
+)
+
+const EntitiesLive = HttpApiBuilder.group(AuditApi, "entities", (handlers) =>
+  Effect.gen(function* () {
+    const core = yield* coreContext
+    return handlers
+      .handle("resolve", ({ payload }) => resolveEntities(payload.ids).pipe(Effect.provide(core)))
+      .handle("backlinks", ({ params }) => backlinks(params.entityId).pipe(Effect.provide(core)))
+  }),
+)
+
 export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
   openapiPath: "/api/openapi.json",
 }).pipe(
@@ -506,6 +624,8 @@ export const HttpApiLive = HttpApiBuilder.layer(AuditApi, {
     BoardsLive,
     TasksLive,
     NotificationsLive,
+    DocsLive,
+    EntitiesLive,
   ]),
   Layer.provide(AuthenticationLive),
 )
