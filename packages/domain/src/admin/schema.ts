@@ -112,3 +112,22 @@ export const AccessPersonReview = Schema.Struct({
 })
 
 export const OrphanCleanupResult = Schema.Struct({ purged: Schema.Number })
+
+/** A background maintenance job's latest request and completion, read from the trail. */
+export const MaintenanceJobStatus = Schema.Struct({
+  state: Schema.Literals(["idle", "queued", "done"]),
+  requestedAt: Schema.NullOr(Schema.Date),
+  completedAt: Schema.NullOr(Schema.Date),
+  /** Docs compacted or boards rebalanced by the latest completed run. */
+  count: Schema.NullOr(Schema.Number),
+})
+export type MaintenanceJobStatus = typeof MaintenanceJobStatus.Type
+
+export const MaintenanceStatus = Schema.Struct({
+  rebalance: MaintenanceJobStatus,
+  compaction: MaintenanceJobStatus,
+  reembed: MaintenanceJobStatus,
+})
+export type MaintenanceStatus = typeof MaintenanceStatus.Type
+
+export const MaintenanceQueued = Schema.Struct({ queued: Schema.Literal(true) })

@@ -100,6 +100,8 @@ export const messages = pgTable(
     deletedAt: timestamptz("deleted_at"),
     replyCount: integer("reply_count").notNull().default(0),
     lastReplyAt: timestamptz("last_reply_at"),
+    /** Set on messages the workspace AI wrote (weekly digest); shown with an AI label. */
+    generatedBy: text("generated_by"),
   },
   (t) => [
     index("messages_channel_idx").on(t.channelId, t.id.desc()),

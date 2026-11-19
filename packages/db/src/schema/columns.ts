@@ -19,3 +19,21 @@ export const updatedAt = () => timestamptz("updated_at").notNull().defaultNow()
 export const tsvector = customType<{ data: string; driverData: string }>({
   dataType: () => "tsvector",
 })
+
+/**
+ * Half-precision embedding vector of a fixed dimension (`halfvec(n)`). The dimension follows the
+ * configured embedding model; the server registers no codec, values travel as pgvector text.
+ */
+export const halfvec = customType<{
+  data: number[]
+  driverData: string
+  config: { dimensions: number }
+}>({
+  dataType: (config) => `halfvec(${config?.dimensions ?? 1536})`,
+  toDriver: (value) => `[${value.join(",")}]`,
+  fromDriver: (value) =>
+    value
+      .slice(1, -1)
+      .split(",")
+      .map((part) => Number(part)),
+})

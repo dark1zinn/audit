@@ -16,6 +16,7 @@ export const NotificationKind = Schema.Literals([
   "event_invited",
   "event_changed",
   "event_reminder",
+  "ai_proposal",
 ])
 export type NotificationKind = typeof NotificationKind.Type
 

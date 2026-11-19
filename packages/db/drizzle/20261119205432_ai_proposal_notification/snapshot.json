@@ -1,0 +1,63 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "7a9c487b-b21d-4d95-bc3a-35f839daa2c3",
+  "prevIds": [
+    "08646222-ade0-4999-8d83-f28821884b51"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "notifications"
+      ],
+      "writes": [
+        "s|ck|public.notifications.notifications_kind_check"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|col|public.notifications.kind",
+        "e|col|public.notifications.kind"
+      ],
+      "sqlHash": "ecdd6477bc76f423"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification_prefs"
+      ],
+      "writes": [
+        "s|ck|public.notification_prefs.notification_prefs_kind_check"
+      ],
+      "reads": [
+        "n|tbl|public.notification_prefs",
+        "n|sch|public",
+        "n|col|public.notification_prefs.kind",
+        "e|col|public.notification_prefs.kind"
+      ],
+      "sqlHash": "6bf357201a1a5038"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"notifications\",\"notifications_kind_check\"]",
+      "set": {
+        "value": "\"kind\" in ('task_due_soon', 'task_overdue', 'task_assigned', 'mention', 'doc_review_due', 'direct_message', 'thread_reply', 'task_unassigned', 'task_changed', 'comment_added', 'invite_accepted', 'event_invited', 'event_changed', 'event_reminder', 'ai_proposal')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"notification_prefs\",\"notification_prefs_kind_check\"]",
+      "set": {
+        "value": "\"kind\" in ('task_due_soon', 'task_overdue', 'task_assigned', 'mention', 'doc_review_due', 'direct_message', 'thread_reply', 'task_unassigned', 'task_changed', 'comment_added', 'invite_accepted', 'event_invited', 'event_changed', 'event_reminder', 'ai_proposal')"
+      }
+    }
+  ]
+}

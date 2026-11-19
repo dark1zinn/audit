@@ -1,0 +1,2287 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "bd395562-d6bc-44e7-ae4b-05f47e54cb73",
+  "prevIds": [
+    "210cc7ca-01f9-4be2-ad58-476763c24af3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_conversations"
+      ],
+      "writes": [
+        "s|tbl|public.ai_conversations",
+        "n|tbl|public.ai_conversations",
+        "e|tbl|public.ai_conversations",
+        "n|rel|public.ai_conversations",
+        "n|type|public.ai_conversations",
+        "n|rel|public.ai_conversations_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_messages"
+      ],
+      "writes": [
+        "s|tbl|public.ai_messages",
+        "n|tbl|public.ai_messages",
+        "e|tbl|public.ai_messages",
+        "n|rel|public.ai_messages",
+        "n|type|public.ai_messages",
+        "n|rel|public.ai_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_proposals"
+      ],
+      "writes": [
+        "s|tbl|public.ai_proposals",
+        "n|tbl|public.ai_proposals",
+        "e|tbl|public.ai_proposals",
+        "n|rel|public.ai_proposals",
+        "n|type|public.ai_proposals",
+        "n|rel|public.ai_proposals_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_providers"
+      ],
+      "writes": [
+        "s|tbl|public.ai_providers",
+        "n|tbl|public.ai_providers",
+        "e|tbl|public.ai_providers",
+        "n|rel|public.ai_providers",
+        "n|type|public.ai_providers",
+        "n|rel|public.ai_providers_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_settings"
+      ],
+      "writes": [
+        "s|tbl|public.ai_settings",
+        "n|tbl|public.ai_settings",
+        "e|tbl|public.ai_settings",
+        "n|rel|public.ai_settings",
+        "n|type|public.ai_settings",
+        "n|rel|public.ai_settings_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_usage"
+      ],
+      "writes": [
+        "s|tbl|public.ai_usage",
+        "n|tbl|public.ai_usage",
+        "e|tbl|public.ai_usage",
+        "n|rel|public.ai_usage",
+        "n|type|public.ai_usage",
+        "n|rel|public.ai_usage_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_user_preferences"
+      ],
+      "writes": [
+        "s|tbl|public.ai_user_preferences",
+        "n|tbl|public.ai_user_preferences",
+        "e|tbl|public.ai_user_preferences",
+        "n|rel|public.ai_user_preferences",
+        "n|type|public.ai_user_preferences",
+        "n|rel|public.ai_user_preferences_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "embeddings"
+      ],
+      "writes": [
+        "s|tbl|public.embeddings",
+        "n|tbl|public.embeddings",
+        "e|tbl|public.embeddings",
+        "n|rel|public.embeddings",
+        "n|type|public.embeddings",
+        "n|rel|public.embeddings_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "ai_conversations",
+        "ai_conversations_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.ai_conversations_user_idx",
+        "n|idx|public.ai_conversations_user_idx",
+        "e|idx|public.ai_conversations_user_idx",
+        "n|rel|public.ai_conversations_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.ai_conversations",
+        "n|sch|public",
+        "n|col|public.ai_conversations.user_id",
+        "n|col|public.ai_conversations.updated_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "ai_messages",
+        "ai_messages_conversation_idx"
+      ],
+      "writes": [
+        "s|idx|public.ai_messages_conversation_idx",
+        "n|idx|public.ai_messages_conversation_idx",
+        "e|idx|public.ai_messages_conversation_idx",
+        "n|rel|public.ai_messages_conversation_idx"
+      ],
+      "reads": [
+        "n|tbl|public.ai_messages",
+        "n|sch|public",
+        "n|col|public.ai_messages.conversation_id",
+        "n|col|public.ai_messages.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "ai_proposals",
+        "ai_proposals_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.ai_proposals_user_idx",
+        "n|idx|public.ai_proposals_user_idx",
+        "e|idx|public.ai_proposals_user_idx",
+        "n|rel|public.ai_proposals_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.ai_proposals",
+        "n|sch|public",
+        "n|col|public.ai_proposals.user_id",
+        "n|col|public.ai_proposals.status",
+        "n|col|public.ai_proposals.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "ai_usage",
+        "ai_usage_user_created_idx"
+      ],
+      "writes": [
+        "s|idx|public.ai_usage_user_created_idx",
+        "n|idx|public.ai_usage_user_created_idx",
+        "e|idx|public.ai_usage_user_created_idx",
+        "n|rel|public.ai_usage_user_created_idx"
+      ],
+      "reads": [
+        "n|tbl|public.ai_usage",
+        "n|sch|public",
+        "n|col|public.ai_usage.user_id",
+        "n|col|public.ai_usage.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "ai_usage",
+        "ai_usage_created_idx"
+      ],
+      "writes": [
+        "s|idx|public.ai_usage_created_idx",
+        "n|idx|public.ai_usage_created_idx",
+        "e|idx|public.ai_usage_created_idx",
+        "n|rel|public.ai_usage_created_idx"
+      ],
+      "reads": [
+        "n|tbl|public.ai_usage",
+        "n|sch|public",
+        "n|col|public.ai_usage.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "embeddings",
+        "embeddings_entity_idx"
+      ],
+      "writes": [
+        "s|idx|public.embeddings_entity_idx",
+        "n|idx|public.embeddings_entity_idx",
+        "e|idx|public.embeddings_entity_idx",
+        "n|rel|public.embeddings_entity_idx"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|col|public.embeddings.entity_id",
+        "n|col|public.embeddings.chunk"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "embeddings",
+        "embeddings_vector_idx"
+      ],
+      "writes": [
+        "s|idx|public.embeddings_vector_idx",
+        "n|idx|public.embeddings_vector_idx",
+        "e|idx|public.embeddings_vector_idx",
+        "n|rel|public.embeddings_vector_idx"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|col|public.embeddings.vector"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_conversations"
+      ],
+      "writes": [
+        "s|fk|public.ai_conversations.ai_conversations_user_id_user_id_fkey",
+        "n|fk|public.ai_conversations.ai_conversations_user_id_user_id_fkey",
+        "e|fk|public.ai_conversations.ai_conversations_user_id_user_id_fkey",
+        "n|con|public.ai_conversations.ai_conversations_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_conversations",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.ai_conversations.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_conversations"
+      ],
+      "writes": [
+        "s|fk|public.ai_conversations.ai_conversations_context_entity_id_entities_id_fkey",
+        "n|fk|public.ai_conversations.ai_conversations_context_entity_id_entities_id_fkey",
+        "e|fk|public.ai_conversations.ai_conversations_context_entity_id_entities_id_fkey",
+        "n|con|public.ai_conversations.ai_conversations_context_entity_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_conversations",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.ai_conversations.context_entity_id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_messages"
+      ],
+      "writes": [
+        "s|fk|public.ai_messages.ai_messages_conversation_id_ai_conversations_id_fkey",
+        "n|fk|public.ai_messages.ai_messages_conversation_id_ai_conversations_id_fkey",
+        "e|fk|public.ai_messages.ai_messages_conversation_id_ai_conversations_id_fkey",
+        "n|con|public.ai_messages.ai_messages_conversation_id_ai_conversations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_messages",
+        "n|sch|public",
+        "n|tbl|public.ai_conversations",
+        "n|sch|public",
+        "n|col|public.ai_messages.conversation_id",
+        "n|col|public.ai_conversations.id",
+        "e|uniqueness|public.ai_conversations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_proposals"
+      ],
+      "writes": [
+        "s|fk|public.ai_proposals.ai_proposals_user_id_user_id_fkey",
+        "n|fk|public.ai_proposals.ai_proposals_user_id_user_id_fkey",
+        "e|fk|public.ai_proposals.ai_proposals_user_id_user_id_fkey",
+        "n|con|public.ai_proposals.ai_proposals_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_proposals",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.ai_proposals.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_proposals"
+      ],
+      "writes": [
+        "s|fk|public.ai_proposals.ai_proposals_conversation_id_ai_conversations_id_fkey",
+        "n|fk|public.ai_proposals.ai_proposals_conversation_id_ai_conversations_id_fkey",
+        "e|fk|public.ai_proposals.ai_proposals_conversation_id_ai_conversations_id_fkey",
+        "n|con|public.ai_proposals.ai_proposals_conversation_id_ai_conversations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_proposals",
+        "n|sch|public",
+        "n|tbl|public.ai_conversations",
+        "n|sch|public",
+        "n|col|public.ai_proposals.conversation_id",
+        "n|col|public.ai_conversations.id",
+        "e|uniqueness|public.ai_conversations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_settings"
+      ],
+      "writes": [
+        "s|fk|public.ai_settings.ai_settings_default_provider_id_ai_providers_id_fkey",
+        "n|fk|public.ai_settings.ai_settings_default_provider_id_ai_providers_id_fkey",
+        "e|fk|public.ai_settings.ai_settings_default_provider_id_ai_providers_id_fkey",
+        "n|con|public.ai_settings.ai_settings_default_provider_id_ai_providers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_settings",
+        "n|sch|public",
+        "n|tbl|public.ai_providers",
+        "n|sch|public",
+        "n|col|public.ai_settings.default_provider_id",
+        "n|col|public.ai_providers.id",
+        "e|uniqueness|public.ai_providers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_settings"
+      ],
+      "writes": [
+        "s|fk|public.ai_settings.ai_settings_embedding_provider_id_ai_providers_id_fkey",
+        "n|fk|public.ai_settings.ai_settings_embedding_provider_id_ai_providers_id_fkey",
+        "e|fk|public.ai_settings.ai_settings_embedding_provider_id_ai_providers_id_fkey",
+        "n|con|public.ai_settings.ai_settings_embedding_provider_id_ai_providers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_settings",
+        "n|sch|public",
+        "n|tbl|public.ai_providers",
+        "n|sch|public",
+        "n|col|public.ai_settings.embedding_provider_id",
+        "n|col|public.ai_providers.id",
+        "e|uniqueness|public.ai_providers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_usage"
+      ],
+      "writes": [
+        "s|fk|public.ai_usage.ai_usage_user_id_user_id_fkey",
+        "n|fk|public.ai_usage.ai_usage_user_id_user_id_fkey",
+        "e|fk|public.ai_usage.ai_usage_user_id_user_id_fkey",
+        "n|con|public.ai_usage.ai_usage_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_usage",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.ai_usage.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_usage"
+      ],
+      "writes": [
+        "s|fk|public.ai_usage.ai_usage_provider_id_ai_providers_id_fkey",
+        "n|fk|public.ai_usage.ai_usage_provider_id_ai_providers_id_fkey",
+        "e|fk|public.ai_usage.ai_usage_provider_id_ai_providers_id_fkey",
+        "n|con|public.ai_usage.ai_usage_provider_id_ai_providers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_usage",
+        "n|sch|public",
+        "n|tbl|public.ai_providers",
+        "n|sch|public",
+        "n|col|public.ai_usage.provider_id",
+        "n|col|public.ai_providers.id",
+        "e|uniqueness|public.ai_providers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "ai_user_preferences"
+      ],
+      "writes": [
+        "s|fk|public.ai_user_preferences.ai_user_preferences_user_id_user_id_fkey",
+        "n|fk|public.ai_user_preferences.ai_user_preferences_user_id_user_id_fkey",
+        "e|fk|public.ai_user_preferences.ai_user_preferences_user_id_user_id_fkey",
+        "n|con|public.ai_user_preferences.ai_user_preferences_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.ai_user_preferences",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.ai_user_preferences.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "embeddings"
+      ],
+      "writes": [
+        "s|fk|public.embeddings.embeddings_entity_id_entities_id_fkey",
+        "n|fk|public.embeddings.embeddings_entity_id_entities_id_fkey",
+        "e|fk|public.embeddings.embeddings_entity_id_entities_id_fkey",
+        "n|con|public.embeddings.embeddings_entity_id_entities_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.embeddings.entity_id",
+        "n|col|public.entities.id",
+        "e|uniqueness|public.entities.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_conversations",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_proposals",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_providers",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_settings",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_usage",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "ai_user_preferences",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "embeddings",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "title",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "context_entity_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "conversation_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "role",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "parts",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'[]'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "conversation_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "command",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "input",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "preview",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "result",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "decided_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "base_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "key_ciphertext",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "key_nonce",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "key_last4",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "chat_model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "embedding_model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "embedding_dimensions",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'untested'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "last_tested_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "last_test_error",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "default_provider_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "embedding_provider_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "allowed_roles",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{owner,admin,member}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "monthly_token_budget",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "features",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "provider_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "feature",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "input_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "output_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_user_preferences",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_user_preferences",
+        "name": "auto_approve_tools",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_user_preferences",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "entity_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "chunk",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "vector",
+        "type": "halfvec(1536)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "ai_conversations_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "updated_at",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "ai_messages_conversation_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "conversation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "ai_proposals_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_user_created_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_created_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "embeddings_entity_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "entity_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "chunk",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "embeddings_vector_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "vector",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": {
+              "name": "halfvec_cosine_ops",
+              "default": false
+            }
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "hnsw",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "ai_conversations_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "ai_conversations_context_entity_id_entities_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "context_entity_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "entities",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "ai_messages_conversation_id_ai_conversations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "ai_conversations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "ai_proposals_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "ai_proposals_conversation_id_ai_conversations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "ai_conversations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_default_provider_id_ai_providers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "default_provider_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "ai_providers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_embedding_provider_id_ai_providers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "embedding_provider_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "ai_providers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_provider_id_ai_providers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "provider_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "ai_providers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_user_preferences",
+        "name": "ai_user_preferences_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "embeddings_entity_id_entities_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "entity_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "entities",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_conversations",
+        "name": "ai_conversations_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "ai_messages_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "ai_proposals_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "ai_providers_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_user_preferences",
+        "name": "ai_user_preferences_pkey",
+        "columns": [
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "embeddings_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_messages",
+        "name": "ai_messages_role_check",
+        "value": "\"role\" in ('user', 'assistant', 'tool')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_proposals",
+        "name": "ai_proposals_status_check",
+        "value": "\"status\" in ('pending', 'approved', 'rejected', 'expired', 'failed')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "ai_providers_kind_check",
+        "value": "\"kind\" in ('openai', 'anthropic', 'google', 'openrouter', 'openai_compatible')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "ai_providers_status_check",
+        "value": "\"status\" in ('untested', 'ok', 'failed')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "ai_providers_key_check",
+        "value": "(\"key_ciphertext\" is null) = (\"key_nonce\" is null)\n      and (\"key_ciphertext\" is null) = (\"key_last4\" is null)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_providers",
+        "name": "ai_providers_dimensions_check",
+        "value": "\"embedding_dimensions\" >= 0 and \"embedding_dimensions\" <= 4000",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_singleton",
+        "value": "\"id\" = 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_settings",
+        "name": "ai_settings_budget_check",
+        "value": "\"monthly_token_budget\" is null or \"monthly_token_budget\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "ai_usage",
+        "name": "ai_usage_feature_check",
+        "value": "\"feature\" in ('assistant', 'semantic_search', 'summaries', 'doc_upkeep', 'editor', 'chat', 'board', 'calendar', 'embedding', 'connection_test')",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

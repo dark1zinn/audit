@@ -1,0 +1,354 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "08646222-ade0-4999-8d83-f28821884b51",
+  "prevIds": [
+    "bd395562-d6bc-44e7-ae4b-05f47e54cb73"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "embeddings",
+        "embeddings_entity_idx"
+      ],
+      "writes": [
+        "s|idx|public.embeddings_entity_idx",
+        "n|idx|public.embeddings_entity_idx",
+        "e|idx|public.embeddings_entity_idx",
+        "n|rel|public.embeddings_entity_idx"
+      ],
+      "reads": [
+        "e|tbl|public.embeddings",
+        "n|sch|public",
+        "e|col|public.embeddings.entity_id",
+        "e|col|public.embeddings.chunk"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "comments",
+        "ai"
+      ],
+      "writes": [
+        "s|col|public.comments.ai",
+        "n|col|public.comments.ai",
+        "e|col|public.comments.ai"
+      ],
+      "reads": [
+        "n|tbl|public.comments",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "embeddings",
+        "text"
+      ],
+      "writes": [
+        "s|col|public.embeddings.text",
+        "n|col|public.embeddings.text",
+        "e|col|public.embeddings.text"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "messages",
+        "generated_by"
+      ],
+      "writes": [
+        "s|col|public.messages.generated_by",
+        "n|col|public.messages.generated_by",
+        "e|col|public.messages.generated_by"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "projects",
+        "ai_digest"
+      ],
+      "writes": [
+        "s|col|public.projects.ai_digest",
+        "n|col|public.projects.ai_digest",
+        "e|col|public.projects.ai_digest"
+      ],
+      "reads": [
+        "n|tbl|public.projects",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "projects",
+        "ai_digest_enabled_by"
+      ],
+      "writes": [
+        "s|col|public.projects.ai_digest_enabled_by",
+        "n|col|public.projects.ai_digest_enabled_by",
+        "e|col|public.projects.ai_digest_enabled_by"
+      ],
+      "reads": [
+        "n|tbl|public.projects",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "embeddings",
+        "model"
+      ],
+      "writes": [
+        "s|colprop|public.embeddings.model.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|col|public.embeddings.model"
+      ],
+      "sqlHash": "ab2359c38c3744d1"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "embeddings",
+        "vector"
+      ],
+      "writes": [
+        "s|colprop|public.embeddings.vector.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|col|public.embeddings.vector"
+      ],
+      "sqlHash": "567c8340b68e1632"
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "embeddings",
+        "embeddings_entity_chunk_uniq"
+      ],
+      "writes": [
+        "s|idx|public.embeddings_entity_chunk_uniq",
+        "n|idx|public.embeddings_entity_chunk_uniq",
+        "e|idx|public.embeddings_entity_chunk_uniq",
+        "n|rel|public.embeddings_entity_chunk_uniq"
+      ],
+      "reads": [
+        "n|tbl|public.embeddings",
+        "n|sch|public",
+        "n|col|public.embeddings.entity_id",
+        "n|col|public.embeddings.chunk"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "projects"
+      ],
+      "writes": [
+        "s|fk|public.projects.projects_ai_digest_enabled_by_user_id_fkey",
+        "n|fk|public.projects.projects_ai_digest_enabled_by_user_id_fkey",
+        "e|fk|public.projects.projects_ai_digest_enabled_by_user_id_fkey",
+        "n|con|public.projects.projects_ai_digest_enabled_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.projects",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.projects.ai_digest_enabled_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "comments",
+        "name": "ai",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "text",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "generated_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "projects",
+        "name": "ai_digest",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "projects",
+        "name": "ai_digest_enabled_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "embeddings",
+        "name": "embeddings_entity_chunk_uniq",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "entity_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "chunk",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "projects",
+        "name": "projects_ai_digest_enabled_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "ai_digest_enabled_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"embeddings_entity_idx\"]"
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"embeddings\",\"model\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"embeddings\",\"vector\"]",
+      "set": {
+        "notNull": false
+      }
+    }
+  ]
+}

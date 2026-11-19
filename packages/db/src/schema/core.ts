@@ -222,6 +222,9 @@ export const projects = pgTable(
     memberRole: text("member_role").notNull().$type<ResourceRoleColumn>().default("editor"),
     status: text("status").notNull().$type<"active" | "archived">().default("active"),
     taskSeq: integer("task_seq").notNull().default(0),
+    /** Opt-in for the weekly AI digest; `aiDigestEnabledBy` is the person who turned it on. */
+    aiDigest: boolean("ai_digest").notNull().default(false),
+    aiDigestEnabledBy: uuid("ai_digest_enabled_by").references(() => user.id),
   },
   (t) => [
     check("projects_key_check", sql`${t.key} ~ '^[A-Z]{2,6}$'`),

@@ -9,6 +9,8 @@ import {
   BrandingInput,
   EmailStatus,
   EmailTestInput,
+  MaintenanceQueued,
+  MaintenanceStatus,
   OrphanCleanupResult,
   RetentionInput,
   SecurityInput,
@@ -63,6 +65,30 @@ export const AdminApi = HttpApiGroup.make("admin")
   .add(
     HttpApiEndpoint.post("runOrphanCleanup", "/api/admin/storage/orphan-cleanup", {
       success: OrphanCleanupResult,
+      error: [Forbidden],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.get("maintenance", "/api/admin/maintenance", {
+      success: MaintenanceStatus,
+      error: [Forbidden],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("rebalanceBoards", "/api/admin/maintenance/rebalance-boards", {
+      success: MaintenanceQueued,
+      error: [Forbidden],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("compactDocs", "/api/admin/maintenance/compact-docs", {
+      success: MaintenanceQueued,
+      error: [Forbidden],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("reembed", "/api/admin/maintenance/reembed", {
+      success: MaintenanceQueued,
       error: [Forbidden],
     }),
   )

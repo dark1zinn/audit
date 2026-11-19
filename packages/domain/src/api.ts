@@ -18,6 +18,7 @@ import { CalendarApi } from "./calendar/api.ts"
 import { AdminApi, SignupApi } from "./admin/api.ts"
 import { PeopleApi } from "./people/api.ts"
 import { SearchApi } from "./search/api.ts"
+import { AiAdminApi, AiApi } from "./ai/api.ts"
 
 /** The REST API served under `/api`, shared by the server and the typed web client. */
 export const AuditApi = HttpApi.make("audit")
@@ -41,4 +42,6 @@ export const AuditApi = HttpApi.make("audit")
   .add(SignupApi)
   .add(PeopleApi)
   .add(SearchApi)
+  .add(AiAdminApi)
+  .add(AiApi)
   .annotateMerge(OpenApi.annotations({ title: "audit API", version: "1.0.0" }))

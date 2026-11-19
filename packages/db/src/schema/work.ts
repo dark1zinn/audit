@@ -36,6 +36,7 @@ export const notificationKinds = [
   "event_invited",
   "event_changed",
   "event_reminder",
+  "ai_proposal",
 ] as const
 
 /** A board belongs to a project. Its access grants live in `container_access` like other containers. */
@@ -173,6 +174,8 @@ export const comments = pgTable(
     }),
     resolvedAt: timestamptz("resolved_at"),
     editedAt: timestamptz("edited_at"),
+    /** Set on comments the AI wrote (doc upkeep findings); see `ai/doc-upkeep`. */
+    ai: jsonb("ai").$type<Record<string, unknown>>(),
   },
   (t) => [index("comments_target_idx").on(t.targetId, t.id)],
 )
