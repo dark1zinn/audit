@@ -24,6 +24,8 @@ import { Route as AppAdminMembersRouteImport } from './routes/_app.admin.members
 import { Route as AppAdminProjectsRouteImport } from './routes/_app.admin.projects'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app.admin.teams'
 import { Route as AppAdminWorkspaceRouteImport } from './routes/_app.admin.workspace'
+import { Route as AppDocsIndexRouteImport } from './routes/_app.docs.index'
+import { Route as AppDocsDocIdRouteImport } from './routes/_app.docs.$docId'
 import { Route as AppPKeyRouteImport } from './routes/_app.p.$key'
 import { Route as AppSettingsProfileRouteImport } from './routes/_app.settings.profile'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app.settings.security'
@@ -31,6 +33,8 @@ import { Route as AppPKeyBoardRouteImport } from './routes/_app.p.$key.board'
 import { Route as AppPKeyCalendarRouteImport } from './routes/_app.p.$key.calendar'
 import { Route as AppPKeyListRouteImport } from './routes/_app.p.$key.list'
 import { Route as AppPKeySettingsRouteImport } from './routes/_app.p.$key.settings'
+import { Route as AppPKeyDocsIndexRouteImport } from './routes/_app.p.$key.docs.index'
+import { Route as AppPKeyDocsDocIdRouteImport } from './routes/_app.p.$key.docs.$docId'
 import { Route as AppPKeyTNumberRouteImport } from './routes/_app.p.$key.t.$number'
 
 const AppRoute = AppRouteImport.update({
@@ -107,6 +111,16 @@ const AppAdminWorkspaceRoute = AppAdminWorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppDocsIndexRoute = AppDocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocsDocIdRoute = AppDocsDocIdRouteImport.update({
+  id: '/docs/$docId',
+  path: '/docs/$docId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPKeyRoute = AppPKeyRouteImport.update({
   id: '/p/$key',
   path: '/p/$key',
@@ -142,6 +156,16 @@ const AppPKeySettingsRoute = AppPKeySettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPKeyRoute,
 } as any)
+const AppPKeyDocsIndexRoute = AppPKeyDocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => AppPKeyRoute,
+} as any)
+const AppPKeyDocsDocIdRoute = AppPKeyDocsDocIdRouteImport.update({
+  id: '/docs/$docId',
+  path: '/docs/$docId',
+  getParentRoute: () => AppPKeyRoute,
+} as any)
 const AppPKeyTNumberRoute = AppPKeyTNumberRouteImport.update({
   id: '/t/$number',
   path: '/t/$number',
@@ -162,15 +186,19 @@ export interface FileRoutesByFullPath {
   '/admin/projects': typeof AppAdminProjectsRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/docs/': typeof AppDocsIndexRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
+  '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
+  '/p/$key/docs/': typeof AppPKeyDocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -185,15 +213,19 @@ export interface FileRoutesByTo {
   '/admin/projects': typeof AppAdminProjectsRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/profile': typeof AppSettingsProfileRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin': typeof AppAdminIndexRoute
+  '/docs': typeof AppDocsIndexRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
+  '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
+  '/p/$key/docs': typeof AppPKeyDocsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -211,15 +243,19 @@ export interface FileRoutesById {
   '/_app/admin/projects': typeof AppAdminProjectsRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/workspace': typeof AppAdminWorkspaceRoute
+  '/_app/docs/$docId': typeof AppDocsDocIdRoute
   '/_app/p/$key': typeof AppPKeyRouteWithChildren
   '/_app/settings/profile': typeof AppSettingsProfileRoute
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_app/docs/': typeof AppDocsIndexRoute
   '/_app/p/$key/board': typeof AppPKeyBoardRoute
   '/_app/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/_app/p/$key/list': typeof AppPKeyListRoute
   '/_app/p/$key/settings': typeof AppPKeySettingsRoute
+  '/_app/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/_app/p/$key/t/$number': typeof AppPKeyTNumberRoute
+  '/_app/p/$key/docs/': typeof AppPKeyDocsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -237,15 +273,19 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/teams'
     | '/admin/workspace'
+    | '/docs/$docId'
     | '/p/$key'
     | '/settings/profile'
     | '/settings/security'
     | '/admin/'
+    | '/docs/'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
+    | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
+    | '/p/$key/docs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -260,15 +300,19 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/teams'
     | '/admin/workspace'
+    | '/docs/$docId'
     | '/p/$key'
     | '/settings/profile'
     | '/settings/security'
     | '/admin'
+    | '/docs'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
+    | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
+    | '/p/$key/docs'
   id:
     | '__root__'
     | '/_app'
@@ -285,15 +329,19 @@ export interface FileRouteTypes {
     | '/_app/admin/projects'
     | '/_app/admin/teams'
     | '/_app/admin/workspace'
+    | '/_app/docs/$docId'
     | '/_app/p/$key'
     | '/_app/settings/profile'
     | '/_app/settings/security'
     | '/_app/admin/'
+    | '/_app/docs/'
     | '/_app/p/$key/board'
     | '/_app/p/$key/calendar'
     | '/_app/p/$key/list'
     | '/_app/p/$key/settings'
+    | '/_app/p/$key/docs/$docId'
     | '/_app/p/$key/t/$number'
+    | '/_app/p/$key/docs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -411,6 +459,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminWorkspaceRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/docs/': {
+      id: '/_app/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof AppDocsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/docs/$docId': {
+      id: '/_app/docs/$docId'
+      path: '/docs/$docId'
+      fullPath: '/docs/$docId'
+      preLoaderRoute: typeof AppDocsDocIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/p/$key': {
       id: '/_app/p/$key'
       path: '/p/$key'
@@ -460,6 +522,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPKeySettingsRouteImport
       parentRoute: typeof AppPKeyRoute
     }
+    '/_app/p/$key/docs/': {
+      id: '/_app/p/$key/docs/'
+      path: '/docs'
+      fullPath: '/p/$key/docs/'
+      preLoaderRoute: typeof AppPKeyDocsIndexRouteImport
+      parentRoute: typeof AppPKeyRoute
+    }
+    '/_app/p/$key/docs/$docId': {
+      id: '/_app/p/$key/docs/$docId'
+      path: '/docs/$docId'
+      fullPath: '/p/$key/docs/$docId'
+      preLoaderRoute: typeof AppPKeyDocsDocIdRouteImport
+      parentRoute: typeof AppPKeyRoute
+    }
     '/_app/p/$key/t/$number': {
       id: '/_app/p/$key/t/$number'
       path: '/t/$number'
@@ -499,7 +575,9 @@ interface AppPKeyRouteChildren {
   AppPKeyCalendarRoute: typeof AppPKeyCalendarRoute
   AppPKeyListRoute: typeof AppPKeyListRoute
   AppPKeySettingsRoute: typeof AppPKeySettingsRoute
+  AppPKeyDocsDocIdRoute: typeof AppPKeyDocsDocIdRoute
   AppPKeyTNumberRoute: typeof AppPKeyTNumberRoute
+  AppPKeyDocsIndexRoute: typeof AppPKeyDocsIndexRoute
 }
 
 const AppPKeyRouteChildren: AppPKeyRouteChildren = {
@@ -507,7 +585,9 @@ const AppPKeyRouteChildren: AppPKeyRouteChildren = {
   AppPKeyCalendarRoute: AppPKeyCalendarRoute,
   AppPKeyListRoute: AppPKeyListRoute,
   AppPKeySettingsRoute: AppPKeySettingsRoute,
+  AppPKeyDocsDocIdRoute: AppPKeyDocsDocIdRoute,
   AppPKeyTNumberRoute: AppPKeyTNumberRoute,
+  AppPKeyDocsIndexRoute: AppPKeyDocsIndexRoute,
 }
 
 const AppPKeyRouteWithChildren =
@@ -517,18 +597,22 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppMyTasksRoute: typeof AppMyTasksRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppDocsDocIdRoute: typeof AppDocsDocIdRoute
   AppPKeyRoute: typeof AppPKeyRouteWithChildren
   AppSettingsProfileRoute: typeof AppSettingsProfileRoute
   AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
+  AppDocsIndexRoute: typeof AppDocsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppMyTasksRoute: AppMyTasksRoute,
   AppIndexRoute: AppIndexRoute,
+  AppDocsDocIdRoute: AppDocsDocIdRoute,
   AppPKeyRoute: AppPKeyRouteWithChildren,
   AppSettingsProfileRoute: AppSettingsProfileRoute,
   AppSettingsSecurityRoute: AppSettingsSecurityRoute,
+  AppDocsIndexRoute: AppDocsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

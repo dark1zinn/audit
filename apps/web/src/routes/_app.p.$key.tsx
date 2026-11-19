@@ -90,6 +90,14 @@ function ProjectHeader({ projectId }: { readonly projectId: ProjectId }) {
           <Trans>Calendar</Trans>
         </Link>
         <Link
+          to="/p/$key/docs"
+          params={{ key }}
+          className={tabClass}
+          activeProps={{ className: activeTabClass, "aria-current": "page" }}
+        >
+          <Trans>Docs</Trans>
+        </Link>
+        <Link
           to="/p/$key/settings"
           params={{ key }}
           className={tabClass}

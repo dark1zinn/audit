@@ -1,7 +1,7 @@
-import { useLingui } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import type { ProjectId, TaskId } from "@audit/domain/ids"
+import type { EntityId, ProjectId, TaskId } from "@audit/domain/ids"
 import type { TaskDetail, UpdateTaskInput } from "@audit/domain/tasks/schema"
 import { roleAtLeast } from "@audit/domain/roles"
 import { Avatar, AvatarFallback } from "@audit/ui/components/ui/avatar.tsx"
@@ -20,6 +20,7 @@ import { Relations } from "./relations.tsx"
 import { Subtasks } from "./subtasks.tsx"
 import { TaskFields } from "./task-fields.tsx"
 import { useTaskUpdate } from "./use-task-update.ts"
+import { BacklinksPanel } from "../docs/backlinks-panel.tsx"
 
 interface TaskPanelProps {
   readonly projectId: ProjectId
@@ -119,6 +120,12 @@ function TaskView({
         <Description task={task} canEdit={canEdit} disabled={update.pending} onSave={save} />
         <Subtasks task={task} canEdit={canEdit} />
         <Relations task={task} projectId={projectId} canEdit={canEdit} />
+        <section className="space-y-2">
+          <h3 className="text-sm font-medium">
+            <Trans>Linked from</Trans>
+          </h3>
+          <BacklinksPanel entityId={task.id as EntityId} projectKey={task.projectKey} />
+        </section>
         <CommentsSection
           task={task}
           currentUserId={me.data?.userId ?? null}

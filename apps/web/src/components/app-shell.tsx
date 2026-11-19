@@ -163,6 +163,9 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
           <NavLink to="/">
             <Trans>Home</Trans>
           </NavLink>
+          <NavLink to="/docs">
+            <Trans>Docs</Trans>
+          </NavLink>
           <NavLink to="/settings/profile">
             <Trans>Profile</Trans>
           </NavLink>
@@ -205,7 +208,7 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
             <UserMenu me={me} />
           </div>
         </header>
-        <main id="main" className="mx-auto w-full max-w-5xl flex-1 p-4 md:p-6">
+        <main id="main" className="w-full flex-1 p-4 md:p-6">
           {children}
         </main>
       </div>

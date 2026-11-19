@@ -180,6 +180,15 @@ export const invalidationsFor = (event: DomainEvent): ReadonlyArray<QueryKey> =>
       return [["task", event.taskId]]
     case "NotificationChanged":
       return [["notifications"]]
+    case "DocChanged":
+      return [
+        ["docs"],
+        ["doc", event.docId],
+        ["doc-versions", event.docId],
+        ["doc-comments", event.docId],
+        ["backlinks"],
+        ["entity-refs"],
+      ]
   }
 }
 

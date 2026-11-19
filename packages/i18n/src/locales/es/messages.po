@@ -92,6 +92,14 @@ msgstr "{0} se soltó sin moverse."
 msgid "{0}/{1} subtasks"
 msgstr "{0}/{1} subtareas"
 
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "@restricted"
+msgstr "@restringido"
+
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "@unavailable"
+msgstr "@no disponible"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "1 day"
 msgstr "1 día"
@@ -175,6 +183,10 @@ msgstr "Actor"
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Add"
 msgstr "Añadir"
+
+#: ../../apps/web/src/components/docs/comments-panel.tsx
+msgid "Add a comment"
+msgstr "Añadir un comentario"
 
 #: ../../apps/web/src/components/task-panel/subtasks.tsx
 msgid "Add a subtask"
@@ -323,6 +335,10 @@ msgstr "Responsables"
 msgid "At least 10 characters."
 msgstr "Al menos 10 caracteres."
 
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "Attachment"
+msgstr "Adjunto"
+
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Audit log"
@@ -336,6 +352,10 @@ msgstr "Retención del registro de auditoría (días)"
 msgid "B"
 msgstr "N"
 
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Backlinks"
+msgstr "Referencias"
+
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/project-settings/options.ts
@@ -345,6 +365,10 @@ msgstr "Pendiente"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Backup codes (shown once; store them safely)"
 msgstr "Códigos de respaldo (se muestran una vez; guárdalos en un lugar seguro)"
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Blank"
+msgstr "En blanco"
 
 #: ../../apps/web/src/components/task-panel/relations.tsx
 msgid "Blocks"
@@ -383,9 +407,17 @@ msgstr "Acciones masivas"
 msgid "Bullet list"
 msgstr "Lista con viñetas"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Bulleted list"
+msgstr "Lista con viñetas"
+
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "Calendar"
 msgstr "Calendario"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Callout"
+msgstr "Destacado"
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
@@ -427,6 +459,10 @@ msgstr "Cambiar contraseña"
 msgid "Changes"
 msgstr "Cambios"
 
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Changes since the previous version"
+msgstr "Cambios desde la versión anterior"
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Changing these affects new sessions and the look of the app for everyone."
 msgstr "Estos cambios afectan a las nuevas sesiones y al aspecto de la app para todos."
@@ -435,6 +471,7 @@ msgstr "Estos cambios afectan a las nuevas sesiones y al aspecto de la app para 
 msgid "Check the highlighted fields and try again."
 msgstr "Revisa los campos marcados e inténtalo de nuevo."
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "Checklist"
 msgstr "Lista de verificación"
@@ -450,6 +487,10 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Choose a person"
 msgstr "Elige una persona"
+
+#: ../../apps/web/src/components/docs/comments-panel.tsx
+msgid "Clear"
+msgstr "Borrar"
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
@@ -467,6 +508,14 @@ msgstr "Cerrar"
 #: ../../apps/web/src/routes/login.tsx
 msgid "Code"
 msgstr "Código"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Code block"
+msgstr "Bloque de código"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Collapse"
+msgstr "Contraer"
 
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 msgid "Color"
@@ -493,6 +542,7 @@ msgstr "Columnas"
 msgid "Comfortable"
 msgstr "Cómoda"
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Comment"
 msgstr "Comentario"
@@ -501,6 +551,10 @@ msgstr "Comentario"
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Comment by {0}"
 msgstr "Comentario de {0}"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Comment on selection"
+msgstr "Comentar selección"
 
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "Commented"
@@ -511,6 +565,7 @@ msgstr "Comentó"
 msgid "Commenter"
 msgstr "Comentarista"
 
+#: ../../apps/web/src/components/docs/doc-view.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Comments"
 msgstr "Comentarios"
@@ -555,6 +610,10 @@ msgstr "No se pudo guardar la vista."
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "Could not update the task."
 msgstr "No se pudo actualizar la tarea."
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Create"
+msgstr "Crear"
 
 #: ../../apps/web/src/routes/join.$token.tsx
 msgid "Create account and join"
@@ -618,6 +677,10 @@ msgstr "Desactivar"
 msgid "Deactivated"
 msgstr "Desactivado"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Decision record"
+msgstr "Registro de decisión"
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Default language"
 msgstr "Idioma predeterminado"
@@ -635,6 +698,7 @@ msgid "Defaults and policies for everyone in the workspace."
 msgstr "Valores predeterminados y políticas para todo el espacio de trabajo."
 
 #: ../../apps/web/src/components/board/bulk-bar.tsx
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
@@ -709,6 +773,32 @@ msgstr "Descartar"
 msgid "Display name"
 msgstr "Nombre para mostrar"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Divider"
+msgstr "Separador"
+
+#: ../../apps/web/src/components/app-shell.tsx
+#: ../../apps/web/src/routes/_app.p.$key.tsx
+msgid "Docs"
+msgstr "Docs"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Document content"
+msgstr "Contenido del documento"
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Document settings"
+msgstr "Configuración del documento"
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Document title"
+msgstr "Título del documento"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+#: ../../apps/web/src/components/docs/docs-page.tsx
+msgid "Documents"
+msgstr "Documentos"
+
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/project-settings/options.ts
@@ -719,6 +809,27 @@ msgstr "Completada"
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Down"
 msgstr "Abajo"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Drag cancelled."
+msgstr "Arrastre cancelado."
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "draggable document"
+msgstr "documento arrastrable"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Drop cancelled."
+msgstr "Soltado cancelado."
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Dropped."
+msgstr "Soltado."
+
+#. placeholder {0}: data.dueAt.toLocaleDateString()
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "Due {0}"
+msgstr "Vence {0}"
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
@@ -774,6 +885,18 @@ msgstr "Correo electrónico"
 msgid "Email (optional)"
 msgstr "Correo electrónico (opcional)"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Embed"
+msgstr "Incrustar"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Embed a task"
+msgstr "Incrustar una tarea"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Embed task"
+msgstr "Incrustar tarea"
+
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Enabled"
 msgstr "Activada"
@@ -799,6 +922,10 @@ msgstr "Estimación"
 msgid "Every project in the workspace, including archived and deleted ones."
 msgstr "Todos los proyectos del espacio de trabajo, incluidos los archivados y eliminados."
 
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Expand"
+msgstr "Expandir"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Expired"
 msgstr "Caducada"
@@ -810,6 +937,18 @@ msgstr "Caduca"
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Expires in"
 msgstr "Caduca en"
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Export HTML"
+msgstr "Exportar HTML"
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Export Markdown"
+msgstr "Exportar Markdown"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "File attachment"
+msgstr "Adjunto de archivo"
 
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Filter"
@@ -866,6 +1005,18 @@ msgstr "Grupos de miembros usados para accesos y notificaciones."
 msgid "Guest"
 msgstr "Invitado"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Heading 1"
+msgstr "Título 1"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Heading 2"
+msgstr "Título 2"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Heading 3"
+msgstr "Título 3"
+
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
@@ -888,11 +1039,23 @@ msgstr "C"
 msgid "Idle timeout (days)"
 msgstr "Tiempo de inactividad (días)"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Image"
+msgstr "Imagen"
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Import Markdown file"
+msgstr "Importar archivo Markdown"
+
 #: ../../apps/web/src/components/board/hooks.ts
 #: ../../apps/web/src/components/list/task-labels.ts
 #: ../../apps/web/src/components/project-settings/options.ts
 msgid "In progress"
 msgstr "En curso"
+
+#: ../../apps/web/src/components/docs/slash-menu.tsx
+msgid "Insert block"
+msgstr "Insertar bloque"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Invite"
@@ -989,6 +1152,10 @@ msgstr "Claro"
 msgid "Link task"
 msgstr "Vincular tarea"
 
+#: ../../apps/web/src/components/task-panel/task-panel.tsx
+msgid "Linked from"
+msgstr "Enlazado desde"
+
 #: ../../apps/web/src/routes/_app.p.$key.tsx
 msgid "List"
 msgstr "Lista"
@@ -1024,6 +1191,10 @@ msgstr "Gestor"
 msgid "Manual order"
 msgstr "Orden manual"
 
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Mark verified"
+msgstr "Marcar como verificado"
+
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Maximum uses"
 msgstr "Usos máximos"
@@ -1033,6 +1204,10 @@ msgstr "Usos máximos"
 #: ../../apps/web/src/components/task-panel/task-fields.tsx
 msgid "Medium"
 msgstr "Media"
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Meeting notes"
+msgstr "Notas de reunión"
 
 #: ../../apps/web/src/components/project-settings/options.ts
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
@@ -1068,7 +1243,9 @@ msgid "Metadata only"
 msgstr "Solo metadatos"
 
 #. placeholder {0}: card.key
+#. placeholder {0}: doc.title || t`Untitled`
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/docs/doc-tree.tsx
 msgid "Move {0}"
 msgstr "Mover {0}"
 
@@ -1082,6 +1259,14 @@ msgstr "Mover {0} hacia abajo"
 msgid "Move {0} up"
 msgstr "Mover {0} hacia arriba"
 
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Move down"
+msgstr "Mover abajo"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Move out"
+msgstr "Sacar"
+
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Move selected to column"
 msgstr "Mover seleccionados a la columna"
@@ -1094,9 +1279,29 @@ msgstr "Mover tareas a"
 msgid "Move to column"
 msgstr "Mover a la columna"
 
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Move up"
+msgstr "Mover arriba"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Moved document."
+msgstr "Documento movido."
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Moved down."
+msgstr "Movido abajo."
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Moved out."
+msgstr "Sacado."
+
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "Moved the task"
 msgstr "Movió la tarea"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Moved up."
+msgstr "Movido arriba."
 
 #. placeholder {0}: keyOf(active)
 #: ../../apps/web/src/components/board/board-view.tsx
@@ -1121,9 +1326,25 @@ msgstr "Nombre"
 msgid "Name (optional)"
 msgstr "Nombre (opcional)"
 
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Name this version"
+msgstr "Nombra esta versión"
+
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 msgid "Name, lead, visibility and the default role of workspace members."
 msgstr "Nombre, responsable, visibilidad y rol predeterminado de los miembros del espacio de trabajo."
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Needs review"
+msgstr "Necesita revisión"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Nest under previous"
+msgstr "Anidar bajo el anterior"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Nested."
+msgstr "Anidado."
 
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "New board name"
@@ -1133,9 +1354,14 @@ msgstr "Nuevo nombre del tablero"
 msgid "New column name"
 msgstr "Nuevo nombre de la columna"
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "New comment"
 msgstr "Nuevo comentario"
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "New document"
+msgstr "Nuevo documento"
 
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "New invite"
@@ -1170,9 +1396,14 @@ msgstr "Nuevo equipo"
 msgid "No activity yet."
 msgstr "Sin actividad todavía."
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "No comments yet."
 msgstr "Sin comentarios todavía."
+
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "No due date"
+msgstr "Sin fecha de vencimiento"
 
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "No events match."
@@ -1189,6 +1420,14 @@ msgstr "Sin agrupación"
 #: ../../apps/web/src/components/project-settings/general-section.tsx
 msgid "No lead"
 msgstr "Sin responsable"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "No longer over a drop target."
+msgstr "Ya no está sobre una zona de soltado."
+
+#: ../../apps/web/src/components/docs/slash-menu.tsx
+msgid "No matches"
+msgstr "Sin coincidencias"
 
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "No passkeys yet."
@@ -1212,9 +1451,17 @@ msgstr "Ninguna vista guardada"
 msgid "No subtasks yet."
 msgstr "Sin subtareas todavía."
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "No task matches that key."
+msgstr "Ninguna tarea coincide con esa clave."
+
 #: ../../apps/web/src/components/list/task-rows.tsx
 msgid "No tasks match these filters."
 msgstr "Ninguna tarea coincide con estos filtros."
+
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "No versions yet."
+msgstr "Aún no hay versiones."
 
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
@@ -1229,6 +1476,11 @@ msgstr "No activada"
 msgid "Note (optional)"
 msgstr "Nota (opcional)"
 
+#: ../../apps/web/src/components/docs/backlinks-panel.tsx
+msgid "Nothing links here yet."
+msgstr "Nada enlaza aquí todavía."
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
 #: ../../apps/web/src/components/task-panel/rich-editor.tsx
 msgid "Numbered list"
 msgstr "Lista numerada"
@@ -1242,6 +1494,10 @@ msgstr "Desactivado"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "On"
 msgstr "Activado"
+
+#: ../../apps/web/src/components/docs/comments-panel.tsx
+msgid "On:"
+msgstr "El:"
 
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 msgid "Only the people and teams listed below can see a restricted project."
@@ -1270,6 +1526,10 @@ msgstr "o"
 #: ../../apps/web/src/routes/_app.settings.security.tsx
 msgid "Other sessions signed out"
 msgstr "Otras sesiones cerradas"
+
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Over a drop target."
+msgstr "Sobre una zona de soltado."
 
 #: ../../apps/web/src/components/board/board-column.tsx
 msgid "Over WIP limit"
@@ -1325,6 +1585,11 @@ msgstr "Persona"
 msgid "Picked up {0} in {1}."
 msgstr "Se recogió {0} de {1}."
 
+#. placeholder {0}: String(active.id)
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+msgid "Picked up {0}."
+msgstr "Recogido {0}."
+
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Post comment"
 msgstr "Publicar comentario"
@@ -1356,6 +1621,10 @@ msgstr "Perfil guardado"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Project archived"
 msgstr "Proyecto archivado"
+
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Project brief"
+msgstr "Resumen del proyecto"
 
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Project deleted"
@@ -1401,6 +1670,10 @@ msgstr "Protege tu cuenta y gestiona los inicios de sesión."
 msgid "QR code for your authenticator app"
 msgstr "Código QR para tu app de autenticación"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Quote"
+msgstr "Cita"
+
 #: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reactivate"
 msgstr "Reactivar"
@@ -1430,10 +1703,12 @@ msgstr "Quitar relación"
 msgid "Rename"
 msgstr "Renombrar"
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Reopen"
 msgstr "Reabrir"
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Reply"
 msgstr "Responder"
@@ -1454,6 +1729,7 @@ msgstr "Restablecer contraseña"
 msgid "Reset two-factor"
 msgstr "Restablecer dos factores"
 
+#: ../../apps/web/src/components/docs/comments-panel.tsx
 #: ../../apps/web/src/components/task-panel/comments.tsx
 msgid "Resolve"
 msgstr "Resolver"
@@ -1470,6 +1746,10 @@ msgstr "Restaurar"
 #: ../../apps/web/src/routes/_app.admin.projects.tsx
 msgid "Restore project {0}?"
 msgstr "¿Restaurar el proyecto {0}?"
+
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Restore this version"
+msgstr "Restaurar esta versión"
 
 #: ../../apps/web/src/components/task-panel/activity.tsx
 msgid "Restored the task"
@@ -1494,6 +1774,10 @@ msgstr "Los proyectos restringidos muestran solo metadatos. Los proyectos elimin
 msgid "Restricted to members"
 msgstr "Restringido a miembros"
 
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Review every (days)"
+msgstr "Revisar cada (días)"
+
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 msgid "Revoke"
@@ -1507,6 +1791,10 @@ msgstr "Revocar acceso de {name}"
 msgid "Revoked"
 msgstr "Revocada"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "RFC"
+msgstr "RFC"
+
 #: ../../apps/web/src/components/project-settings/access-section.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
@@ -1518,7 +1806,12 @@ msgstr "Rol"
 msgid "Role for {0}"
 msgstr "Rol de {0}"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Runbook"
+msgstr "Runbook"
+
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
+#: ../../apps/web/src/components/docs/doc-view.tsx
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 #: ../../apps/web/src/components/project-settings/labels-section.tsx
 msgid "Save"
@@ -1543,6 +1836,10 @@ msgstr "Guardar perfil"
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Save settings"
 msgstr "Guardar configuración"
+
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Save version"
+msgstr "Guardar versión"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "Save view"
@@ -1575,6 +1872,10 @@ msgstr "Seguridad"
 #: ../../apps/web/src/components/board/task-card.tsx
 msgid "Select {0}"
 msgstr "Seleccionar {0}"
+
+#: ../../apps/web/src/components/docs/docs-page.tsx
+msgid "Select a document to read or edit it."
+msgstr "Selecciona un documento para leerlo o editarlo."
 
 #: ../../apps/web/src/routes/_app.admin.teams.tsx
 msgid "Select a team."
@@ -1666,6 +1967,10 @@ msgstr "Ordenar descendente"
 msgid "Start date"
 msgstr "Fecha de inicio"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Start from a blank page or a template, or import a Markdown file."
+msgstr "Empieza con una página en blanco o una plantilla, o importa un archivo Markdown."
+
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 #: ../../apps/web/src/routes/_app.admin.invites.tsx
 #: ../../apps/web/src/routes/_app.admin.members.tsx
@@ -1687,9 +1992,17 @@ msgstr "Subtareas"
 msgid "System"
 msgstr "Sistema"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Table"
+msgstr "Tabla"
+
 #: ../../apps/web/src/components/board/task-quick-edit.tsx
 msgid "Target column"
 msgstr "Columna de destino"
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Task key"
+msgstr "Clave de la tarea"
 
 #: ../../apps/web/src/routes/_app.p.$key.t.$number.tsx
 msgid "Task not found."
@@ -1698,6 +2011,10 @@ msgstr "Tarea no encontrada."
 #: ../../apps/web/src/components/list/task-filter-bar.tsx
 msgid "Task number"
 msgstr "Número de tarea"
+
+#: ../../apps/web/src/components/docs/nodes.tsx
+msgid "Task unavailable"
+msgstr "Tarea no disponible"
 
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Tasks"
@@ -1721,6 +2038,10 @@ msgstr "Rol en el equipo"
 msgid "Teams"
 msgstr "Equipos"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Template"
+msgstr "Plantilla"
+
 #: ../../apps/web/src/components/feedback.tsx
 msgid "That conflicts with the current data. Refresh and try again."
 msgstr "Hay un conflicto con los datos actuales. Actualiza e inténtalo de nuevo."
@@ -1736,6 +2057,10 @@ msgstr "Este elemento ya no existe."
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "The bulk action failed. Nothing was changed."
 msgstr "La acción masiva falló. No se cambió nada."
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "The file could not be uploaded."
+msgstr "No se pudo subir el archivo."
 
 #: ../../apps/web/src/components/project-create-dialog.tsx
 msgid "The key prefixes task numbers, for example ABC-12."
@@ -1806,6 +2131,7 @@ msgstr "Este espacio de trabajo requiere autenticación en dos pasos. Configúra
 msgid "Time zone"
 msgstr "Zona horaria"
 
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
 #: ../../apps/web/src/components/task-panel/conflict-dialog.tsx
 #: ../../apps/web/src/components/task-panel/task-panel.tsx
 #: ../../apps/web/src/routes/_app.settings.profile.tsx
@@ -1889,6 +2215,11 @@ msgstr "Usuario desconocido"
 msgid "Unnamed passkey"
 msgstr "Clave de acceso sin nombre"
 
+#: ../../apps/web/src/components/docs/doc-tree.tsx
+#: ../../apps/web/src/components/docs/new-doc-dialog.tsx
+msgid "Untitled"
+msgstr "Sin título"
+
 #: ../../apps/web/src/components/project-settings/board-columns.tsx
 msgid "Up"
 msgstr "Arriba"
@@ -1919,6 +2250,15 @@ msgstr "Usado"
 msgid "Uses"
 msgstr "Usos"
 
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Verified"
+msgstr "Verificado"
+
+#. placeholder {0}: new Date(doc.verifiedAt).toLocaleDateString()
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Verified on {0}"
+msgstr "Verificado el {0}"
+
 #: ../../apps/web/src/routes/login.tsx
 msgid "Verify"
 msgstr "Verificar"
@@ -1926,6 +2266,18 @@ msgstr "Verificar"
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Verify integrity"
 msgstr "Verificar integridad"
+
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Version name"
+msgstr "Nombre de la versión"
+
+#: ../../apps/web/src/components/docs/versions-panel.tsx
+msgid "Version preview"
+msgstr "Vista previa de la versión"
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+msgid "Versions"
+msgstr "Versiones"
 
 #: ../../apps/web/src/components/board/saved-filters.tsx
 msgid "View deleted."
@@ -2001,9 +2353,25 @@ msgstr "Configuración del espacio de trabajo guardada"
 msgid "Workspace teams"
 msgstr "Equipos del espacio de trabajo"
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "You can comment on this document but not edit it."
+msgstr "Puedes comentar en este documento pero no editarlo."
+
+#: ../../apps/web/src/components/docs/doc-view.tsx
+#~ msgid "You can read this document."
+#~ msgstr "Puedes leer este documento."
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "You can read this document. Ask an editor to change it."
+msgstr "Puedes leer este documento. Pide a un editor que lo cambie."
+
 #: ../../apps/web/src/components/board/board-mutations.ts
 msgid "You cannot move this task."
 msgstr "No puedes mover esta tarea."
+
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "You cannot open this document."
+msgstr "No puedes abrir este documento."
 
 #: ../../apps/web/src/components/feedback.tsx
 msgid "You do not have permission to do that."

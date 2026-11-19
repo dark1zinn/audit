@@ -1,14 +1,12 @@
 import { useLingui } from "@lingui/react/macro"
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import TaskItem from "@tiptap/extension-task-item"
-import TaskList from "@tiptap/extension-task-list"
+import { baseExtensions } from "../docs/editor-extensions.ts"
 import type { JSONContent } from "@tiptap/react"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { emptyDoc } from "./rich-text.ts"
 
-const extensions = [StarterKit, TaskList, TaskItem.configure({ nested: true })]
+const extensions = baseExtensions
 
 interface RichEditorProps {
   readonly value: RichDoc | null
