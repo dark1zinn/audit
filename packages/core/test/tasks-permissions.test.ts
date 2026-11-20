@@ -181,4 +181,23 @@ describe("task commands by resource role", () => {
       stranger: "NotFound",
     })
   })
+
+  test("comment.create refuses an anchor larger than a selection", async () => {
+    const task = await create(owner, "Anchor target")
+    const body = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "hello" }] }],
+    }
+    const refused = await exitAs(
+      database,
+      owner.actor,
+    )(
+      createComment.execute({
+        taskId: task.id as TaskId,
+        body,
+        anchor: { quote: "q".repeat(5_000) },
+      }),
+    )
+    expect(refused._tag).toBe("Failure")
+  })
 })

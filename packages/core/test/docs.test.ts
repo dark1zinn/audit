@@ -74,20 +74,35 @@ describe("space docs", () => {
     expect(failureTag(exit)).not.toBe("success")
   })
 
-  test("deleted docs resolve as deleted and restricted docs as masked", async () => {
+  test("a deleted doc shows as deleted only to callers who could see it", async () => {
     const hiddenId = await createSpaceDoc(owner, "Masked")
     await restrict(hiddenId)
     const goneId = await createSpaceDoc(owner, "Gone")
-    await database.superuser`update entities set deleted_at = now() where id = ${goneId}`
+    const goneHiddenId = await createSpaceDoc(owner, "Gone and hidden")
+    await restrict(goneHiddenId)
+    await database.superuser`insert into access_entries (resource_id, principal_type, principal_id, role, granted_by) values (${goneHiddenId}, 'user', ${owner.userId}, 'manager', ${owner.userId})`
+    await database.superuser`update entities set deleted_at = now() where id in (${goneId}, ${goneHiddenId})`
 
     const refs = await runAs(
       database,
       member.actor,
-    )(resolveEntities([hiddenId as EntityId, goneId as EntityId]))
-    expect(refs[hiddenId]).toMatchObject({ restricted: true, deleted: false })
-    expect(refs[hiddenId]?.title).toBeUndefined()
-    expect(refs[hiddenId]).not.toHaveProperty("type")
-    expect(refs[goneId]).toMatchObject({ deleted: true })
+    )(resolveEntities([hiddenId, goneId, goneHiddenId] as EntityId[]))
+    expect(refs[hiddenId]).toEqual({ id: hiddenId, restricted: true, deleted: false })
+    // The member could read "Gone": it is reported deleted, with its type but not its title.
+    expect(refs[goneId]).toEqual({ id: goneId, type: "doc", restricted: false, deleted: true })
+    // The member never could read "Gone and hidden": deletion is not revealed.
+    expect(refs[goneHiddenId]).toEqual({ id: goneHiddenId, restricted: true, deleted: false })
+
+    const ownerRefs = await runAs(
+      database,
+      owner.actor,
+    )(resolveEntities([goneHiddenId as EntityId]))
+    expect(ownerRefs[goneHiddenId]).toEqual({
+      id: goneHiddenId,
+      type: "doc",
+      restricted: false,
+      deleted: true,
+    })
   })
 
   test("a person's reference sync keeps targets they cannot see", async () => {

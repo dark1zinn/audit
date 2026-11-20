@@ -194,10 +194,13 @@ const searchEntities = (query: SearchQuery) =>
     const windowRows = (spec: MatchSpec, keyset: Keyset | null, size: number) =>
       db
         .execute<WindowRow>(sql`
-          with cand as (
+          with qq as materialized (
+            select plainto_tsquery(audit_search_config(), ${q}) as tsq
+          ),
+          cand as (
             select e.id, e.type, e.title, e.project_id, e.updated_at, ${spec.rank} as rank
             from entities e
-            cross join (select plainto_tsquery(audit_search_config(), ${q}) as tsq) qq
+            cross join qq
             where ${sql.join([...conditions, spec.match, afterKeyset(spec.rank, keyset)], sql` and `)}
             order by rank desc, e.updated_at desc, e.id
             limit ${size}

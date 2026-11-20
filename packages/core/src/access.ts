@@ -3,8 +3,8 @@
  * or their workspace role, on that item or its ancestors up to the nearest restricted boundary.
  *
  * Containers (projects, boards, channels, calendars) have their effective roles materialised in
- * `container_access`; items walk `entities.parent_id` up to their container, collecting their own
- * grants on the way, and stop early at a restricted item.
+ * `container_access`. Every entity carries `entities.access_path`, its chain up to that boundary,
+ * kept current by triggers, so both checks are a key lookup plus an array overlap.
  */
 import { type SQL, sql } from "drizzle-orm"
 import type { ContainerType } from "@audit/domain/entity"
@@ -39,53 +39,63 @@ const activeUser = (userId: SQL) => sql`exists (
   select 1 from user_profiles act_p where act_p.user_id = ${userId} and act_p.deactivated_at is null
 )`
 
+/**
+ * Node ids the user holds a grant on, as an array to overlap with `entities.access_path`. Container
+ * grants come from `container_access`; item grants from `access_entries` on non-container
+ * resources, so grants stored on a container never count as item grants.
+ */
+const grantedNodes = (userId: SQL) => sql`(
+  select coalesce(array_agg(g.id), '{}') from (
+    select ca.container_id as id from container_access ca
+    join entities k on k.id = ca.container_id and k.type in (${containers})
+    where ca.user_id = ${userId}
+    union
+    select ae.resource_id as id from access_entries ae
+    join entities r on r.id = ae.resource_id
+    where r.type not in (${containers}) and ${entryMatchesUser(userId)}
+  ) g
+)`
+
 /** The user's role on one entity, or no row when they have none. */
 export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
-  with recursive chain as (
-    select e.id, e.parent_id, e.type, e.restricted from entities e where e.id = ${entityId}
-    union all
-    select p.id, p.parent_id, p.type, p.restricted
-    from chain c join entities p on p.id = c.parent_id
-    where not c.restricted and c.type not in (${containers})
+  with chain as (
+    select e.access_path as path from entities e where e.id = ${entityId}
   ),
   roles as (
-    select 'viewer' as role from chain c where c.type in (${directoryTypes})
+    select 'viewer' as role from chain c
+    where exists (select 1 from entities d where d.id = any(c.path) and d.type in (${directoryTypes}))
     union all
     select ca.role from chain c
-    join container_access ca on ca.container_id = c.id and ca.user_id = ${userId}
-    where c.type in (${containers})
+    join container_access ca on ca.container_id = any(c.path) and ca.user_id = ${userId}
+    join entities k on k.id = ca.container_id and k.type in (${containers})
     union all
     select ae.role from chain c
-    join access_entries ae on ae.resource_id = c.id
-    where c.type not in (${containers}) and ${entryMatchesUser(sql`${userId}`)}
+    join access_entries ae on ae.resource_id = any(c.path)
+    join entities r on r.id = ae.resource_id
+    where r.type not in (${containers}) and ${entryMatchesUser(sql`${userId}`)}
   )
   select role from roles where ${activeUser(sql`${userId}`)}
   order by ${roleRank(sql`role`)} desc limit 1
 `
 
 /**
- * Condition true when `idColumn` names an entity the user can see. Inner aliases are prefixed
- * `vis_` so they never shadow the caller's aliases inside `idColumn`. Used by every list, search,
- * backlink, notification fan-out, realtime filter and AI retrieval query.
+ * Condition true when `idColumn` names an entity the user can see. Used by every list, search,
+ * backlink, notification fan-out, realtime filter and AI retrieval query. The inner alias is
+ * prefixed `vis_` so it never shadows the caller's aliases inside `idColumn`.
  */
-export const visibleTo = (userId: UserId | SQL, idColumn: SQL) => sql`(${activeUser(sql`${userId}`)}
+export const visibleTo = (
+  userId: UserId | SQL,
+  idColumn: SQL,
+  /** Same grants, but soft-deleted entities count: "could this user see it before deletion". */
+  options: { readonly includeDeleted?: boolean } = {},
+) => sql`(${activeUser(sql`${userId}`)}
   and exists (
-  with recursive vis_chain as (
-    select vis_e.id, vis_e.parent_id, vis_e.type, vis_e.restricted, true as start
-    from entities vis_e where vis_e.id = ${idColumn} and vis_e.deleted_at is null
-    union all
-    select vis_p.id, vis_p.parent_id, vis_p.type, vis_p.restricted, false
-    from vis_chain vis_c join entities vis_p on vis_p.id = vis_c.parent_id
-    where not vis_c.restricted and vis_c.type not in (${containers})
-  )
-  select 1 from vis_chain vis_c
-  where (vis_c.start and vis_c.type in (${directoryTypes}))
-    or (vis_c.type in (${containers}) and exists (
-      select 1 from container_access vis_ca
-      where vis_ca.container_id = vis_c.id and vis_ca.user_id = ${userId}))
-    or (vis_c.type not in (${containers}) and exists (
-      select 1 from access_entries ae
-      where ae.resource_id = vis_c.id and ${entryMatchesUser(sql`${userId}`)}))
+    select 1 from entities vis_e
+    where vis_e.id = ${idColumn} and ${options.includeDeleted === true ? sql`true` : sql`vis_e.deleted_at is null`}
+      and (vis_e.access_path && ${grantedNodes(sql`${userId}`)}
+        or exists (
+          select 1 from entities vis_d
+          where vis_d.id = any(vis_e.access_path) and vis_d.type in (${directoryTypes})))
 ))`
 
 /** Highest own grant on container `c` for member `m`. */

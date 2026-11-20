@@ -45,7 +45,10 @@ export default defineConfig({
       { text: "Security model", link: "/security" },
       {
         text: "Operations",
-        items: [{ text: "Backups and upgrades", link: "/operations/backups-and-upgrades" }],
+        items: [
+          { text: "Backups and upgrades", link: "/operations/backups-and-upgrades" },
+          { text: "Capacity", link: "/operations/capacity" },
+        ],
       },
       {
         text: "API reference",

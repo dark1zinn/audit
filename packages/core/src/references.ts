@@ -2,7 +2,7 @@
  * Cross-references: mentions and links become rows in `references`, diffed in the same transaction
  * as the change that made them. Also cross-entity reads: resolving mention and link targets, and
  * backlinks into an entity. Invisible entities are masked (`restricted`, untitled); soft-deleted
- * ones are `deleted`.
+ * ones are `deleted` to callers who could see them before deletion, `restricted` to the rest.
  */
 import { entities, references } from "@audit/db/schema"
 import { actorUserId, CurrentActor } from "@audit/domain/actor"
@@ -12,6 +12,7 @@ import type { EntityId } from "@audit/domain/ids"
 import { Db } from "@audit/platform/database"
 import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm"
 import { Effect } from "effect"
+import { visibleTo } from "./access.ts"
 import { Authz } from "./authz.ts"
 
 export interface ReferenceTarget {
@@ -125,14 +126,34 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
       .where(and(inArray(entities.id, ids), visible))
       .pipe(Effect.orDie)
     const visibleIds = new Set(seen.map((row) => row.id))
+    // A soft-deleted entity shows as deleted (with its type, never its title) only to callers who
+    // could see it before it was deleted; to everyone else it is indistinguishable from restricted.
+    const deletedIds = rows.filter((row) => row.deletedAt !== null).map((row) => row.id)
+    const userId = actorUserId(yield* CurrentActor)
+    const formerlySeen =
+      deletedIds.length === 0
+        ? []
+        : yield* db
+            .select({ id: entities.id })
+            .from(entities)
+            .where(
+              and(
+                inArray(entities.id, deletedIds),
+                userId === null
+                  ? sql`true`
+                  : visibleTo(userId, sql`${entities.id}`, { includeDeleted: true }),
+              ),
+            )
+            .pipe(Effect.orDie)
+    const formerlyVisibleIds = new Set(formerlySeen.map((row) => row.id))
     for (const row of rows) {
       const id = row.id as EntityId
-      if (row.deletedAt !== null) {
-        out[id] = { id, type: row.type, restricted: false, deleted: true }
-      } else if (!visibleIds.has(row.id)) {
-        out[id] = { id, restricted: true, deleted: false }
-      } else {
+      if (visibleIds.has(row.id)) {
         out[id] = { id, type: row.type, title: row.title, restricted: false, deleted: false }
+      } else if (formerlyVisibleIds.has(row.id)) {
+        out[id] = { id, type: row.type, restricted: false, deleted: true }
+      } else {
+        out[id] = { id, restricted: true, deleted: false }
       }
     }
     return out

@@ -1,0 +1,91 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fd0234c6-90fc-4282-9cd4-1e26c364b6af",
+  "prevIds": [
+    "da972837-59ca-4f26-9ec4-f331387276b6"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "entities",
+        "access_path"
+      ],
+      "writes": [
+        "s|col|public.entities.access_path",
+        "n|col|public.entities.access_path",
+        "e|col|public.entities.access_path"
+      ],
+      "reads": [
+        "n|tbl|public.entities",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "entities",
+        "entities_access_path_gin"
+      ],
+      "writes": [
+        "s|idx|public.entities_access_path_gin",
+        "n|idx|public.entities_access_path_gin",
+        "e|idx|public.entities_access_path_gin",
+        "n|rel|public.entities_access_path_gin"
+      ],
+      "reads": [
+        "n|tbl|public.entities",
+        "n|sch|public",
+        "n|col|public.entities.access_path"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "entities",
+        "name": "access_path",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "entities",
+        "name": "entities_access_path_gin",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "access_path",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "gin",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    }
+  ]
+}
