@@ -13,16 +13,21 @@ export const clientIpFromForwarded = (forwardedFor: string, hops: number): strin
   return ip === undefined || ip === "" ? undefined : ip
 }
 
+/**
+ * Stamps the client address for Better Auth, rate limits and the trail. `socketIp` must come from
+ * `server.requestIP()` on the request Bun handed to `fetch`: Bun resolves the socket only for that
+ * object, never for a rebuilt `new Request(...)`.
+ */
 export const withClientIp = (
   request: Request,
-  server: Bun.Server<unknown>,
+  socketIp: string | undefined,
   trustProxy: boolean,
   trustProxyHops = 1,
 ): Request => {
   const forwardedFor = trustProxy ? request.headers.get("x-forwarded-for") : null
   const forwarded =
     forwardedFor === null ? undefined : clientIpFromForwarded(forwardedFor, trustProxyHops)
-  const ip = forwarded ?? server.requestIP(request)?.address
+  const ip = forwarded ?? socketIp
   const headers = new Headers(request.headers)
   headers.delete(CLIENT_IP_HEADER)
   if (ip !== undefined) headers.set(CLIENT_IP_HEADER, ip)

@@ -286,6 +286,8 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     idleTimeout: 120,
     async fetch(incoming, bunServer) {
       const requestId = requestIdFrom(incoming.headers.get("x-request-id"))
+      // Resolved from the original request: Bun cannot map a rebuilt Request back to its socket.
+      const socketIp = bunServer.requestIP(incoming)?.address
       const { pathname } = new URL(incoming.url)
       if (needsOriginCheck(incoming) && !isSameOriginRequest(incoming, config.url.origin)) {
         return withHeaders(new Response("Forbidden", { status: 403 }), requestId)
@@ -297,7 +299,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
           : withRequestId(incoming, requestId)
       const context = Context.add(loggerContext, BunServer, bunServer) as Context.Context<unknown>
       if (pathname.startsWith("/api/auth/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
+        const forwarded = withClientIp(request, socketIp, config.trustProxy, config.trustProxyHops)
         return withHeaders(await auth.handler(forwarded), requestId, true)
       }
       if (pathname === "/collab") {
@@ -311,11 +313,11 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
         return response === undefined ? undefined : withHeaders(response, requestId)
       }
       if (pathname.startsWith("/api/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
+        const forwarded = withClientIp(request, socketIp, config.trustProxy, config.trustProxyHops)
         return withHeaders(await app.handler(forwarded, context), requestId, true)
       }
       if (pathname.startsWith("/files/") || pathname.startsWith("/ical/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
+        const forwarded = withClientIp(request, socketIp, config.trustProxy, config.trustProxyHops)
         return withHeaders(await app.handler(forwarded, context), requestId)
       }
       if (pathname === "/healthz") return withHeaders(Response.json({ ok: true }), requestId)
