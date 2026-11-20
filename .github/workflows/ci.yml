@@ -84,3 +84,40 @@ jobs:
       - uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
         with:
           scan-args: --lockfile=bun.lock
+
+  image:
+    name: Container image and end-to-end tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_USER: audit
+          POSTGRES_PASSWORD: audit
+          POSTGRES_DB: audit
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U audit -d audit"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: bun install --frozen-lockfile
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          load: true
+          tags: audit:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: bunx --bun playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: End-to-end tests against the image
+        run: bun run e2e
+        env:
+          E2E_IMAGE: audit:ci

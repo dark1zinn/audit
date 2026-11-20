@@ -13,6 +13,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "test": "bun test",
+    "version": "bunx --bun changeset version && bun install --lockfile-only",
     "bench:search": "bun apps/server/src/bench-search.ts",
     "db:up": "docker compose -f deploy/compose.dev.yml up -d --wait",
     "db:down": "docker compose -f deploy/compose.dev.yml down",

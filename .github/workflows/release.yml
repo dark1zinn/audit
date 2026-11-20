@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  verify:
+    name: End-to-end tests against the release image
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_USER: audit
+          POSTGRES_PASSWORD: audit
+          POSTGRES_DB: audit
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U audit -d audit"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag matches the package version
+        run: |
+          version="$(jq -r .version apps/server/package.json)"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match apps/server version ${version}"
+            exit 1
+          fi
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: bun install --frozen-lockfile
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          load: true
+          tags: audit:release
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: bunx --bun playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: bun run e2e
+        env:
+          E2E_IMAGE: audit:release
+
+  publish:
+    name: Publish, sign and release
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - id: build
+        name: Build and push (amd64, arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign the image (keyless)
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+      - name: SBOM (SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: audit-${{ github.ref_name }}.spdx.json
+          upload-artifact: false
+      - name: Release notes from the changelog
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          REPO: ${{ github.repository }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v heading="## ${version}" '$0 == heading {found = 1; next} found && /^## / {exit} found' \
+            apps/server/CHANGELOG.md > notes.md
+          {
+            echo
+            echo "Image: \`${IMAGE}:${version}\` (\`${DIGEST}\`)"
+            echo
+            echo "Verify the signature:"
+            echo
+            echo '```sh'
+            echo "cosign verify ${IMAGE}@${DIGEST} \\"
+            echo "  --certificate-identity-regexp 'https://github.com/${REPO}/' \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo '```'
+          } >> notes.md
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release create "${GITHUB_REF_NAME}" --verify-tag --title "${GITHUB_REF_NAME}"
+          --notes-file notes.md "audit-${GITHUB_REF_NAME}.spdx.json"

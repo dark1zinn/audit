@@ -2,6 +2,9 @@
  * `bun run e2e`: builds the web app, starts the server on a fresh database, runs the Playwright
  * suite in apps/web against it, and tears everything down. Arguments after `--` go to
  * `playwright test`. Exits with Playwright's exit code.
+ *
+ * With `E2E_IMAGE=<image>`, the server is that container image (host networking) instead of the
+ * source tree, so CI can run the suite against the image it is about to publish.
  */
 import { SQL } from "bun"
 import { mkdtemp } from "node:fs/promises"
@@ -15,6 +18,8 @@ const devDatabaseUrl = "postgres://audit:audit@127.0.0.1:5432/audit"
 const secretKey = "dev-only-secret-key-change-me-0123456789abcdef"
 const setupToken = `e2e-setup-${crypto.randomUUID()}`
 const databaseName = `audit_e2e_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`
+const image = process.env.E2E_IMAGE || undefined
+const containerName = `audit-e2e-${databaseName}`
 
 const log = (message: string) => console.log(`[e2e] ${message}`)
 
@@ -73,9 +78,11 @@ let exitCode = 1
 let serverLog = ""
 
 try {
-  log("building web app")
-  const buildCode = await runToEnd(["bun", "run", "build:web"], root)
-  if (buildCode !== 0) throw new Error(`build:web failed with code ${buildCode}`)
+  if (image === undefined) {
+    log("building web app")
+    const buildCode = await runToEnd(["bun", "run", "build:web"], root)
+    if (buildCode !== 0) throw new Error(`build:web failed with code ${buildCode}`)
+  }
 
   log(`creating database ${databaseName}`)
   await createDatabase()
@@ -84,22 +91,39 @@ try {
   const url = `http://127.0.0.1:${port}`
   const logDir = await mkdtemp(join(tmpdir(), "audit-e2e-"))
   serverLog = join(logDir, "server.log")
+  const serverEnv: Record<string, string> = {
+    AUDIT_URL: url,
+    PORT: String(port),
+    DATABASE_URL: `postgres://audit:audit@127.0.0.1:5432/${databaseName}`,
+    AUDIT_SECRET_KEY: secretKey,
+    SETUP_TOKEN: setupToken,
+    // The assistant spec's mock provider listens on 127.0.0.1.
+    AI_ALLOW_PRIVATE_BASE_URL: "true",
+  }
 
-  log(`starting server at ${url} (log: ${serverLog})`)
-  server = Bun.spawn(["bun", "src/cli.ts", "serve"], {
-    cwd: serverDir,
-    env: {
-      ...process.env,
-      AUDIT_URL: url,
-      PORT: String(port),
-      DATABASE_URL: `postgres://audit:audit@127.0.0.1:5432/${databaseName}`,
-      AUDIT_SECRET_KEY: secretKey,
-      SETUP_TOKEN: setupToken,
-      WEB_DIST: "../web/dist",
-    },
-    stdout: Bun.file(serverLog),
-    stderr: Bun.file(serverLog),
-  })
+  log(`starting ${image ?? "server"} at ${url} (log: ${serverLog})`)
+  server =
+    image === undefined
+      ? Bun.spawn(["bun", "src/cli.ts", "serve"], {
+          cwd: serverDir,
+          env: { ...process.env, ...serverEnv, WEB_DIST: "../web/dist" },
+          stdout: Bun.file(serverLog),
+          stderr: Bun.file(serverLog),
+        })
+      : Bun.spawn(
+          [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            containerName,
+            "--network",
+            "host",
+            ...Object.entries(serverEnv).flatMap(([key, value]) => ["-e", `${key}=${value}`]),
+            image,
+          ],
+          { stdout: Bun.file(serverLog), stderr: Bun.file(serverLog) },
+        )
   await waitForServer(url, server)
   log("server ready")
 
@@ -117,7 +141,8 @@ try {
   exitCode = 1
 } finally {
   if (server !== undefined) {
-    server.kill()
+    if (image === undefined) server.kill()
+    else await runToEnd(["docker", "stop", "--time", "30", containerName], root)
     await server.exited
   }
   try {

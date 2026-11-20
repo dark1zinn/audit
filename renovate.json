@@ -1,0 +1,46 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", "helpers:pinGitHubActionDigests"],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "rangeStrategy": "pin",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "description": "Core framework upgrades land together once a month and get a human review.",
+      "groupName": "core framework",
+      "matchPackageNames": [
+        "effect",
+        "@effect/**",
+        "drizzle-orm",
+        "drizzle-kit",
+        "@hocuspocus/**",
+        "yjs",
+        "@tiptap/**",
+        "better-auth"
+      ],
+      "schedule": ["before 6am on the first day of the month"]
+    },
+    {
+      "description": "Bun is pinned in .bun-version and the Dockerfile base image.",
+      "groupName": "bun",
+      "matchDepNames": ["bun", "oven/bun"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.bun-version$/"],
+      "matchStrings": ["^(?<currentValue>\\S+)"],
+      "depNameTemplate": "bun",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}

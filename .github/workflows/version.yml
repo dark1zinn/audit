@@ -1,0 +1,33 @@
+name: Version
+
+# Turns pending changesets into a "Version packages" pull request (versions + CHANGELOG.md).
+# After merging it, pushing the matching `v<version>` tag starts the release workflow.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: version
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: bun install --frozen-lockfile
+      - uses: changesets/action@v1
+        with:
+          version: bun run version
+          title: "chore(release): version packages"
+          commit: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
