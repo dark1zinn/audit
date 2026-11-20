@@ -294,3 +294,126 @@ to wake the chainer, so every command commit queued on that one lock, and under 
 commits stacked up behind it. Migration `20261120151955_drop_trail_notify` removes the trigger.
 The chainer now wakes in process when commands publish their events after commit, and still sweeps
 every second. A test asserts that no trigger on `trail_events` calls `NOTIFY`.
+
+## Confirmation after the NOTIFY fix (f7f6fd9)
+
+Fresh image from `git archive f7f6fd9` (build exit 0). Fresh stack, app `--cpus 2 --memory 4g`,
+Postgres `log_lock_waits=on`, `deadlock_timeout=200ms`, `log_min_duration_statement=250`,
+`log_checkpoints=on`, `log_autovacuum_min_duration=0` (applied with `ALTER SYSTEM`, reset at
+teardown). Ramped gate: `API_VUS=200`, `RAMP=60s`, run twice.
+
+| Run | Exit                                          | Failed requests | API p50 / p95 / p99 / max (ms) | Requests over 1 s |
+| --- | --------------------------------------------- | --------------- | ------------------------------ | ----------------- |
+| 1   | 99 (threshold `p(95)<150` crossed, p95 373.3) | 0               | 28.8 / 373.3 / 2005.6 / 4768.6 | 191               |
+| 2   | 0                                             | 0               | 31.0 / 112.2 / 581.3 / 1730.7  | 28                |
+
+Per-endpoint p95 / p99 (ms):
+
+| Endpoint     | Run 1 p95 / p99 | Run 2 p95 / p99 |
+| ------------ | --------------- | --------------- |
+| message post | 975.9 / 2048.5  | 244.5 / 1138.4  |
+| task move    | 1015.5 / 3334.5 | 262.5 / 810.5   |
+| search       | 495.4 / 2389.0  | 368.6 / 1197.7  |
+| doc open     | 60.7 / 1482.6   | 33.0 / 121.0    |
+| board view   | 103.7 / 1578.8  | 85.9 / 167.3    |
+| channel hist | 80.6 / 1317.5   | 48.8 / 88.2     |
+
+Run 1 stalled for about two minutes (15:43:56–15:46:05 UTC). Run 2 had isolated seconds over 1 s,
+all after 15:53.
+
+Lock waits in the Postgres log: 0 on the shared `pg_database` object, down from 6 before the fix.
+The two waits that were logged are row-level `ShareLock on transaction` waits of 1.56 s and 0.70 s
+at 15:45:00 and 15:45:32 UTC, both inside run 1's stall.
+
+The `COMMIT` statements that ran at least 1 s number 100, most inside run 1's window and the last at
+15:58:13. Their durations run 1.0–4.7 s. This is commit latency, not the lock: the long commits
+cluster at 15:44:14–15:44:29, which overlaps checkpoint 2 (starts 15:43:51, completes 15:44:48), and
+at 15:45:01 and 15:45:32, after that checkpoint finished. No `docker stats`, `pg_stat_activity`, or
+host I/O sampler ran in this session, so the cause of the commit stall is not established. It is
+not the NOTIFY lock.
+
+Idle memory gate (25 realtime sockets, 330 s hold): app 168.3 MiB, Postgres 175.8 MiB, total about
+344 MiB. Exit 0, under the 1 GB criterion.
+
+## Stall cause: host disk write latency (f7f6fd9, fresh stack, instrumented)
+
+Same image and settings as the section above. Samplers ran through both gates: `pg_stat_activity`
+wait events and `pg_blocking_pids` every 0.25 s, `vmstat 1`, `iostat -x 1` (sysstat from nix),
+`/proc/diskstats`, PSI io, Dirty and Writeback every second, and `docker stats` every second. Postgres
+also logged `log_checkpoints`, `log_lock_waits` and statements over 250 ms, with `track_io_timing` and
+`track_wal_io_timing` on (added beyond the list above). `pg_stat_io` was read before and after each run.
+
+Gate results, root-disk Postgres (`/dev/nvme0n1p2`, 95% full, 11 GB free):
+
+| Attempt   | Exit | API p50 / p95 / p99 / max (ms)                      | Failed | Requests over 1 s |
+| --------- | ---- | --------------------------------------------------- | ------ | ----------------- |
+| 1, gate 1 | 99   | 1080.7 p95 / 3256.6 p99 / 5089.4 max (p50 not kept) | 0      | 351               |
+| 1, gate 2 | 99   | 156.5 p95 / 1320.6 p99 (p50 not kept)               | 0      | 87                |
+| 2, gate 1 | 0    | 35.9 / 111.9 / 463.0 / 3009.0                       | 0      | 13                |
+| 2, gate 2 | 0    | 30.0 / 108.3 / 857.0 / 3474.5                       | 0      | 44                |
+
+Both round-2 gates clear `api_latency p(95)<150`. Attempt 1 had no samplers and is kept as evidence.
+
+Per-endpoint p95 / p99 (ms), round 2:
+
+| Endpoint     | Gate 1 p95 / p99 | Gate 2 p95 / p99 |
+| ------------ | ---------------- | ---------------- |
+| task move    | 278.9 / 822.5    | 316.6 / 1437.0   |
+| message post | 274.8 / 611.5    | 260.0 / 1325.0   |
+| search       | 259.3 / 743.8    | 253.5 / 1060.6   |
+| board view   | 96.1 / 140.4     | 88.0 / 183.1     |
+| channel hist | 64.8 / 106.0     | 55.0 / 665.6     |
+| doc open     | 37.7 / 61.2      | 32.5 / 310.6     |
+
+Correlation, per second, all seconds in the two run windows: 14 seconds had at least one API request
+over 1 s, against 1249 seconds without. Averages over the two groups:
+
+| Signal                            | Slow seconds | Other seconds |
+| --------------------------------- | ------------ | ------------- |
+| nvme0n1 write await (ms)          | 218.2        | 22.6          |
+| nvme0n1 util (%)                  | 75.0         | 20.4          |
+| PSI io some (ms per s)            | 319.9        | 54.6          |
+| Writeback (kB)                    | 1803         | 528           |
+| Dirty (kB)                        | 67837        | 58533         |
+| vmstat wa (%)                     | 18.9         | 2.6           |
+| vmstat b (blocked processes)      | 2.9          | 0.7           |
+| Backends waiting on WAL write     | 5.5          | 0.2           |
+| Backends waiting on WAL fsync     | 0.7          | 0.1           |
+| Backends waiting on a row lock    | 0.05         | 0.00          |
+| Backends waiting on `pg_database` | 0.07         | 0.00          |
+| App CPU (%)                       | 28.6         | 26.4          |
+| Postgres CPU (%)                  | 22.8         | 20.7          |
+| Checkpoint active (fraction)      | 0.93         | 0.55          |
+
+Client backends' WAL fsync, from `pg_stat_io`: run 1 had 5756 fsyncs taking 66.8 s (about 11.6 ms
+each); run 2 had 6674 fsyncs taking 81.2 s (about 12.2 ms each). Postgres logged 36 commits of at
+least 1 s across both runs, the largest 3408 ms. Lock waits on `pg_database` were 0.
+
+Cause: the stall is host disk write latency under WAL fsync and writeback, not row locks and not CPU.
+The root disk was saturated (util about 75% averaged over slow seconds, up to 138%) and write await
+reached 200 to 900 ms while client WAL fsyncs took about 12 ms each. The disk was 95% full. That the
+fullness causes the latency is [INFERENCE]; it was not tested. Checkpoint durations of 3 to 5 min are
+pacing from `checkpoint_completion_target=0.9` on a 5 min timeout, so they are not evidence on their own.
+
+Controlled comparison: the same gates with Postgres data on tmpfs (`tmpfs.yml`), app on the same
+`--cpus 2 --memory 4g`. Host sampling was not run in this comparison.
+
+| Run     | Exit | API p50 / p95 / p99 / max (ms) | Failed | Requests over 1 s | Client WAL fsync            |
+| ------- | ---- | ------------------------------ | ------ | ----------------- | --------------------------- |
+| tmpfs 1 | 0    | 23.5 / 50.3 / 70.2 / 203       | 0      | 0                 | 28882 fsyncs, 19.6 ms total |
+| tmpfs 2 | 0    | 20.6 / 50.5 / 76.3 / 210       | 0      | 0                 | 36015 fsyncs, 41.5 ms total |
+
+With tmpfs, client WAL fsync averages about 0.001 ms, against about 12 ms on the root disk, and there
+are no commits of 1 s or more. The disk path is the cause of the tail latency on this host.
+
+Caveats:
+
+- On the tmpfs mount, Postgres logged `ignoring /docker-entrypoint-initdb.d/*`, so the init script
+  did not create `audit_app`. It was created by hand with the same SQL before the app started. The
+  init script did run on the disk stacks.
+- The `vmstat` and `docker stats` parsers had two bugs, fixed before these numbers were taken: a
+  wrong timestamp column, and ANSI clear-screen codes in the `docker stats` lines.
+- Nothing here shows that moving the Postgres data directory off the root disk fixes the stall. The
+  tmpfs run is the only evidence, and it removes durable fsync entirely.
+
+Teardown: `down -v` exit 0. `ALTER SYSTEM RESET ALL` exit 0 with a reload.
