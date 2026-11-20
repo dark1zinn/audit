@@ -7,6 +7,7 @@
 import * as Command from "@audit/core/command"
 import { record } from "@audit/core/trail"
 import type { AppConfigShape } from "@audit/platform/config"
+import type { TrailHead } from "@audit/domain/trail/schema"
 import { migrationsFolder } from "@audit/platform/database"
 import { readMigrationFiles } from "drizzle-orm/migrator"
 import { Decrypter, Encrypter } from "age-encryption"
@@ -44,6 +45,8 @@ export interface BackupManifest {
     | (StoredFile & { readonly driver: "local" })
     | { readonly driver: "s3"; readonly skipped: true }
   readonly encryption: { readonly format: "age"; readonly recipients: number } | null
+  /** Newest trail entry at dump time (null for an empty trail). Absent when the schema predates the trail key, and in older backups; restore skips the check then. */
+  readonly trail?: TrailHead | null
 }
 
 /** Runs an external tool, streaming stdin/stdout to files when given. */
@@ -139,6 +142,54 @@ const applicationMigrations = async (databaseUrl: string): Promise<ReadonlyArray
   }
 }
 
+const trailHead = async (databaseUrl: string): Promise<TrailHead | null> => {
+  const sql = new SQL(databaseUrl)
+  try {
+    const rows = await sql<{ seq: number; hash: string }[]>`
+      select seq::int as seq, hash from trail_events order by seq desc limit 1`
+    return rows[0] ?? null
+  } catch {
+    throw new BackupError({ message: "the database has no audit trail; run `audit migrate` first" })
+  } finally {
+    await sql.close()
+  }
+}
+
+/** Whether the schema has the trail key, that is, is at or past the trail-HMAC migration. */
+export const trailKeyPresent = async (databaseUrl: string): Promise<boolean> => {
+  const sql = new SQL(databaseUrl)
+  try {
+    const rows = await sql<{ present: boolean }[]>`
+      select to_regclass('public.trail_key') is not null as present`
+    return rows[0]?.present === true
+  } finally {
+    await sql.close()
+  }
+}
+
+/**
+ * Dumps the database and returns the trail head the dump contains. The head is read before and
+ * after pg_dump: appends only add newer entries, so an unchanged head means the dump holds it.
+ * Otherwise the dump is retried.
+ */
+const dumpDatabase = async (databaseUrl: string, file: string): Promise<TrailHead | null> => {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const before = await trailHead(databaseUrl)
+    await runTool(["pg_dump", "--format=custom", "--no-owner", "--dbname", databaseUrl], {
+      stdout: file,
+    })
+    const after = await trailHead(databaseUrl)
+    const unchanged =
+      before === null || after === null
+        ? before === after
+        : before.seq === after.seq && before.hash === after.hash
+    if (unchanged) return after
+  }
+  throw new BackupError({
+    message: "the audit trail kept changing during the dump; run the backup again",
+  })
+}
+
 const storedFile = async (dir: string, file: string): Promise<StoredFile> => ({
   file,
   sha256: await sha256File(join(dir, file)),
@@ -162,15 +213,14 @@ export const createBackup = async (options: {
       throw new BackupError({ message: `not an age recipient (expected age1…): ${recipient}` })
     }
   }
-  const databaseUrl = Redacted.value(config.databaseUrl)
+  const databaseUrl = Redacted.value(config.databaseMigratorUrl)
   const migrations = await applicationMigrations(databaseUrl)
   const stamp = new Date().toISOString().replace(/[:.]/g, "-")
   const dir = resolve(options.out, `audit-backup-${stamp}`)
   await mkdir(dir, { recursive: true })
 
-  await runTool(["pg_dump", "--format=custom", "--no-owner", "--dbname", databaseUrl], {
-    stdout: join(dir, DATABASE_FILE),
-  })
+  const keyed = await trailKeyPresent(databaseUrl)
+  const trail = await dumpDatabase(databaseUrl, join(dir, DATABASE_FILE))
   const local = config.storage.driver === "local"
   if (config.storage.driver === "local") {
     await mkdir(config.storage.root, { recursive: true })
@@ -190,6 +240,7 @@ export const createBackup = async (options: {
     createdAt: new Date().toISOString(),
     version: pkg.version,
     migrations,
+    ...(keyed ? { trail } : {}),
     database: await storedFile(dir, `${DATABASE_FILE}${suffix}`),
     files: local
       ? { driver: "local", ...(await storedFile(dir, `${FILES_FILE}${suffix}`)) }

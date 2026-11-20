@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { createDoc } from "@audit/core/docs/commands"
 import { createDocComment } from "@audit/core/docs/comments"
 import { getDoc, spaceTree } from "@audit/core/docs/queries"
-import { resolveEntities } from "@audit/core/references"
+import { backlinks, resolveEntities, syncReferences } from "@audit/core/references"
 import { WORKSPACE_SPACE_ID } from "@audit/domain/docs/schema"
 import type { DocId, EntityId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
@@ -86,7 +86,41 @@ describe("space docs", () => {
     )(resolveEntities([hiddenId as EntityId, goneId as EntityId]))
     expect(refs[hiddenId]).toMatchObject({ restricted: true, deleted: false })
     expect(refs[hiddenId]?.title).toBeUndefined()
+    expect(refs[hiddenId]).not.toHaveProperty("type")
     expect(refs[goneId]).toMatchObject({ deleted: true })
+  })
+
+  test("a person's reference sync keeps targets they cannot see", async () => {
+    const sourceId = await createSpaceDoc(owner, "Linker")
+    const visibleId = await createSpaceDoc(owner, "Open target")
+    const hiddenId = await createSpaceDoc(owner, "Secret target")
+    await restrict(hiddenId)
+    await runAs(
+      database,
+      owner.actor,
+    )(syncReferences(sourceId as EntityId, "link", [{ targetId: visibleId as EntityId }]))
+    // The owner has no grant on the restricted target, so the link is written directly.
+    await database.superuser`
+      insert into "references" (source_id, target_id, kind)
+      values (${sourceId}, ${hiddenId}, 'link')`
+
+    await runAs(database, member.actor)(syncReferences(sourceId as EntityId, "link", []))
+
+    const rows = await database.superuser`
+      select target_id from "references" where source_id = ${sourceId} and kind = 'link'`
+    expect(rows.map((row: { target_id: string }) => row.target_id)).toEqual([hiddenId])
+  })
+
+  test("backlinks into a target the person cannot see are empty", async () => {
+    const sourceId = await createSpaceDoc(owner, "Citing")
+    const hiddenId = await createSpaceDoc(owner, "Hidden cited")
+    await restrict(hiddenId)
+    await runAs(
+      database,
+      owner.actor,
+    )(syncReferences(sourceId as EntityId, "link", [{ targetId: hiddenId as EntityId }]))
+
+    expect(await runAs(database, member.actor)(backlinks(hiddenId as EntityId))).toEqual([])
   })
 })
 

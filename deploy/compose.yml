@@ -17,7 +17,8 @@ services:
     environment:
       AUDIT_URL: ${AUDIT_URL:?required, public origin e.g. https://audit.example.com}
       AUDIT_SECRET_KEY: ${AUDIT_SECRET_KEY:?required, 32+ random characters}
-      DATABASE_URL: postgres://audit:${POSTGRES_PASSWORD:?required}@postgres:5432/audit
+      DATABASE_URL: postgres://audit_app:${APP_DB_PASSWORD:?required}@postgres:5432/audit
+      DATABASE_MIGRATOR_URL: postgres://audit:${POSTGRES_PASSWORD:?required}@postgres:5432/audit
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Optional, set only when used: SETUP_TOKEN, TRUST_PROXY, OTEL_EXPORTER_OTLP_ENDPOINT.
     volumes:
@@ -33,8 +34,10 @@ services:
       POSTGRES_USER: audit
       POSTGRES_DB: audit
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?required}
     volumes:
       - pgdata:/var/lib/postgresql
+      - ./postgres/init-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
       interval: 5s

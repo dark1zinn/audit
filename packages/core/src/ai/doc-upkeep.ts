@@ -4,7 +4,7 @@
  * edits a doc on its own: a person accepts a suggestion, which applies it as that person, or
  * dismisses it. Jobs are debounced per doc so a burst of source edits runs one review.
  */
-import { comments, docs, entities, references } from "@audit/db/schema"
+import { comments, docs, entities, references, user } from "@audit/db/schema"
 import type { DomainEvent } from "@audit/domain/events"
 import { Conflict, NotFound } from "@audit/domain/errors"
 import { CommentId, DocId, ProjectId, UserId } from "@audit/domain/ids"
@@ -12,8 +12,9 @@ import { Db } from "@audit/platform/database"
 import { defineJob, Jobs } from "@audit/platform/jobs"
 import { jsonToState } from "@audit/editor/ydoc"
 import { isJsonNode, type JsonNode } from "@audit/editor/json"
-import { and, eq, isNull, sql } from "drizzle-orm"
+import { and, eq, inArray, isNull, sql } from "drizzle-orm"
 import { Effect, Schema, Stream } from "effect"
+import { visibleTo } from "../access.ts"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
 import { currentUser } from "../current-user.ts"
@@ -178,16 +179,50 @@ const createSuggestion = Command.make("doc.upkeep.suggest", {
     }),
 })
 
-const sourcesOf = (docId: string) =>
+/**
+ * Sources the upkeep may cite: live targets the author can see and that every reader of the doc
+ * can see too, so a finding never reveals a source to someone who could not read it.
+ */
+const sourcesOf = (docId: string, authorId: UserId) =>
   Effect.gen(function* () {
     const db = yield* Db
-    return yield* db
-      .select({ title: entities.title, searchText: entities.searchText })
+    const readers = yield* db
+      .select({ id: user.id })
+      .from(user)
+      .where(visibleTo(sql`${user.id}`, sql`${docId}`))
+      .pipe(Effect.orDie)
+    const candidates = yield* db
+      .select({
+        id: entities.id,
+        title: entities.title,
+        searchText: entities.searchText,
+      })
       .from(references)
       .innerJoin(entities, eq(entities.id, references.targetId))
-      .where(and(eq(references.sourceId, docId), isNull(entities.deletedAt)))
-      .limit(10)
+      .where(
+        and(
+          eq(references.sourceId, docId),
+          isNull(entities.deletedAt),
+          visibleTo(authorId, sql`${entities.id}`),
+        ),
+      )
       .pipe(Effect.orDie)
+    if (candidates.length === 0) return []
+    const ids = candidates.map((row) => row.id)
+    let allowed = new Set(ids)
+    for (const reader of readers) {
+      const seen = yield* db
+        .select({ id: entities.id })
+        .from(entities)
+        .where(and(inArray(entities.id, ids), visibleTo(sql`${reader.id}`, sql`${entities.id}`)))
+        .pipe(Effect.orDie)
+      const readable = new Set(seen.map((row) => row.id))
+      allowed = new Set([...allowed].filter((id) => readable.has(id)))
+    }
+    return candidates
+      .filter((row) => allowed.has(row.id))
+      .slice(0, 10)
+      .map((row) => ({ title: row.title, searchText: row.searchText }))
   })
 
 const buildPrompt = (
@@ -231,7 +266,7 @@ export const reviewDoc = (docId: DocId) =>
     const authorId = doc.lastEditedBy ?? doc.ownerUserId
     const content = doc.content
     if (authorId === null) return
-    const sources = yield* sourcesOf(docId)
+    const sources = yield* sourcesOf(docId, authorId as UserId)
     if (sources.length === 0) return
     const generated = yield* generateStructured(
       authorId as UserId,

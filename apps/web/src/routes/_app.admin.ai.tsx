@@ -651,6 +651,8 @@ function ProviderForm({
   const [dimensions, setDimensions] = useState(
     provider === undefined ? "" : String(provider.embeddingDimensions),
   )
+  const baseUrlChanged = provider !== undefined && baseUrl.trim() !== provider.baseUrl
+  const keyMissing = baseUrlChanged && trimmedOrUndefined(apiKey) === undefined
 
   const save = useMutation({
     mutationFn: (run: () => Promise<unknown>) => run(),
@@ -675,6 +677,7 @@ function ProviderForm({
     event.preventDefault()
     const dims = dimensions.trim()
     const key = trimmedOrUndefined(apiKey)
+    if (keyMissing) return
 
     if (provider === undefined) {
       const input: AiProviderInput = {
@@ -752,6 +755,11 @@ function ProviderForm({
           value={baseUrl}
           onChange={(event) => setBaseUrl(event.currentTarget.value)}
         />
+        {baseUrlChanged && (
+          <p className="text-xs text-muted-foreground">
+            <Trans>Changing the base URL requires re-entering the API key.</Trans>
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="aiProviderApiKey">
@@ -762,9 +770,13 @@ function ProviderForm({
           type="password"
           autoComplete="off"
           maxLength={500}
-          required={!isEdit}
+          required={!isEdit || baseUrlChanged}
           placeholder={
-            isEdit && provider.hasKey ? t`Leave empty to keep ••••${provider.keyLast4 ?? ""}` : ""
+            baseUrlChanged
+              ? t`Re-enter the API key for the new base URL`
+              : isEdit && provider.hasKey
+                ? t`Leave empty to keep ••••${provider.keyLast4 ?? ""}`
+                : ""
           }
           value={apiKey}
           onChange={(event) => setApiKey(event.currentTarget.value)}
@@ -816,7 +828,7 @@ function ProviderForm({
               <Trans>Cancel</Trans>
             </Button>
           )}
-          <Button type="submit" disabled={save.isPending}>
+          <Button type="submit" disabled={save.isPending || keyMissing}>
             {isEdit ? <Trans>Save provider</Trans> : <Trans>Add provider</Trans>}
           </Button>
         </div>

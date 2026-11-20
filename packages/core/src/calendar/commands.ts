@@ -25,6 +25,7 @@ import { createHash, randomBytes } from "node:crypto"
 import { Effect, Schema } from "effect"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
+import { cleanRichDoc } from "../rich-text.ts"
 import { currentUser } from "../current-user.ts"
 import {
   checkVersion,
@@ -248,11 +249,15 @@ const insertEvent = (input: {
 }) =>
   Effect.gen(function* () {
     const db = yield* Db
+    const description =
+      input.description === null || input.description === undefined
+        ? input.description
+        : yield* cleanRichDoc(input.description, "description")
     yield* createEntity({
       id: input.id,
       type: "event",
       title: input.title,
-      searchText: eventSearchText(input.description, input.location),
+      searchText: eventSearchText(description, input.location),
       parentId: input.calendarId,
       projectId: input.projectId,
     })
@@ -268,7 +273,7 @@ const insertEvent = (input: {
       recurrenceParentId: input.recurrenceParentId ?? null,
       originalStart: input.originalStart ?? null,
       location: input.location,
-      description: input.description as never,
+      description: description as never,
     })
   })
 

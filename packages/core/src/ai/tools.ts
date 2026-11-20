@@ -225,9 +225,9 @@ export const writeTools: ReadonlyArray<WriteTool> = [
   }),
   writeTool({
     name: "draft_message",
-    description: "Post a message to a channel. Low-risk: runs without approval if allowed.",
+    description: "Post a message to a channel. Always needs the user's approval.",
     input: Schema.Struct({ channelId: ChannelId, text: Body }),
-    autoApprovable: true,
+    autoApprovable: false,
     prepare: Commands.draftMessageRequest,
   }),
 ]

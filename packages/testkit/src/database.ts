@@ -8,6 +8,7 @@ import { EventBus } from "@audit/core/event-bus"
 import { type MailMessage, Mailer } from "@audit/core/notifications/mail"
 import { PasswordBreaches } from "@audit/core/admin/passwords"
 import { type PostFn, PushTransport } from "@audit/core/notifications/push"
+import type { Resolve } from "@audit/core/notifications/push-address"
 import { vapidConfig } from "@audit/core/notifications/vapid"
 import type { AppConfigShape } from "@audit/platform/config"
 import { AppConfig } from "@audit/platform/config"
@@ -30,6 +31,7 @@ export const testConfig = (databaseUrl: string, dataDir: string): AppConfigShape
   url: new URL("http://localhost:3000"),
   port: 0,
   databaseUrl: Redacted.make(databaseUrl),
+  databaseMigratorUrl: Redacted.make(databaseUrl),
   secretKey: Redacted.make("test-secret-key-0123456789abcdef-0123456789"),
   setupToken: Option.none(),
   smtpUrl: Option.none(),
@@ -40,6 +42,8 @@ export const testConfig = (databaseUrl: string, dataDir: string): AppConfigShape
   storage: { driver: "local", root: join(dataDir, "files") },
   dataDir,
   trustProxy: false,
+  trustProxyHops: 1,
+  aiAllowPrivateBaseUrl: false,
   logLevel: "warn",
   otelEndpoint: Option.none(),
   webDist: dataDir,
@@ -71,6 +75,8 @@ export interface PushRequest {
 export interface PushStub {
   readonly requests: PushRequest[]
   status: number
+  /** Addresses a host resolves to; hosts not listed resolve to a public documentation address. */
+  readonly addresses: Map<string, string[]>
 }
 
 export interface TestDatabase {
@@ -104,12 +110,13 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
   const config = testConfig(databaseUrl, dataDir)
   const jobs = recordingJobs()
   const mail: MailMessage[] = []
-  const push: PushStub = { requests: [], status: 201 }
+  const push: PushStub = { requests: [], status: 201, addresses: new Map() }
   const breachedPasswords = new Set<string>()
   const post: PostFn = async (url, init) => {
     push.requests.push({ url, init })
     return new Response(null, { status: push.status })
   }
+  const resolve: Resolve = async (hostname) => push.addresses.get(hostname) ?? ["203.0.113.10"]
   const base = Layer.mergeAll(
     Layer.succeed(AppConfig, config),
     databaseLayer({ url: config.databaseUrl, role: APP_ROLE, maxConnections: 4 }),
@@ -124,7 +131,7 @@ export const makeTestDatabase = async (): Promise<TestDatabase> => {
     Layer.succeed(PasswordBreaches, {
       isBreached: (password) => Effect.succeed(breachedPasswords.has(password)),
     }),
-    PushTransport.live(vapidConfig, post).pipe(Layer.provide(Secrets.layer)),
+    PushTransport.live(vapidConfig, post, resolve).pipe(Layer.provide(Secrets.layer)),
     // No provider is reachable from tests; AI tests provide fake models explicitly.
     Layer.succeed(AiModels, {
       language: () => Layer.effect(LanguageModel.LanguageModel, Effect.fail(noModels)),

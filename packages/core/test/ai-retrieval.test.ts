@@ -7,7 +7,7 @@ import { retrieveContext } from "@audit/core/ai/retrieval"
 import { syncEntity } from "@audit/core/ai/sync"
 import { createDoc } from "@audit/core/docs/commands"
 import { saveDocContent } from "@audit/core/docs/content"
-import { createProject } from "@audit/core/projects/commands"
+import { createProject, setBoardRestricted } from "@audit/core/projects/commands"
 import { defaultBoardId } from "@audit/core/projects/read"
 import { createTask } from "@audit/core/tasks/commands"
 import { type Actor, CurrentActor } from "@audit/domain/actor"
@@ -262,6 +262,10 @@ describe("doc upkeep", () => {
         ydocState: jsonToState(paragraph("Sprint 12 is due Friday.")),
       }),
     )
+    await database.superuser`update entities set restricted = true where id = ${docId}`
+    await database.superuser`
+      insert into access_entries (resource_id, principal_type, principal_id, role)
+      values (${docId}, 'user', ${owner.userId}, 'editor')`
     await runAs(
       database,
       owner.actor,
@@ -326,6 +330,63 @@ describe("doc upkeep", () => {
     expect(trail).toHaveLength(1)
     expect(trail[0]?.actorId).toBe(owner.userId)
   })
+
+  test("a source a reader of the doc cannot see is not cited", async () => {
+    const doc = await runAs(
+      database,
+      owner.actor,
+    )(createDoc.execute({ parentId: spaceId, title: "Shared plan" }))
+    const docId = doc.id as DocId
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      saveDocContent.execute({
+        docId,
+        ydocState: jsonToState(paragraph("Sprint 12 is due Friday.")),
+      }),
+    )
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      Effect.gen(function* () {
+        const db = yield* Db
+        yield* db
+          .insert(references)
+          .values({ sourceId: docId, targetId: secretTaskId, kind: "link" })
+          .pipe(Effect.orDie)
+      }),
+    )
+
+    const reply = (): FakeReply => ({
+      text: JSON.stringify({
+        findings: [
+          {
+            quote: "Sprint 12 is due Friday",
+            replacement: "Sprint 12 is due Monday",
+            reason: "The linked plan moved the deadline to Monday.",
+          },
+        ],
+      }),
+    })
+    await runWith(system, modelsWith(reply), reviewDoc(docId))
+
+    const suggestions = await runAs(
+      database,
+      owner.actor,
+    )(
+      Effect.gen(function* () {
+        const db = yield* Db
+        return yield* db
+          .select({ id: comments.id })
+          .from(comments)
+          .where(eq(comments.targetId, docId))
+          .pipe(Effect.orDie)
+      }),
+    )
+    expect(suggestions).toHaveLength(0)
+  })
 })
 
 describe("weekly digest", () => {
@@ -360,5 +421,24 @@ describe("weekly digest", () => {
     const posted = await digestMessages()
     expect(posted).toHaveLength(1)
     expect(posted[0]?.authorId).toBe(owner.userId)
+  })
+
+  test("leaves tasks under a restricted board out of the summary", async () => {
+    const boardId = (await runAs(database, owner.actor)(defaultBoardId(digestProjectId)))!
+    await runAs(
+      database,
+      owner.actor,
+    )(createTask.execute({ boardId, title: "Secret acquisition plan" }))
+    await runAs(database, owner.actor)(setBoardRestricted.execute({ boardId, restricted: true }))
+    const prompts: string[] = []
+    await runWith(
+      system,
+      modelsWith((prompt) => {
+        prompts.push(prompt)
+        return digestReply()
+      }),
+      runAiDigests.execute({}),
+    )
+    expect(prompts.join("\n")).not.toContain("Secret acquisition plan")
   })
 })

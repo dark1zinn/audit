@@ -7,6 +7,8 @@ import { Authz } from "@audit/core/authz"
 import { RequestMeta } from "@audit/core/request"
 import { writeTrail } from "@audit/core/trail"
 import type { Db } from "@audit/platform/database"
+import type { Secrets } from "@audit/platform/crypto"
+import type { SqlClient } from "effect/sql"
 import { Effect, type ManagedRuntime } from "effect"
 
 export interface TrailWriterEntry {
@@ -25,7 +27,9 @@ export interface TrailWriterEntry {
 export type TrailWriter = (entry: TrailWriterEntry) => Promise<void>
 
 export const makeTrailWriter =
-  (runtime: ManagedRuntime.ManagedRuntime<Db | Authz, unknown>): TrailWriter =>
+  (
+    runtime: ManagedRuntime.ManagedRuntime<Db | Authz | Secrets | SqlClient.SqlClient, unknown>,
+  ): TrailWriter =>
   (entry) =>
     runtime.runPromise(
       Effect.gen(function* () {

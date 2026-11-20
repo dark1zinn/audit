@@ -268,6 +268,38 @@ describe("threads", () => {
     expect(view.root.replyCount).toBe(1)
     expect(view.following).toBe(true)
   })
+
+  test("a thread in a private channel is hidden from people outside it", async () => {
+    const channel = await runAs(
+      database,
+      owner.actor,
+    )(chat.createChannel.execute({ name: "threads-private", kind: "private" }))
+    const root = await runAs(
+      database,
+      owner.actor,
+    )(chat.postMessage.execute({ channelId: channel.id, body: paragraph("secret root") }))
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      chat.postMessage.execute({
+        channelId: channel.id,
+        body: paragraph("secret reply"),
+        threadRootId: root.id,
+      }),
+    )
+
+    const exit = await exitAs(
+      database,
+      sam.actor,
+    )(chatQueries.threadView(root.id as MessageId, {}, sam.userId as UserId))
+    expect(exit._tag).toBe("Failure")
+    const followExit = await exitAs(
+      database,
+      sam.actor,
+    )(chat.followThread.execute({ messageId: root.id as MessageId }))
+    expect(followExit._tag).toBe("Failure")
+  })
 })
 
 describe("admin reads of private channels", () => {

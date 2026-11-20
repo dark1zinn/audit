@@ -24,6 +24,4 @@ Each item below was executed in a scratch project; the patterns that worked are 
 - **Better Auth admin plugin is not enabled.** Its endpoints would change roles, ban users and revoke
   sessions outside the command layer and the audit log. The admin console uses audited commands
   instead (`packages/core/src/identity/commands.ts`).
-- **Database roles.** The server logs in with `DATABASE_URL`, runs migrations as that role, and
-  serves requests on connections that switch to `audit_app`, which cannot update or delete the
-  audit trail. Retention purges run as `audit_retention`.
+- **Database roles.** `DATABASE_MIGRATOR_URL` (the owner login) runs migrations, pg-boss setup, backup, and restore. `DATABASE_URL` is the app login `audit_app`, which cannot delete audit trail rows. Retention deletes rows only through the `trail_purge` function.

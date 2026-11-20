@@ -1,6 +1,6 @@
 import { Schema } from "effect"
 import { Email, Password, SignupPolicy, WorkspaceName } from "../identity/schema.ts"
-import { EntityId, FileId, UserId } from "../ids.ts"
+import { EntityId, FileId, Uuid, UserId } from "../ids.ts"
 import { ResourceRole, WorkspaceRole } from "../roles.ts"
 
 const Days = (minimum: number) => Schema.Int.check(Schema.isBetween({ minimum, maximum: 3650 }))
@@ -37,7 +37,26 @@ export const SignupInput = Schema.Struct({
 })
 export type SignupInput = typeof SignupInput.Type
 
-export const SignedUp = Schema.Struct({ userId: UserId })
+/**
+ * `email`: the verification link was mailed. `approval`: an admin decides. The answer depends only
+ * on the server's mail setup, never on whether the address already has an account.
+ */
+export const SignedUp = Schema.Struct({ delivery: Schema.Literals(["email", "approval"]) })
+export type SignedUp = typeof SignedUp.Type
+
+export const VerifySignupInput = Schema.Struct({
+  token: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(128)),
+})
+export type VerifySignupInput = typeof VerifySignupInput.Type
+
+/** A sign-up waiting for an admin's approval (no mail configured). */
+export const PendingSignup = Schema.Struct({
+  id: Uuid,
+  name: Schema.String,
+  email: Schema.String,
+  requestedAt: Schema.Date,
+})
+export type PendingSignup = typeof PendingSignup.Type
 
 export const EmailTestInput = Schema.Struct({ to: Email })
 export type EmailTestInput = typeof EmailTestInput.Type

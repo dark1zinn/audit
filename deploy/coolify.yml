@@ -10,7 +10,8 @@ services:
     environment:
       AUDIT_URL: ${SERVICE_URL_APP}
       AUDIT_SECRET_KEY: ${SERVICE_PASSWORD_64_AUDIT}
-      DATABASE_URL: postgres://audit:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/audit
+      DATABASE_URL: postgres://audit_app:${SERVICE_PASSWORD_APPDB}@postgres:5432/audit
+      DATABASE_MIGRATOR_URL: postgres://audit:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/audit
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - files:/data/files
@@ -31,8 +32,12 @@ services:
       POSTGRES_USER: audit
       POSTGRES_DB: audit
       POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      APP_DB_PASSWORD: ${SERVICE_PASSWORD_APPDB}
     volumes:
       - pgdata:/var/lib/postgresql
+    configs:
+      - source: app-role-init
+        target: /docker-entrypoint-initdb.d/10-app-role.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
       interval: 5s
@@ -42,3 +47,14 @@ services:
 volumes:
   pgdata:
   files:
+configs:
+  app-role-init:
+    content: |
+      #!/bin/sh
+      # Runs once, when the Postgres volume is first created: creates the login the server uses
+      # for requests (DATABASE_URL). The migrator login (POSTGRES_USER) runs migrations.
+      set -eu
+      psql -v ON_ERROR_STOP=1 -v app_pw="$APP_DB_PASSWORD" \
+        --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'EOSQL'
+      CREATE ROLE audit_app LOGIN PASSWORD :'app_pw';
+      EOSQL

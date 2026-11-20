@@ -192,4 +192,15 @@ describe("access review", () => {
       }),
     )
   })
+
+  test("inspecting an item or a person leaves an audit entry for each", async () => {
+    await runAs(database, owner.actor)(accessItem(boardId))
+    await runAs(database, owner.actor)(accessPerson(guest.userId))
+    const rows = await database.superuser`
+      select entity_id from trail_events
+      where action = 'admin.access_inspected' and actor_id = ${owner.userId}`
+    const ids = rows.map((row: { entity_id: string }) => row.entity_id)
+    expect(ids).toContain(boardId)
+    expect(ids).toContain(guest.userId)
+  })
 })

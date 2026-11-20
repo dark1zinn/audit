@@ -14,6 +14,7 @@ import { currentUser } from "../current-user.ts"
 import { createEntity, softDeleteEntity } from "../entities.ts"
 import { record } from "../trail.ts"
 import { cleanFileName, makeThumbnail, sha256Hex, sniffMime } from "./media.ts"
+import { assertWritable } from "../projects/read.ts"
 import { fileLimits } from "./queries.ts"
 
 const MEGABYTE = 1024 * 1024
@@ -64,6 +65,7 @@ export const uploadFile = Command.make("file.upload", {
       const parent = yield* parentRow(input.parentId)
       const commentable = parent.type === "comment" || parent.type === "message"
       yield* authz.requireOn(commentable ? "file.comment" : "file.create", input.parentId)
+      if (parent.projectId !== null) yield* assertWritable(parent.projectId)
     }),
   run: (input) =>
     Effect.gen(function* () {

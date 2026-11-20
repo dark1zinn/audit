@@ -7,8 +7,9 @@ import { channels, entities, messages, projects, tasks } from "@audit/db/schema"
 import { ChannelId, EntityId, MessageId, ProjectId, UserId } from "@audit/domain/ids"
 import { Db } from "@audit/platform/database"
 import { defineJob } from "@audit/platform/jobs"
-import { and, desc, eq, gte, isNull } from "drizzle-orm"
+import { and, desc, eq, gte, isNull, sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
+import { visibleTo } from "../access.ts"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
 import { currentUser } from "../current-user.ts"
@@ -58,6 +59,21 @@ export const setAiDigest = Command.make("project.ai_digest.set", {
     }),
 })
 
+/**
+ * Nothing from the task up to, but not including, its project is restricted. Restricted items keep
+ * their own audience, so the public channel's readers may not see them even when the author can.
+ * The project itself is excluded: its channel is already scoped to the project's members.
+ */
+const unrestrictedChain = (projectId: ProjectId) => sql`not exists (
+  with recursive digest_chain as (
+    select e.id, e.parent_id, e.restricted from entities e where e.id = ${entities.id}
+    union all
+    select p.id, p.parent_id, p.restricted
+    from digest_chain c join entities p on p.id = c.parent_id
+  )
+  select 1 from digest_chain c where c.restricted and c.id <> ${projectId}
+)`
+
 /** Posts one project's digest. Runs as the system actor from the weekly job. */
 export const postDigest = Command.make("ai.digest.post", {
   input: Schema.Struct({ projectId: Schema.String }),
@@ -77,6 +93,8 @@ export const postDigest = Command.make("ai.digest.post", {
         .pipe(Effect.orDie)
       if (project === undefined || !project.aiDigest || project.enabledBy === null) return
       const enabledBy = project.enabledBy as UserId
+      const authz = yield* Authz
+      if ((yield* authz.workspaceRole(enabledBy)) === null) return
       const [channel] = yield* db
         .select({ id: channels.id })
         .from(channels)
@@ -102,6 +120,8 @@ export const postDigest = Command.make("ai.digest.post", {
             eq(tasks.projectId, project.id),
             isNull(entities.deletedAt),
             gte(entities.updatedAt, since),
+            visibleTo(enabledBy, sql`${entities.id}`),
+            unrestrictedChain(project.id as ProjectId),
           ),
         )
         .orderBy(desc(entities.updatedAt))

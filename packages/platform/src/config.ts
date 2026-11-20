@@ -19,6 +19,8 @@ export interface AppConfigShape {
   readonly url: URL
   readonly port: number
   readonly databaseUrl: Redacted.Redacted
+  /** Owner login for migrations, backups and restores. Defaults to DATABASE_URL (single-login setups). */
+  readonly databaseMigratorUrl: Redacted.Redacted
   /** 32+ random bytes; derives the keys for AI-key encryption and tokens. */
   readonly secretKey: Redacted.Redacted
   readonly setupToken: Option.Option<Redacted.Redacted>
@@ -30,6 +32,10 @@ export interface AppConfigShape {
   readonly storage: StorageConfig
   readonly dataDir: string
   readonly trustProxy: boolean
+  /** Proxy hops appended after the client when `trustProxy` is set; the client IP is the hop this many from the right. */
+  readonly trustProxyHops: number
+  /** Lets AI provider base URLs point at private, loopback or link-local addresses (tests, local gateways). */
+  readonly aiAllowPrivateBaseUrl: boolean
   readonly logLevel: string
   readonly otelEndpoint: Option.Option<string>
   /** Directory of the built web app, served for every path not handled by the server. */
@@ -65,10 +71,13 @@ export const readAppConfig = Effect.gen(function* () {
   if (Redacted.value(secretKey).length < 32) {
     return yield* new InvalidConfig({ message: "AUDIT_SECRET_KEY must be at least 32 characters" })
   }
+  const databaseUrl = yield* Config.Redacted("DATABASE_URL")
+  const migratorUrl = yield* Config.Redacted("DATABASE_MIGRATOR_URL").pipe(Config.option)
   const config: AppConfigShape = {
     url: yield* Config.URL("AUDIT_URL"),
     port: yield* Config.Port("PORT").pipe(Config.withDefault(3000)),
-    databaseUrl: yield* Config.Redacted("DATABASE_URL"),
+    databaseUrl,
+    databaseMigratorUrl: Option.getOrElse(migratorUrl, () => databaseUrl),
     secretKey,
     setupToken: yield* Config.Redacted("SETUP_TOKEN").pipe(Config.option),
     smtpUrl: yield* Config.Redacted("SMTP_URL").pipe(Config.option),
@@ -79,6 +88,10 @@ export const readAppConfig = Effect.gen(function* () {
     storage: yield* readStorage(dataDir),
     dataDir,
     trustProxy: yield* Config.Boolean("TRUST_PROXY").pipe(Config.withDefault(false)),
+    trustProxyHops: yield* Config.Int("TRUST_PROXY_HOPS").pipe(Config.withDefault(1)),
+    aiAllowPrivateBaseUrl: yield* Config.Boolean("AI_ALLOW_PRIVATE_BASE_URL").pipe(
+      Config.withDefault(false),
+    ),
     logLevel: yield* Config.String("LOG_LEVEL").pipe(Config.withDefault("info")),
     otelEndpoint: yield* Config.String("OTEL_EXPORTER_OTLP_ENDPOINT").pipe(Config.option),
     webDist: yield* Config.String("WEB_DIST").pipe(Config.withDefault("./apps/web/dist")),

@@ -1,5 +1,6 @@
 import { rotateSecrets } from "@audit/core/admin/secret-rotation"
-import { aiProviders, trailEvents, workspace } from "@audit/db/schema"
+import { TRAIL_KEY_PURPOSE } from "@audit/core/trail-key"
+import { aiProviders, trailEvents, trailKey, workspace } from "@audit/db/schema"
 import { type Sealed, Secrets, makeSecrets } from "@audit/platform/crypto"
 import { Db } from "@audit/platform/database"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
@@ -54,11 +55,43 @@ const storedVapidSeal = async (): Promise<Sealed> => {
   throw new Error("workspace has no sealed VAPID key")
 }
 
+const storedTrailKey = () =>
+  runAs(
+    database,
+    system,
+  )(
+    Effect.gen(function* () {
+      const db = yield* Db
+      const [row] = yield* db
+        .select({ ciphertext: trailKey.keyCiphertext, nonce: trailKey.keyNonce })
+        .from(trailKey)
+        .where(eq(trailKey.id, 1))
+        .pipe(Effect.orDie)
+      return { ciphertext: row?.ciphertext ?? "", nonce: row?.nonce ?? "" }
+    }),
+  )
+
 beforeAll(async () => {
   database = await makeTestDatabase()
   owner = await setupWorkspace(database)
   oldKey = await Effect.runPromise(makeSecrets(OLD).seal("ai-key", "sk-live-abcd1234"))
   oldVapid = await Effect.runPromise(makeSecrets(OLD).seal("vapid", "vapid-private-key"))
+  // setupWorkspace wrote trail events, which created the trail key under the test secret; move it to OLD.
+  const trailPlain = await openCurrent(TRAIL_KEY_PURPOSE, await storedTrailKey())
+  const trailOld = await Effect.runPromise(makeSecrets(OLD).seal(TRAIL_KEY_PURPOSE, trailPlain))
+  await runAs(
+    database,
+    system,
+  )(
+    Effect.gen(function* () {
+      const db = yield* Db
+      yield* db
+        .update(trailKey)
+        .set({ keyCiphertext: trailOld.ciphertext, keyNonce: trailOld.nonce })
+        .where(eq(trailKey.id, 1))
+        .pipe(Effect.orDie)
+    }),
+  )
   providerId = await runAs(
     database,
     owner.actor,
@@ -145,4 +178,79 @@ test("a wrong previous secret fails clearly and leaves stored values unchanged",
 test("only the system may rotate secrets", async () => {
   const exit = await exitAs(database, owner.actor)(rotateSecrets(OLD).execute({}))
   expect(Exit.isFailure(exit)).toBe(true)
+})
+
+test("rotation re-seals the trail HMAC key under the current secret", async () => {
+  const other = Redacted.make("other-secret-key-0123456789abcdef-0123456789")
+  const plaintext = await runAs(
+    database,
+    system,
+  )(
+    Effect.gen(function* () {
+      const db = yield* Db
+      const [row] = yield* db
+        .select({ ciphertext: trailKey.keyCiphertext, nonce: trailKey.keyNonce })
+        .from(trailKey)
+        .where(eq(trailKey.id, 1))
+        .pipe(Effect.orDie)
+      const secrets = yield* Secrets
+      return Redacted.value(
+        yield* secrets.open(TRAIL_KEY_PURPOSE, {
+          ciphertext: row?.ciphertext ?? "",
+          nonce: row?.nonce ?? "",
+        }),
+      )
+    }),
+  )
+
+  // Seal every stored value under `other`, so rotation from `other` has something to move.
+  const trailSealed = await Effect.runPromise(makeSecrets(other).seal(TRAIL_KEY_PURPOSE, plaintext))
+  const aiSealed = await Effect.runPromise(makeSecrets(other).seal("ai-key", "sk-live-abcd1234"))
+  const vapidSealed = await Effect.runPromise(makeSecrets(other).seal("vapid", "vapid-private-key"))
+  await runAs(
+    database,
+    system,
+  )(
+    Effect.gen(function* () {
+      const db = yield* Db
+      yield* db
+        .update(trailKey)
+        .set({ keyCiphertext: trailSealed.ciphertext, keyNonce: trailSealed.nonce })
+        .where(eq(trailKey.id, 1))
+        .pipe(Effect.orDie)
+      yield* db
+        .update(aiProviders)
+        .set({ keyCiphertext: aiSealed.ciphertext, keyNonce: aiSealed.nonce })
+        .where(eq(aiProviders.id, providerId as never))
+        .pipe(Effect.orDie)
+      yield* db
+        .update(workspace)
+        .set({ settings: { vapid: { publicKey: "pub", sealed: vapidSealed } } })
+        .where(eq(workspace.id, 1))
+        .pipe(Effect.orDie)
+    }),
+  )
+
+  const result = await runAs(database, system)(rotateSecrets(other).execute({}))
+  expect(result).toEqual({ aiKeys: 1, vapid: true })
+
+  const [row] = await runAs(
+    database,
+    system,
+  )(
+    Effect.gen(function* () {
+      const db = yield* Db
+      return yield* db
+        .select({ ciphertext: trailKey.keyCiphertext, nonce: trailKey.keyNonce })
+        .from(trailKey)
+        .where(eq(trailKey.id, 1))
+        .pipe(Effect.orDie)
+    }),
+  )
+  expect(
+    await openCurrent(TRAIL_KEY_PURPOSE, {
+      ciphertext: row?.ciphertext ?? "",
+      nonce: row?.nonce ?? "",
+    }),
+  ).toBe(plaintext)
 })

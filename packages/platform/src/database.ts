@@ -1,7 +1,7 @@
 /**
- * Database access. Requests run on a pool that logs in with DATABASE_URL and switches to the
- * `audit_app` role, which may only INSERT and SELECT the trail. Migrations and retention purges
- * open their own short-lived connections as the login role.
+ * Database access. Requests and jobs run as the `audit_app` login (DATABASE_URL): it cannot own
+ * tables, and it may only INSERT and SELECT the trail; retention deletes through `trail_purge`.
+ * Migrations, backups and restores use the owner login (DATABASE_MIGRATOR_URL).
  */
 import { fileURLToPath } from "node:url"
 import { relations } from "@audit/db/relations"
@@ -21,7 +21,6 @@ export type Database = PgDrizzle.EffectPgDatabase<typeof relations> & {
 export class Db extends Context.Service<Db, Database>()("@audit/platform/Db") {}
 
 export const APP_ROLE = "audit_app"
-export const RETENTION_ROLE = "audit_retention"
 
 export interface PoolOptions {
   readonly url: Redacted.Redacted

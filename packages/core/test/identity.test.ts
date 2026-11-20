@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import * as identity from "@audit/core/identity/commands"
+import { EventBus } from "@audit/core/event-bus"
 import { verifyTrail } from "@audit/core/trail-queries"
 import { defaultWorkspaceSettings } from "@audit/domain/identity/schema"
 import type { TeamId } from "@audit/domain/ids"
@@ -13,7 +14,7 @@ import {
   setupWorkspace,
   system,
 } from "@audit/testkit/fixtures"
-import { Cause, Effect, Exit, Option } from "effect"
+import { Cause, Effect, Exit, Fiber, Option, Stream } from "effect"
 import { SqlClient } from "effect/sql"
 
 let database: TestDatabase
@@ -116,14 +117,14 @@ describe("audit trail", () => {
   })
 
   test("verification detects a tampered entry", async () => {
-    const intact = await runAs(database, system)(verifyTrail)
+    const intact = await runAs(database, system)(verifyTrail())
     expect(intact.ok).toBe(true)
     const [target] =
       await database.superuser`select seq from trail_events order by seq limit 1 offset 2`
     await database.superuser`alter table trail_events disable trigger trail_events_append_only`
     await database.superuser`update trail_events set action = 'forged' where seq = ${target.seq}`
     await database.superuser`alter table trail_events enable trigger trail_events_append_only`
-    const broken = await runAs(database, system)(verifyTrail)
+    const broken = await runAs(database, system)(verifyTrail())
     expect(broken).toMatchObject({ ok: false, firstBrokenSeq: Number(target.seq) })
   })
 })
@@ -237,5 +238,95 @@ describe("member administration", () => {
         )(identity.changeRole.execute({ userId: admin.userId, role: "member" })),
       ),
     ).toBe("Forbidden")
+  })
+})
+
+describe("team leads on teams that hold grants", () => {
+  test("cannot add guests or promote members to lead; admins still can", async () => {
+    const teamId = await runAs(
+      database,
+      admin.actor,
+    )(identity.createTeam.execute({ name: "Granted", slug: "granted" }))
+    await runAs(
+      database,
+      admin.actor,
+    )(identity.setTeamMember.execute({ teamId, userId: member.userId, role: "lead" }))
+    await database.superuser`
+      insert into access_entries (resource_id, principal_type, principal_id, role)
+      values (${teamId}, 'team', ${teamId}, 'viewer')`
+    const guest = await addPerson(database, owner, "Guest", "guest")
+    const other = await addPerson(database, owner, "Other", "member")
+
+    expect(
+      failureTag(
+        await exitAs(
+          database,
+          member.actor,
+        )(identity.setTeamMember.execute({ teamId, userId: guest.userId, role: "member" })),
+      ),
+    ).toBe("Forbidden")
+    expect(
+      failureTag(
+        await exitAs(
+          database,
+          member.actor,
+        )(identity.setTeamMember.execute({ teamId, userId: other.userId, role: "lead" })),
+      ),
+    ).toBe("Forbidden")
+    expect(
+      failureTag(
+        await exitAs(
+          database,
+          admin.actor,
+        )(identity.setTeamMember.execute({ teamId, userId: guest.userId, role: "member" })),
+      ),
+    ).toBe("success")
+  })
+})
+
+describe("deactivation", () => {
+  test("a deactivated person loses their push subscriptions and calendar token", async () => {
+    const leaver = await addPerson(database, owner, "Leo", "member")
+    await database.superuser`
+      update user_profiles set ical_token_hash = 'hash' where user_id = ${leaver.userId}`
+    await database.superuser`
+      insert into push_subscriptions (user_id, endpoint, p256dh, auth)
+      values (${leaver.userId}, 'https://push.example.test/leo', 'p', 'a')`
+
+    await runAs(database, owner.actor)(identity.deactivateMember.execute(leaver.userId))
+
+    const [profile] = await database.superuser`
+      select ical_token_hash from user_profiles where user_id = ${leaver.userId}`
+    const [subs] = await database.superuser`
+      select count(*)::int as n from push_subscriptions where user_id = ${leaver.userId}`
+    expect(profile?.ical_token_hash).toBeNull()
+    expect(subs?.n).toBe(0)
+  })
+
+  test("revoking sessions publishes MembersChanged so the person's live sockets close", async () => {
+    const target = await addPerson(database, owner, "Rae", "member")
+    const published = await runAs(
+      database,
+      owner.actor,
+    )(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const bus = yield* EventBus
+          const events = yield* bus.subscribe
+          const first = yield* Effect.forkScoped(
+            events.pipe(
+              Stream.filter((event) => event._tag === "MembersChanged"),
+              Stream.runHead,
+            ),
+          )
+          yield* identity.revokeSessions.execute(target.userId)
+          return yield* Fiber.join(first)
+        }),
+      ),
+    )
+    expect(Option.getOrUndefined(published)).toMatchObject({
+      _tag: "MembersChanged",
+      userId: target.userId,
+    })
   })
 })

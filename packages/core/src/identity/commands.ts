@@ -2,6 +2,7 @@ import {
   accessEntries,
   invites,
   projects,
+  pushSubscriptions,
   session,
   teamMembers,
   teams,
@@ -47,6 +48,7 @@ import * as Command from "../command.ts"
 import { diff, emit, record } from "../trail.ts"
 import { createAccount, normalizeEmail } from "./accounts.ts"
 import { inviteStatus, toInvite } from "./queries.ts"
+import { resetIdentifier } from "./reset-token.ts"
 
 const requireCapability = (capability: WorkspaceCapability) =>
   Effect.gen(function* () {
@@ -382,8 +384,9 @@ export const deactivateMember = Command.make("member.deactivated", {
       if (member.deactivatedAt !== null) return
       yield* db
         .update(userProfiles)
-        .set({ deactivatedAt: new Date() })
+        .set({ deactivatedAt: new Date(), icalTokenHash: null })
         .where(eq(userProfiles.userId, userId))
+      yield* db.delete(pushSubscriptions).where(eq(pushSubscriptions.userId, userId))
       yield* revokeAllSessions(userId)
       yield* record({ action: "member.deactivated", entityId: userId, entityType: "user" })
       yield* memberEvent(userId, actorUserId(yield* CurrentActor))
@@ -419,6 +422,7 @@ export const revokeSessions = Command.make("member.sessions_revoked", {
         yield* requireCapability("workspace.transfer")
       }
       yield* revokeAllSessions(userId)
+      yield* memberEvent(userId, actorUserId(yield* CurrentActor))
       yield* record({ action: "member.sessions_revoked", entityId: userId, entityType: "user" })
     }),
 })
@@ -457,7 +461,7 @@ export const createPasswordResetLink = Command.make("member.password_reset_link_
       const expiresAt = new Date(Date.now() + RESET_LINK_HOURS * 3_600_000)
       yield* db
         .insert(verification)
-        .values({ identifier: `reset-password:${token}`, value: userId, expiresAt })
+        .values({ identifier: resetIdentifier(token), value: userId, expiresAt })
       yield* record({
         action: "member.password_reset_link_created",
         entityId: userId,
@@ -637,15 +641,19 @@ export const updateTeam = Command.make("team.updated", {
     }),
 })
 
+/** Owners and admins hold `teams.manage`; team leads do not. */
+const canManageTeams = Effect.gen(function* () {
+  const authz = yield* Authz
+  return yield* authz.requireCapability("teams.manage").pipe(
+    Effect.as(true),
+    Effect.orElseSucceed(() => false),
+  )
+})
+
 /** Admins manage every team; a team lead manages their own team's members. */
 const authorizeTeamMembership = (teamId: TeamId) =>
   Effect.gen(function* () {
-    const authz = yield* Authz
-    const allowed = yield* authz.requireCapability("teams.manage").pipe(
-      Effect.as(true),
-      Effect.orElseSucceed(() => false),
-    )
-    if (allowed) return
+    if (yield* canManageTeams) return
     const userId = yield* currentUserId
     const db = yield* Db
     const [lead] = yield* db
@@ -669,13 +677,14 @@ export const setTeamMember = Command.make("team.member_set", {
     Effect.gen(function* () {
       const db = yield* Db
       const authz = yield* Authz
+      const manager = yield* canManageTeams
       const [team] = yield* db
         .select({ id: teams.id })
         .from(teams)
         .where(eq(teams.id, input.teamId))
       if (team === undefined) return yield* new NotFound({ entity: "team", id: input.teamId })
       const [member] = yield* db
-        .select({ userId: workspaceMembers.userId })
+        .select({ userId: workspaceMembers.userId, role: workspaceMembers.role })
         .from(workspaceMembers)
         .where(eq(workspaceMembers.userId, input.userId))
       if (member === undefined) return yield* new NotFound({ entity: "member", id: input.userId })
@@ -684,6 +693,22 @@ export const setTeamMember = Command.make("team.member_set", {
         .from(teamMembers)
         .where(and(eq(teamMembers.teamId, input.teamId), eq(teamMembers.userId, input.userId)))
       if (before?.role === input.role) return
+      const [grant] = yield* db
+        .select({ id: accessEntries.id })
+        .from(accessEntries)
+        .where(
+          and(eq(accessEntries.principalType, "team"), eq(accessEntries.principalId, input.teamId)),
+        )
+        .limit(1)
+        .pipe(Effect.orDie)
+      const addsGuest = before === undefined && member.role === "guest"
+      const promotes = input.role === "lead" && before?.role !== "lead"
+      if (!manager && grant !== undefined && (addsGuest || promotes)) {
+        return yield* new Forbidden({
+          action: "team.members",
+          message: "Only admins can add guests or leads to a team that holds grants",
+        })
+      }
       yield* db
         .insert(teamMembers)
         .values(input)

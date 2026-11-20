@@ -169,7 +169,7 @@ describe("no leaks after access is lost", () => {
     const stored = await notifyTo(assignee, "task_changed", taskId, `changed:${taskId}`)
     expect(stored).toBe(false)
     const after = await inboxOf(assignee)
-    expect(after.filter((item) => item.entityId === taskId).length).toBe(1)
+    expect(after.filter((item) => item.entityId === taskId).length).toBe(0)
 
     const pushesBefore = database.push.requests.length
     await runAs(
@@ -360,5 +360,111 @@ describe("invites", () => {
     expect(sent.subject).toBe(
       translate("pt-BR", { id: "email.invite_subject" }, { workspace: "Test workspace" }),
     )
+  })
+})
+
+describe("push endpoints", () => {
+  const refusedAt = (person: Person, endpoint: string) =>
+    runAs(
+      database,
+      person.actor,
+    )(subscribePush.execute({ endpoint, p256dh: "AAAA", auth: "AAAA" }).pipe(Effect.flip))
+
+  test("a non-https endpoint, or one with credentials, is refused at subscribe", async () => {
+    const person = await addPerson(database, owner, "Nina", "member")
+    for (const endpoint of [
+      "http://push.example.test/plain",
+      "https://user:secret@push.example.test/creds",
+      "https://:443/no-host",
+    ]) {
+      expect((await refusedAt(person, endpoint))._tag).toBe("ValidationError")
+    }
+    expect(await pushCount(person.userId)).toBe(0)
+  })
+
+  test("internal, loopback and link-local addresses and localhost are refused at subscribe", async () => {
+    const person = await addPerson(database, owner, "Otto", "member")
+    for (const endpoint of [
+      "https://169.254.169.254/latest/meta-data",
+      "https://127.0.0.1/push",
+      "https://10.0.0.1/push",
+      "https://192.168.1.10/push",
+      "https://100.64.0.1/push",
+      "https://0.0.0.0/push",
+      "https://localhost/push",
+      "https://[::1]/push",
+      "https://[::ffff:127.0.0.1]/push",
+      "https://[fe80::1]/push",
+      "https://[fd00::1]/push",
+    ]) {
+      expect((await refusedAt(person, endpoint))._tag).toBe("ValidationError")
+    }
+    expect(await pushCount(person.userId)).toBe(0)
+  })
+
+  test("a public https endpoint is accepted", async () => {
+    const person = await addPerson(database, owner, "Pedro", "member")
+    await subscribeAs(person, "https://push.example.test/public")
+    expect(await pushCount(person.userId)).toBe(1)
+  })
+
+  test("another user cannot take over an endpoint that is already subscribed", async () => {
+    const first = await addPerson(database, owner, "Quinn", "member")
+    const second = await addPerson(database, owner, "Rosa", "member")
+    await subscribeAs(first, "https://push.example.test/shared")
+
+    const error = await refusedAt(second, "https://push.example.test/shared")
+    expect(error._tag).toBe("Conflict")
+    expect(await pushCount(second.userId)).toBe(0)
+    const rows = await database.superuser`
+      select user_id from push_subscriptions where endpoint = 'https://push.example.test/shared'`
+    expect(rows[0]?.user_id).toBe(first.userId)
+  })
+
+  test("delivery is refused when the host now resolves to a private address", async () => {
+    const person = await addPerson(database, owner, "Sami", "member")
+    const endpoint = "https://rebind.example.test/sami"
+    await subscribeAs(person, endpoint)
+    database.push.addresses.set("rebind.example.test", ["10.0.0.5"])
+    try {
+      await notifyTo(person, "mention", person.userId, "rebind")
+      const id = (await inboxOf(person)).find((item) => item.entityId === person.userId)!.id
+      await runAs(database, system)(deliverNotification({ notificationId: id, channel: "push" }))
+    } finally {
+      database.push.addresses.delete("rebind.example.test")
+    }
+    expect(database.push.requests.some((request) => request.url === endpoint)).toBe(false)
+    expect(await pushCount(person.userId)).toBe(1)
+  })
+})
+
+describe("inbox visibility", () => {
+  test("a notice about a project disappears from the inbox once the person loses access", async () => {
+    const person = await addPerson(database, owner, "Tomas", "member")
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      grantProjectAccess.execute({
+        projectId,
+        principalType: "user",
+        principalId: person.userId,
+        role: "editor",
+      }),
+    )
+    await notifyTo(person, "mention", projectId, "inbox-visibility")
+    expect((await inboxOf(person)).some((item) => item.entityId === projectId)).toBe(true)
+
+    await runAs(
+      database,
+      owner.actor,
+    )(
+      revokeProjectAccess.execute({
+        projectId,
+        principalType: "user",
+        principalId: person.userId,
+      }),
+    )
+    expect((await inboxOf(person)).some((item) => item.entityId === projectId)).toBe(false)
   })
 })

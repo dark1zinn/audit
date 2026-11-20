@@ -51,6 +51,7 @@ import { Effect, Schema } from "effect"
 import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
+import { cleanRichDoc } from "../rich-text.ts"
 import { currentUser } from "../current-user.ts"
 import { boardRow } from "../projects/board-read.ts"
 import { assertWritable } from "../projects/read.ts"
@@ -538,11 +539,14 @@ export const createTask = Command.make("task.create", {
       }
 
       const position = yield* placeInColumn(columnId as ColumnId, undefined, null)
+      const description = input.description
+        ? yield* cleanRichDoc(input.description, "description")
+        : input.description
       const key = `${project?.key ?? ""}-${number}`
       const id = (yield* createEntity({
         type: "task",
         title: input.title,
-        searchText: taskSearchText(key, input.description),
+        searchText: taskSearchText(key, description),
         parentId: input.parentId ?? input.boardId,
         projectId: board.projectId,
       })) as TaskId
@@ -559,7 +563,7 @@ export const createTask = Command.make("task.create", {
           startAt: input.startAt ?? null,
           dueAt: input.dueAt ?? null,
           estimate: input.estimate ?? null,
-          description: input.description ?? null,
+          description: description ?? null,
           completedAt: completedAtFor(category, null, new Date()),
         })
         .pipe(Effect.orDie)
@@ -581,8 +585,8 @@ export const createTask = Command.make("task.create", {
       yield* addAssignees(state, input.assignees ?? [], userId)
       yield* addLabels(id, board.projectId, input.labels ?? [])
       yield* watch(id, userId)
-      if (input.description !== undefined && input.description !== null) {
-        yield* syncMentions(id, id, input.description, userId, {})
+      if (description !== undefined && description !== null) {
+        yield* syncMentions(id, id, description, userId, {})
       }
       yield* record({
         action: "task.created",
@@ -617,12 +621,15 @@ export const updateTask = Command.make("task.update", {
       if (input.parentId !== undefined && input.parentId !== null) {
         yield* requireParent(input.parentId, state.boardId, input.taskId)
       }
+      const description = input.description
+        ? yield* cleanRichDoc(input.description, "description")
+        : input.description
 
       const patch: Partial<typeof tasks.$inferInsert> = {}
       if (input.priority !== undefined) patch.priority = input.priority
       if (input.startAt !== undefined) patch.startAt = input.startAt
       if (input.estimate !== undefined) patch.estimate = input.estimate
-      if (input.description !== undefined) patch.description = input.description
+      if (description !== undefined) patch.description = description
       if (input.dueAt !== undefined) {
         patch.dueAt = input.dueAt
         patch.dueNotifiedAt = null
@@ -631,8 +638,8 @@ export const updateTask = Command.make("task.update", {
       if (Object.keys(patch).length > 0) {
         yield* db.update(tasks).set(patch).where(eq(tasks.id, input.taskId)).pipe(Effect.orDie)
       }
-      if (input.description !== undefined) {
-        yield* syncMentions(input.taskId, input.taskId, input.description, userId, {})
+      if (description !== undefined) {
+        yield* syncMentions(input.taskId, input.taskId, description, userId, {})
       }
 
       if (input.assignees !== undefined) {
@@ -667,8 +674,8 @@ export const updateTask = Command.make("task.update", {
       const version = yield* touchEntity(input.taskId, {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.parentId !== undefined ? { parentId: input.parentId ?? state.boardId } : {}),
-        ...(input.description !== undefined
-          ? { searchText: taskSearchText(state.key, input.description) }
+        ...(description !== undefined
+          ? { searchText: taskSearchText(state.key, description) }
           : {}),
       })
       yield* record({
@@ -981,10 +988,11 @@ export const createComment = Command.make("comment.create", {
           .pipe(Effect.orDie)
         if (!parent) return yield* invalid("Parent comment must be on this task", "parentCommentId")
       }
+      const body = yield* cleanRichDoc(input.body, "body")
       const id = (yield* createEntity({
         type: "comment",
         title: "",
-        searchText: plainText(input.body),
+        searchText: plainText(body),
         parentId: input.taskId,
         projectId: state.projectId,
       })) as CommentId
@@ -995,8 +1003,8 @@ export const createComment = Command.make("comment.create", {
           targetId: input.taskId,
           authorId: userId,
           anchor: input.anchor ?? null,
-          body: input.body,
-          bodyText: plainText(input.body),
+          body,
+          bodyText: plainText(body),
           parentCommentId: input.parentCommentId ?? null,
         })
         .pipe(Effect.orDie)
@@ -1009,7 +1017,7 @@ export const createComment = Command.make("comment.create", {
         payload: { taskKey: state.key, title: state.title },
         groupKey: `comment:${input.taskId}`,
       })
-      yield* syncMentions(id, input.taskId, input.body, userId, { commentId: id })
+      yield* syncMentions(id, input.taskId, body, userId, { commentId: id })
       yield* record({
         action: "comment.created",
         entityId: id,
@@ -1055,17 +1063,18 @@ export const updateComment = Command.make("comment.update", {
       const lock = yield* lockEntity(input.commentId, "comment")
       yield* checkVersion(lock, input.version, { comment: input.commentId })
       yield* assertWritable(state.projectId)
-      if (input.body !== undefined) {
+      const body = input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body")
+      if (body !== undefined) {
         yield* db
           .update(comments)
           .set({
-            body: input.body,
-            bodyText: plainText(input.body),
+            body,
+            bodyText: plainText(body),
             editedAt: new Date(),
           })
           .where(eq(comments.id, input.commentId))
           .pipe(Effect.orDie)
-        yield* syncMentions(input.commentId, target.taskId, input.body, userId, {
+        yield* syncMentions(input.commentId, target.taskId, body, userId, {
           commentId: input.commentId,
         })
       }
@@ -1078,7 +1087,7 @@ export const updateComment = Command.make("comment.update", {
       }
       const version = yield* touchEntity(
         input.commentId,
-        input.body !== undefined ? { searchText: plainText(input.body) } : {},
+        body !== undefined ? { searchText: plainText(body) } : {},
       )
       yield* emit({
         _tag: "CommentChanged",

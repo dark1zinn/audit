@@ -19,11 +19,13 @@ import { EMPTY_DOC, jsonToState, stateToJson } from "@audit/editor/ydoc"
 import { and, desc, eq } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import { Authz } from "../authz.ts"
+import { cleanRichDoc } from "../rich-text.ts"
 import * as Command from "../command.ts"
 import { currentUser } from "../current-user.ts"
 import { createEntity, touchEntity } from "../entities.ts"
 import { syncReferences } from "../references.ts"
 import { CommandScope, emit, record } from "../trail.ts"
+import { assertWritable } from "../projects/read.ts"
 import { loadDoc, positionAmong } from "./read.ts"
 import { snapshotDoc } from "./versions.ts"
 
@@ -111,7 +113,8 @@ export const saveDocContent = Command.make("doc.content.save", {
       const userId = yield* currentUser("doc.content.save")
       const db = yield* Db
       const doc = yield* loadDoc(docId)
-      const json = stateToJson(input.ydocState)
+      if (doc.projectId !== null) yield* assertWritable(doc.projectId)
+      const json = yield* cleanRichDoc(stateToJson(input.ydocState), "content")
       const text = jsonToText(json)
       const now = new Date()
       yield* db
@@ -214,13 +217,15 @@ export const replaceDocState = (
   Effect.gen(function* () {
     const db = yield* Db
     const doc = yield* loadDoc(docId)
-    const json = isJsonNode(state.content) ? state.content : EMPTY_DOC
+    const json = isJsonNode(state.content)
+      ? yield* cleanRichDoc(state.content, "content")
+      : EMPTY_DOC
     const text = jsonToText(json)
     yield* db
       .update(docs)
       .set({
         ydoc: state.ydoc,
-        content: state.content,
+        content: json as Record<string, unknown>,
         contentText: text,
         lastEditedBy: editedBy,
         lastEditedAt: new Date(),
@@ -307,7 +312,7 @@ const placementUnder = (parentId: EntityId) =>
 export const importMarkdown = (input: ImportMarkdownInput, createdBy: UserId) =>
   Effect.gen(function* () {
     const db = yield* Db
-    const json = markdownToJson(input.markdown)
+    const json = yield* cleanRichDoc(markdownToJson(input.markdown), "markdown")
     const firstHeading = json.content?.find((node) => node.type === "heading")
     const headingText = jsonToText({ type: "doc", content: firstHeading ? [firstHeading] : [] })
     const title = input.title ?? (headingText.length > 0 ? headingText : "Untitled")

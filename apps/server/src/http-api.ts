@@ -275,7 +275,7 @@ const TrailLive = HttpApiBuilder.group(AuditApi, "trail", (handlers) =>
     const core = yield* coreContext
     return handlers
       .handle("list", ({ query }) => listTrail(query).pipe(Effect.provide(core)))
-      .handle("verify", () => verifyTrail.pipe(Effect.provide(core)))
+      .handle("verify", () => verifyTrail().pipe(Effect.provide(core)))
   }),
 )
 
@@ -1012,6 +1012,13 @@ const AdminLive = HttpApiBuilder.group(AuditApi, "admin", (handlers) =>
         adminCommands.sendEmailTest.execute(payload).pipe(Effect.asVoid, Effect.provide(core)),
       )
       .handle("storage", () => adminQueries.storage.pipe(Effect.provide(core)))
+      .handle("pendingSignups", () => adminSignup.pendingSignups.pipe(Effect.provide(core)))
+      .handle("approveSignup", ({ params }) =>
+        adminSignup.approveSignup.execute({ id: params.id }).pipe(Effect.provide(core)),
+      )
+      .handle("rejectSignup", ({ params }) =>
+        adminSignup.rejectSignup.execute({ id: params.id }).pipe(Effect.provide(core)),
+      )
   }),
 )
 
@@ -1038,9 +1045,13 @@ const AiAdminLive = HttpApiBuilder.group(AuditApi, "aiAdmin", (handlers) =>
           .pipe(Effect.provide(core)),
       )
       .handle("testProvider", ({ params }) =>
-        aiCommands.testProvider
-          .execute({ providerId: params.providerId })
-          .pipe(Effect.provide(core)),
+        aiCommands.testProvider.execute({ providerId: params.providerId }).pipe(
+          // A stored base URL that the SSRF policy now refuses is a failed test, not an error.
+          Effect.catchTag("ValidationError", (error) =>
+            Effect.succeed({ ok: false, message: error.message, latencyMs: 0 }),
+          ),
+          Effect.provide(core),
+        ),
       )
       .handle("usage", ({ query }) => aiQueries.aiUsage(query.month).pipe(Effect.provide(core)))
   }),
@@ -1091,19 +1102,33 @@ const SignupLive = HttpApiBuilder.group(AuditApi, "signup", (handlers) =>
   Effect.gen(function* () {
     const core = yield* coreContext
     const limiter = yield* RateLimiter
-    return handlers.handle("signup", ({ payload }) =>
-      Effect.gen(function* () {
-        const meta = yield* clientMeta
-        yield* limiter.check("signup", meta.ip ?? "unknown")
-        return yield* adminSignup.signup
-          .execute(payload)
-          .pipe(
-            systemActor("signup"),
-            Effect.provideService(RequestMeta, meta),
-            Effect.provide(core),
-          )
-      }),
-    )
+    return handlers
+      .handle("signup", ({ payload }) =>
+        Effect.gen(function* () {
+          const meta = yield* clientMeta
+          yield* limiter.check("signup", meta.ip ?? "unknown")
+          return yield* adminSignup.signup
+            .execute(payload)
+            .pipe(
+              systemActor("signup"),
+              Effect.provideService(RequestMeta, meta),
+              Effect.provide(core),
+            )
+        }),
+      )
+      .handle("verifySignup", ({ payload }) =>
+        Effect.gen(function* () {
+          const meta = yield* clientMeta
+          yield* limiter.check("signup", meta.ip ?? "unknown")
+          return yield* adminSignup.verifySignup
+            .execute(payload)
+            .pipe(
+              systemActor("signup"),
+              Effect.provideService(RequestMeta, meta),
+              Effect.provide(core),
+            )
+        }),
+      )
   }),
 )
 

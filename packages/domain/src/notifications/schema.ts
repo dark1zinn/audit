@@ -68,8 +68,27 @@ export const UpdateQuietHoursInput = Schema.Struct({
 })
 export type UpdateQuietHoursInput = typeof UpdateQuietHoursInput.Type
 
+/**
+ * A push endpoint is an https URL with a host and no credentials. Whether the host is a public
+ * address is checked in core, where DNS is available.
+ */
+export const isPushEndpoint = (value: string): boolean => {
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return false
+  }
+  return (
+    url.protocol === "https:" && url.username === "" && url.password === "" && url.hostname !== ""
+  )
+}
+
 export const PushSubscriptionInput = Schema.Struct({
-  endpoint: Schema.String.check(Schema.isMaxLength(2048)),
+  endpoint: Schema.String.check(
+    Schema.isMaxLength(2048),
+    Schema.makeFilter<string>((value) => isPushEndpoint(value)),
+  ),
   p256dh: Schema.String.check(Schema.isMaxLength(256)),
   auth: Schema.String.check(Schema.isMaxLength(256)),
 })

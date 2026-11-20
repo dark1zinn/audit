@@ -55,9 +55,18 @@ export const TrailPage = Schema.Struct({
 })
 export type TrailPage = typeof TrailPage.Type
 
+/** The newest entry of the trail: the value a backup records and a restore checks against. */
+export const TrailHead = Schema.Struct({
+  seq: Schema.Int,
+  hash: Schema.String,
+})
+export type TrailHead = typeof TrailHead.Type
+
 export const TrailVerification = Schema.Struct({
   ok: Schema.Boolean,
   checked: Schema.Int,
   firstBrokenSeq: Schema.NullOr(Schema.Int),
+  head: Schema.NullOr(TrailHead),
+  expectedHeadFound: Schema.NullOr(Schema.Boolean),
 })
 export type TrailVerification = typeof TrailVerification.Type

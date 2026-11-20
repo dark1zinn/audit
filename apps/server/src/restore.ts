@@ -120,7 +120,7 @@ export const restoreBackup = async (
     ? await readIdentities(requireIdentityFile(options.ageIdentityFile))
     : []
 
-  const databaseUrl = Redacted.value(config.databaseUrl)
+  const databaseUrl = Redacted.value(config.databaseMigratorUrl)
   const root = config.storage.driver === "local" ? config.storage.root : null
   const sql = new SQL(databaseUrl)
   try {
@@ -158,7 +158,7 @@ export const restoreBackup = async (
     await rm(work, { recursive: true, force: true })
   }
 
-  await Effect.runPromise(migrateDatabase(config.databaseUrl))
+  await Effect.runPromise(migrateDatabase(config.databaseMigratorUrl))
   return { dir, manifest, migrationsApplied }
 }
 

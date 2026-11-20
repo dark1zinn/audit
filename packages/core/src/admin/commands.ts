@@ -58,7 +58,7 @@ const saveSettings = (
       .pipe(Effect.orDie)
   })
 
-const requireSettings = () =>
+export const requireSettings = () =>
   Effect.gen(function* () {
     const authz = yield* Authz
     yield* authz.requireCapability("workspace.settings")

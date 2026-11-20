@@ -96,7 +96,7 @@ beforeAll(async () => {
     createProvider.execute({
       kind: "openai_compatible",
       name: "Board actions",
-      baseUrl: "https://llm.test/v1",
+      baseUrl: "https://93.184.216.34/v1",
       apiKey: "sk-test-BOARD-2222",
       chatModel: "chat-test",
     }),

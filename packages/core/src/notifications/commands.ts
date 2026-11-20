@@ -9,10 +9,11 @@ import {
   pushSubscriptions,
   userProfiles,
 } from "@audit/db/schema"
-import { NotFound, ValidationError } from "@audit/domain/errors"
+import { Conflict, NotFound, ValidationError } from "@audit/domain/errors"
 import type { EntityId, ProjectId, UserId } from "@audit/domain/ids"
 import { NotificationId } from "@audit/domain/ids"
 import {
+  isPushEndpoint,
   NotificationKind,
   PushSubscriptionInput,
   RemovePushSubscriptionInput,
@@ -25,6 +26,7 @@ import { Effect, Schema } from "effect"
 import * as Command from "../command.ts"
 import { currentUser } from "../current-user.ts"
 import { emit } from "../trail.ts"
+import { PushTransport } from "./push.ts"
 
 /** The caller's notification, or NotFound (never reveals another user's row). */
 const ownNotification = (notificationId: NotificationId) =>
@@ -199,8 +201,20 @@ export const subscribePush = Command.make("notification.push_subscribe", {
   run: (input) =>
     Effect.gen(function* () {
       const db = yield* Db
+      const push = yield* PushTransport
       const userId = yield* currentUser("notification.push_subscribe")
-      yield* db
+      if (!isPushEndpoint(input.endpoint))
+        return yield* new ValidationError({
+          field: "endpoint",
+          message: "Push endpoints must be https URLs without credentials",
+        })
+      if (!(yield* push.allowsEndpoint(input.endpoint)))
+        return yield* new ValidationError({
+          field: "endpoint",
+          message: "Push endpoints must resolve only to public addresses",
+        })
+      // Only the owner's row is updated: an endpoint another account holds yields no row back.
+      const claimed = yield* db
         .insert(pushSubscriptions)
         .values({
           userId,
@@ -211,9 +225,15 @@ export const subscribePush = Command.make("notification.push_subscribe", {
         })
         .onConflictDoUpdate({
           target: pushSubscriptions.endpoint,
-          set: { userId, p256dh: input.p256dh, auth: input.auth },
+          set: { p256dh: input.p256dh, auth: input.auth },
+          setWhere: eq(pushSubscriptions.userId, userId),
         })
+        .returning({ id: pushSubscriptions.id })
         .pipe(Effect.orDie)
+      if (claimed.length === 0)
+        return yield* new Conflict({
+          message: "This push endpoint is already registered to another account",
+        })
     }),
 })
 

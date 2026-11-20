@@ -22,6 +22,7 @@ import { CurrentActor } from "@audit/domain/actor"
 import type { UserId } from "@audit/domain/ids"
 import { RealtimeRpcs } from "@audit/domain/events"
 import { RpcAuthentication } from "@audit/domain/http"
+import { Unauthorized } from "@audit/domain/errors"
 import { type AppConfigShape, AppConfig } from "@audit/platform/config"
 import { BlobStore } from "@audit/platform/blob-store"
 import { Secrets } from "@audit/platform/crypto"
@@ -34,6 +35,9 @@ import type { ServerWebSocket } from "bun"
 import { type AuthHandle, makeAuth } from "./auth.ts"
 import { type CollabSocketData, createCollab } from "./collab.ts"
 import { withClientIp } from "./client-ip.ts"
+import { isSameOriginRequest, needsOriginCheck } from "./origin.ts"
+import { resolveStaticPath } from "./static-path.ts"
+import { createSocketTracker, resolveSession } from "./socket-tracker.ts"
 import {
   consoleContext,
   observabilityLayer,
@@ -77,13 +81,17 @@ const securityHeaders: Record<string, string> = {
   "content-security-policy":
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; " +
     "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+  "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
 }
 
-const withHeaders = (response: Response, requestId?: string) => {
+const withHeaders = (response: Response, requestId?: string, noStore = false) => {
   for (const [name, value] of Object.entries(securityHeaders)) {
     if (!response.headers.has(name)) response.headers.set(name, value)
   }
   if (requestId !== undefined) response.headers.set("x-request-id", requestId)
+  if (noStore && !response.headers.has("cache-control")) {
+    response.headers.set("cache-control", "no-store")
+  }
   return response
 }
 
@@ -113,7 +121,11 @@ export const makeCoreLayer = (config: AppConfigShape) => {
     liveAiModels.pipe(Layer.provide(FetchHttpClient.layer)),
     Secrets.layer,
     notificationTransports(config),
-    pgBossLayer({ url: config.databaseUrl, jobs: jobDefinitions }),
+    pgBossLayer({
+      url: config.databaseUrl,
+      setupUrl: config.databaseMigratorUrl,
+      jobs: jobDefinitions,
+    }),
   )
   return services.pipe(Layer.provideMerge(base))
 }
@@ -124,7 +136,7 @@ export interface RunningServer {
 }
 
 export const startServer = async (config: AppConfigShape): Promise<RunningServer> => {
-  await Effect.runPromise(migrateDatabase(config.databaseUrl))
+  await Effect.runPromise(migrateDatabase(config.databaseMigratorUrl))
 
   const core = makeCoreLayer(config)
   const runtime = ManagedRuntime.make(core)
@@ -156,7 +168,8 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   const collabRuntime = ManagedRuntime.make(sessions.pipe(Layer.provideMerge(core)), {
     memoMap: runtime.memoMap,
   })
-  const collab = createCollab({ runtime: collabRuntime })
+  const tracker = createSocketTracker(collabRuntime)
+  const collab = createCollab({ runtime: collabRuntime, tracker })
 
   // Compaction reads the collaboration server's open docs; the jobs see them through the layer.
   const liveDocuments = Layer.succeed(LiveDocuments, { isOpen: (docId) => collab.isOpen(docId) })
@@ -173,6 +186,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     jobWorkersLayer,
   ).pipe(Layer.provideMerge(liveDocuments), Layer.provideMerge(core))
   await collab.start()
+  await tracker.start()
 
   const RpcAuthenticationLive = Layer.effect(
     RpcAuthentication,
@@ -182,6 +196,10 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       return RpcAuthentication.of((effect, { headers }) =>
         Effect.gen(function* () {
           const resolved = yield* sessions.resolve(new Headers(headers as Record<string, string>))
+          // A session still waiting on its second factor is not authenticated for RPC.
+          if (resolved.twoFactorRequired) {
+            return yield* new Unauthorized({ message: "Two-factor authentication required" })
+          }
           return yield* Effect.provideService(effect, CurrentActor, resolved.actor)
         }),
       )
@@ -217,11 +235,12 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   )
 
   const webRoot = normalize(config.webDist)
-  const serveStatic = async (pathname: string) => {
-    const path = normalize(join(webRoot, decodeURIComponent(pathname)))
-    if (path.startsWith(webRoot)) {
-      const file = Bun.file(path)
-      if (pathname !== "/" && (await file.exists())) {
+  const serveStatic = async (pathname: string): Promise<Response> => {
+    const resolved = resolveStaticPath(webRoot, pathname)
+    if (resolved.kind === "malformed") return new Response("Bad request", { status: 400 })
+    if (resolved.kind === "file" && pathname !== "/") {
+      const file = Bun.file(resolved.path)
+      if (await file.exists()) {
         const immutable = pathname.startsWith("/assets/")
         return new Response(file, {
           headers: immutable ? { "cache-control": "public, max-age=31536000, immutable" } : {},
@@ -234,11 +253,28 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     return new Response("The web app is not built. Run `bun run build:web`.", { status: 404 })
   }
 
+  /** Tracks an RPC socket for the access sweep once its session resolves. */
+  const trackRpc = async (ws: ServerWebSocket<RpcSocketData>) => {
+    const session = await resolveSession(collabRuntime, ws.data.headers)
+    if (session._tag === "None" || ws.data.closed === true) return
+    ws.data.untrack = tracker.track({
+      userId: session.value.actor.userId,
+      close: (code, reason) => ws.close(code, reason),
+      stillAllowed: async () => {
+        const current = await resolveSession(collabRuntime, ws.data.headers)
+        return current._tag === "Some" && !current.value.twoFactorRequired
+      },
+    })
+  }
+
   const server: Bun.Server<SocketData> = Bun.serve<SocketData>({
     port: config.port,
     async fetch(incoming, bunServer) {
       const requestId = requestIdFrom(incoming.headers.get("x-request-id"))
       const { pathname } = new URL(incoming.url)
+      if (needsOriginCheck(incoming) && !isSameOriginRequest(incoming, config.url.origin)) {
+        return withHeaders(new Response("Forbidden", { status: 403 }), requestId)
+      }
       // Upgrades need the original Request object; plain HTTP paths carry the id forward.
       const request =
         pathname === "/collab" || pathname === "/rpc"
@@ -246,40 +282,44 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
           : withRequestId(incoming, requestId)
       const context = Context.add(loggerContext, BunServer, bunServer) as Context.Context<unknown>
       if (pathname.startsWith("/api/auth/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy)
-        return withHeaders(await auth.handler(forwarded), requestId)
+        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
+        return withHeaders(await auth.handler(forwarded), requestId, true)
       }
       if (pathname === "/collab") {
         if (collab.handleUpgrade(request, bunServer)) return undefined
-        return new Response("Unauthorized", { status: 401 })
+        return withHeaders(new Response("Unauthorized", { status: 401 }), requestId)
       }
       if (pathname === "/rpc") {
         const { promise: upgraded, resolve } = Promise.withResolvers<undefined>()
         upgradeWaiters.set(request, () => resolve(undefined))
-        return Promise.race([app.handler(request, context), upgraded])
+        const response = await Promise.race([app.handler(request, context), upgraded])
+        return response === undefined ? undefined : withHeaders(response, requestId)
       }
       if (pathname.startsWith("/api/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy)
-        return withHeaders(await app.handler(forwarded, context), requestId)
+        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
+        return withHeaders(await app.handler(forwarded, context), requestId, true)
       }
       if (pathname.startsWith("/files/") || pathname.startsWith("/ical/")) {
-        const forwarded = withClientIp(request, bunServer, config.trustProxy)
+        const forwarded = withClientIp(request, bunServer, config.trustProxy, config.trustProxyHops)
         return withHeaders(await app.handler(forwarded, context), requestId)
       }
-      if (pathname === "/healthz") return Response.json({ ok: true })
+      if (pathname === "/healthz") return withHeaders(Response.json({ ok: true }), requestId)
       if (pathname === "/readyz") {
         const ready = await runtime.runPromise(migrationStatus).then(
           (status) => status.ready,
           () => false,
         )
-        return Response.json({ ok: ready }, { status: ready ? 200 : 503 })
+        return withHeaders(Response.json({ ok: ready }, { status: ready ? 200 : 503 }), requestId)
       }
-      return withHeaders(await serveStatic(pathname))
+      return withHeaders(await serveStatic(pathname), requestId)
     },
     websocket: {
       open(ws) {
         if (isCollabSocket(ws)) collab.open(ws)
-        else if (isRpcSocket(ws)) rpcSocketHandlers.open(ws)
+        else if (isRpcSocket(ws)) {
+          rpcSocketHandlers.open(ws)
+          void trackRpc(ws)
+        }
       },
       message(ws, message) {
         if (isCollabSocket(ws)) collab.message(ws, message)
@@ -287,7 +327,11 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       },
       close(ws, code, reason) {
         if (isCollabSocket(ws)) collab.close(ws, code, reason)
-        else if (isRpcSocket(ws)) rpcSocketHandlers.close(ws, code, reason)
+        else if (isRpcSocket(ws)) {
+          ws.data.closed = true
+          ws.data.untrack?.()
+          rpcSocketHandlers.close(ws, code, reason)
+        }
       },
     },
   })
@@ -299,6 +343,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       await server.stop(false)
       // Collab stores must land while the runtime that runs them is still alive.
       await collab.shutdown()
+      await tracker.stop()
       // Then drop what remains (open RPC sockets) before the services underneath go away.
       await server.stop(true)
       await app.dispose()

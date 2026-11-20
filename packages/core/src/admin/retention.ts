@@ -14,7 +14,7 @@ import { Forbidden } from "@audit/domain/errors"
 import { defaultWorkspaceSettings, type WorkspaceSettings } from "@audit/domain/identity/schema"
 import { workspace } from "@audit/db/schema"
 import { BlobStore } from "@audit/platform/blob-store"
-import { Db, RETENTION_ROLE } from "@audit/platform/database"
+import { Db } from "@audit/platform/database"
 import { defineJob } from "@audit/platform/jobs"
 import { Effect, Schema } from "effect"
 import { SqlClient } from "effect/sql"
@@ -54,13 +54,10 @@ export const purgeTrail = Command.make("trail.retention", {
       const settings = yield* loadSettings
       const cutoff = new Date(Date.now() - settings.trailRetentionDays * DAY_MS)
 
-      yield* sql.unsafe(`set local role ${RETENTION_ROLE}`).pipe(Effect.orDie)
-      const deleted = yield* sql<{ id: string }>`
-        delete from trail_events where at < ${cutoff} returning id
+      const [row] = yield* sql<{ purged: string }>`
+        select trail_purge(${settings.trailRetentionDays}) as purged
       `.pipe(Effect.orDie)
-      yield* sql.unsafe("reset role").pipe(Effect.orDie)
-
-      const purged = deleted.length
+      const purged = Number(row?.purged ?? 0)
       if (purged > 0) {
         yield* record({
           action: "trail.purged",

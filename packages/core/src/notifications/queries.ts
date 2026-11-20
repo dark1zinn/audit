@@ -3,8 +3,9 @@ import { notificationPrefs, notifications, pushSubscriptions, userProfiles } fro
 import type { EntityId, NotificationId, UserId } from "@audit/domain/ids"
 import type { Notification, NotificationSettings } from "@audit/domain/notifications/schema"
 import { Db } from "@audit/platform/database"
-import { and, desc, eq, isNotNull, isNull } from "drizzle-orm"
+import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm"
 import { Effect } from "effect"
+import { visibleTo } from "../access.ts"
 import { currentUser } from "../current-user.ts"
 import { Mailer } from "./mail.ts"
 import { PushTransport } from "./push.ts"
@@ -21,6 +22,7 @@ export const myNotifications = (archived: boolean) =>
         and(
           eq(notifications.userId, userId),
           archived ? isNotNull(notifications.archivedAt) : isNull(notifications.archivedAt),
+          visibleTo(userId, sql`${notifications.entityId}`),
         ),
       )
       .orderBy(desc(notifications.createdAt))

@@ -4,6 +4,7 @@ import type {
   TrailDiff,
   TrailEvent,
   TrailFilter,
+  TrailHead,
   TrailMeta,
   TrailPage,
   TrailVerification,
@@ -12,6 +13,7 @@ import { Db } from "@audit/platform/database"
 import { and, desc, eq, gte, lt, lte, type SQL, sql } from "drizzle-orm"
 import { Effect } from "effect"
 import { Authz } from "./authz.ts"
+import { loadTrailKey } from "./trail-key.ts"
 
 const DEFAULT_LIMIT = 50
 
@@ -75,32 +77,60 @@ export const listTrail = (filter: TrailFilter) =>
   })
 
 /**
- * Re-checks the hash chain: every row's hash matches its content and links to the previous row.
- * The first remaining row is trusted as the start (retention purges remove older rows).
+ * Re-checks the trail: each row links to the previous one and carries the hash its generation
+ * requires (legacy SHA-256 up to trail_key.legacy_through, keyed HMAC after). The first remaining
+ * row is trusted as the start (retention purges remove older rows). With `expectedHead`, the trail
+ * must still contain that entry, so a truncated or rewritten tail is detected.
  */
-export const verifyTrail = Effect.gen(function* () {
-  const authz = yield* Authz
-  yield* authz.requireCapability("trail.read")
-  const db = yield* Db
-  const result = yield* db
-    .execute<{ checked: number; first_broken: number | null }>(
-      sql`
-        select count(*)::int as checked,
-          min(seq) filter (where not valid)::int as first_broken
-        from (
-          select seq,
-            hash = trail_event_hash(t)
-              and (lag(hash) over (order by seq) is null or prev_hash = lag(hash) over (order by seq))
-              as valid
-          from trail_events t
-        ) chain`,
-    )
-    .pipe(Effect.orDie)
-  const row = result.rows[0]
-  const firstBrokenSeq = row?.first_broken ?? null
-  return {
-    ok: firstBrokenSeq === null,
-    checked: row?.checked ?? 0,
-    firstBrokenSeq,
-  } satisfies TrailVerification
-})
+export const verifyTrail = (options: { readonly expectedHead?: TrailHead } = {}) =>
+  Effect.gen(function* () {
+    const authz = yield* Authz
+    yield* authz.requireCapability("trail.read")
+    const db = yield* Db
+    const key = yield* loadTrailKey
+    const result = yield* db
+      .execute<{ checked: number; first_broken: number | null }>(
+        sql`
+          select count(*)::int as checked,
+            min(seq) filter (where not valid)::int as first_broken
+          from (
+            select seq,
+              (
+                case when seq <= (select legacy_through from trail_key where id = 1)
+                  then hash = trail_event_hash(t)
+                  else hash = trail_event_mac(t, ${key})
+                end
+              )
+                and (lag(hash) over (order by seq) is null or prev_hash = lag(hash) over (order by seq))
+                as valid
+            from trail_events t
+          ) chain`,
+      )
+      .pipe(Effect.orDie)
+    const head = yield* db
+      .execute<{ seq: number; hash: string }>(
+        sql`select seq::int as seq, hash from trail_events order by seq desc limit 1`,
+      )
+      .pipe(Effect.orDie)
+    let expectedHeadFound: boolean | null = null
+    if (options.expectedHead !== undefined) {
+      const found = yield* db
+        .execute<{ found: boolean }>(
+          sql`select exists(
+            select 1 from trail_events where seq = ${options.expectedHead.seq} and hash = ${options.expectedHead.hash}
+          ) as found`,
+        )
+        .pipe(Effect.orDie)
+      expectedHeadFound = found.rows[0]?.found === true
+    }
+    const row = result.rows[0]
+    const firstBrokenSeq = row?.first_broken ?? null
+    const current = head.rows[0]
+    return {
+      ok: firstBrokenSeq === null && expectedHeadFound !== false,
+      checked: row?.checked ?? 0,
+      firstBrokenSeq,
+      head: current === undefined ? null : { seq: current.seq, hash: current.hash },
+      expectedHeadFound,
+    } satisfies TrailVerification
+  })

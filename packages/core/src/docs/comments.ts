@@ -21,6 +21,7 @@ import {
 } from "../entities.ts"
 import { plainText } from "../notifications/notify.ts"
 import { emit, record } from "../trail.ts"
+import { cleanRichDoc } from "../rich-text.ts"
 import { assertWritable } from "../projects/read.ts"
 import { loadDoc } from "./read.ts"
 
@@ -119,10 +120,11 @@ export const createDocComment = Command.make("doc.comment.create", {
           })
         }
       }
+      const body = yield* cleanRichDoc(input.body, "body")
       const id = (yield* createEntity({
         type: "comment",
         title: "",
-        searchText: plainText(input.body),
+        searchText: plainText(body),
         parentId: input.docId,
         projectId: doc.projectId,
       })) as CommentId
@@ -133,8 +135,8 @@ export const createDocComment = Command.make("doc.comment.create", {
           targetId: input.docId,
           authorId: userId,
           anchor: input.anchor ?? null,
-          body: input.body,
-          bodyText: plainText(input.body),
+          body,
+          bodyText: plainText(body),
           parentCommentId: input.parentCommentId ?? null,
         })
         .pipe(Effect.orDie)
@@ -181,11 +183,12 @@ export const updateDocComment = Command.make("doc.comment.update", {
       const doc = yield* loadDoc(target.docId)
       const lock = yield* lockEntity(input.commentId, "comment")
       yield* checkVersion(lock, input.version, { comment: input.commentId })
+      const body = input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body")
       if (doc.projectId !== null) yield* assertWritable(doc.projectId)
-      if (input.body !== undefined) {
+      if (body !== undefined) {
         yield* db
           .update(comments)
-          .set({ body: input.body, bodyText: plainText(input.body), editedAt: new Date() })
+          .set({ body, bodyText: plainText(body), editedAt: new Date() })
           .where(eq(comments.id, input.commentId))
           .pipe(Effect.orDie)
       }
@@ -198,7 +201,7 @@ export const updateDocComment = Command.make("doc.comment.update", {
       }
       const version = yield* touchEntity(
         input.commentId,
-        input.body !== undefined ? { searchText: plainText(input.body) } : {},
+        body !== undefined ? { searchText: plainText(body) } : {},
       )
       yield* emit({
         _tag: "DocChanged",

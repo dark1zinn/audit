@@ -3,6 +3,7 @@
  * both with WebCrypto. The HTTP call is injected so tests can stub the boundary.
  */
 import { Context, Effect, Layer } from "effect"
+import { endpointAllowed, type Resolve, resolveHost } from "./push-address.ts"
 
 export interface PushSubscription {
   readonly endpoint: string
@@ -26,6 +27,8 @@ export class PushTransport extends Context.Service<
   {
     /** The VAPID public key that subscribers pass to `pushManager.subscribe`. */
     readonly publicKey: Effect.Effect<string>
+    /** Whether a subscription endpoint may receive a push (https, public host). */
+    readonly allowsEndpoint: (endpoint: string) => Effect.Effect<boolean>
     readonly send: (subscription: PushSubscription, message: string) => Effect.Effect<PushOutcome>
   }
 >()("@audit/core/PushTransport") {
@@ -36,6 +39,7 @@ export class PushTransport extends Context.Service<
   static readonly live = <R>(
     vapid: Effect.Effect<VapidConfig, never, R>,
     post: PostFn = (url, init) => fetch(url, init),
+    resolve: Resolve = resolveHost,
   ) =>
     Layer.effect(
       PushTransport,
@@ -44,10 +48,12 @@ export class PushTransport extends Context.Service<
         const keys = yield* Effect.cached(Effect.provideContext(vapid, context))
         return {
           publicKey: keys.pipe(Effect.map((config) => config.publicKey)),
+          allowsEndpoint: (endpoint) =>
+            Effect.promise(() => endpointAllowed(endpoint, resolve).catch(() => false)),
           send: (subscription, message) =>
             keys.pipe(
               Effect.flatMap((config) =>
-                Effect.promise(() => deliver(config, post, subscription, message)),
+                Effect.promise(() => deliver(config, post, resolve, subscription, message)),
               ),
             ),
         }
@@ -58,10 +64,13 @@ export class PushTransport extends Context.Service<
 const deliver = async (
   vapid: VapidConfig,
   post: PostFn,
+  resolve: Resolve,
   subscription: PushSubscription,
   message: string,
 ): Promise<PushOutcome> => {
   try {
+    // Checked again here, after the subscription was stored: the host may now resolve elsewhere.
+    if (!(await endpointAllowed(subscription.endpoint, resolve))) return "failed"
     const body = await encryptPayload(subscription, new TextEncoder().encode(message))
     const jwt = await vapidToken(vapid, new URL(subscription.endpoint).origin)
     const response = await post(subscription.endpoint, {

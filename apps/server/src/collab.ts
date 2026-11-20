@@ -12,6 +12,8 @@ import { loadDocState, saveDocContent } from "@audit/core/docs/content"
 import { CurrentActor, type UserActor, UserActor as UserActorSchema } from "@audit/domain/actor"
 import { DocChanged } from "@audit/domain/events"
 import type { DocId, UserId } from "@audit/domain/ids"
+import { docs, projects } from "@audit/db/schema"
+import { Secrets } from "@audit/platform/crypto"
 import { Db } from "@audit/platform/database"
 import {
   Hocuspocus,
@@ -21,10 +23,12 @@ import {
   type WebSocketLike,
 } from "@hocuspocus/server"
 import type { ServerWebSocket } from "bun"
+import { eq } from "drizzle-orm"
 import { Effect, Fiber, type ManagedRuntime, Schema, Stream } from "effect"
 import type { SqlClient } from "effect/sql"
 import * as Y from "yjs"
 import { Sessions } from "./sessions.ts"
+import { type SocketTracker, resolveSession } from "./socket-tracker.ts"
 
 const DOC_NAME = /^doc:([0-9a-f-]{36})$/
 /** Field name used by the Tiptap collaboration extension (see `@audit/editor/ydoc`). */
@@ -40,12 +44,20 @@ export interface CollabSocketData {
   readonly kind: "collab"
   readonly request: Request
   connection?: SocketConnection | undefined
+  /** Access granted per doc at authentication. `true` means read-only. */
+  readonly grants: Map<DocId, boolean>
+  /** Set by `open`: lets the tracker close this socket. */
+  ws?: ServerWebSocket<CollabSocketData> | undefined
+  /** Removes this socket from the access sweep. Set once authenticated. */
+  untrack?: (() => void) | undefined
+  closed?: boolean
 }
 
-export type CollabServices = Authz | Db | EventBus | Sessions | SqlClient.SqlClient
+export type CollabServices = Authz | Db | EventBus | Secrets | Sessions | SqlClient.SqlClient
 
 export interface CollabOptions {
   readonly runtime: ManagedRuntime.ManagedRuntime<CollabServices, unknown>
+  readonly tracker: SocketTracker
   readonly debounce?: number
   readonly maxDebounce?: number
 }
@@ -97,6 +109,23 @@ const socketOf = (ws: ServerWebSocket<CollabSocketData>): WebSocketLike => ({
   },
 })
 
+/** What the user may do on a doc now. `null` when they may not see it. Archived projects are read-only. */
+const docAccess = (userId: UserId, docId: DocId) =>
+  Effect.gen(function* () {
+    const authz = yield* Authz
+    const role = yield* authz.roleOn(userId, docId)
+    if (role === null) return null
+    const db = yield* Db
+    const [row] = yield* db
+      .select({ status: projects.status })
+      .from(docs)
+      .leftJoin(projects, eq(projects.id, docs.projectId))
+      .where(eq(docs.id, docId))
+      .limit(1)
+    const archived = row?.status === "archived"
+    return { readOnly: archived || !(role === "editor" || role === "manager") }
+  })
+
 /** Replaces the live fragment with the restored state, so the change converges through Yjs. */
 const replaceFragment = (live: Y.Doc, restored: Uint8Array) => {
   const fresh = new Y.Doc()
@@ -113,8 +142,20 @@ const replaceFragment = (live: Y.Doc, restored: Uint8Array) => {
 }
 
 export const createCollab = (options: CollabOptions): Collab => {
-  const { runtime } = options
+  const { runtime, tracker } = options
   const pendingStores = new Set<Promise<void>>()
+  const socketsByRequest = new WeakMap<Request, CollabSocketData>()
+
+  /** Re-checks a socket's session and every doc grant. Any mismatch means the socket must close. */
+  const socketStillAllowed = async (socket: CollabSocketData) => {
+    const session = await resolveSession(runtime, socket.request.headers)
+    if (session._tag === "None" || session.value.twoFactorRequired) return false
+    for (const [docId, readOnly] of socket.grants) {
+      const access = await runtime.runPromise(docAccess(session.value.actor.userId, docId))
+      if (access === null || access.readOnly !== readOnly) return false
+    }
+    return true
+  }
 
   const hocuspocus = new Hocuspocus({
     debounce: options.debounce ?? 2_000,
@@ -122,24 +163,26 @@ export const createCollab = (options: CollabOptions): Collab => {
 
     async onAuthenticate(data: onAuthenticatePayload) {
       const docId = docIdOf(data.documentName)
-      const session = await runtime.runPromise(
-        Effect.gen(function* () {
-          const sessions = yield* Sessions
-          return yield* sessions.resolve(data.requestHeaders).pipe(Effect.option)
-        }),
-      )
+      const session = await resolveSession(runtime, data.requestHeaders)
       if (session._tag === "None") throw rejected("unauthenticated")
-      const actor = session.value.actor
+      // Two-factor sessions are not complete until the second factor is verified.
+      if (session.value.twoFactorRequired) throw rejected("two-factor-required")
+      const { actor } = session.value
 
-      const role = await runtime.runPromise(
-        Effect.gen(function* () {
-          const authz = yield* Authz
-          return yield* authz.roleOn(actor.userId, docId)
-        }),
-      )
-      if (role === null) throw rejected("forbidden")
+      const access = await runtime.runPromise(docAccess(actor.userId, docId))
+      if (access === null) throw rejected("forbidden")
       // Viewers and commenters receive updates, but their Sync writes are discarded.
-      data.connectionConfig.readOnly = !(role === "editor" || role === "manager")
+      data.connectionConfig.readOnly = access.readOnly
+
+      const socket = socketsByRequest.get(data.request)
+      if (socket !== undefined && socket.closed !== true) {
+        socket.grants.set(docId, access.readOnly)
+        socket.untrack ??= tracker.track({
+          userId: actor.userId,
+          close: (code, reason) => socket.ws?.close(code, reason),
+          stillAllowed: () => socketStillAllowed(socket),
+        })
+      }
       return { actor }
     },
 
@@ -217,10 +260,13 @@ export const createCollab = (options: CollabOptions): Collab => {
     handleUpgrade(request, server) {
       if (new URL(request.url).pathname !== "/collab") return false
       if (request.headers.get("upgrade")?.toLowerCase() !== "websocket") return false
-      return server.upgrade(request, { data: { kind: "collab", request } })
+      const data: CollabSocketData = { kind: "collab", request, grants: new Map() }
+      socketsByRequest.set(request, data)
+      return server.upgrade(request, { data })
     },
 
     open(ws) {
+      ws.data.ws = ws
       ws.data.connection = hocuspocus.handleConnection(
         socketOf(ws),
         ws.data.request,
@@ -233,6 +279,9 @@ export const createCollab = (options: CollabOptions): Collab => {
     },
 
     close(ws, code, reason) {
+      ws.data.closed = true
+      ws.data.untrack?.()
+      ws.data.untrack = undefined
       ws.data.connection?.handleClose({ code, reason })
       ws.data.connection = undefined
     },

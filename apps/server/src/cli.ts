@@ -4,6 +4,7 @@
  */
 import { CurrentActor } from "@audit/domain/actor"
 import { verifyTrail } from "@audit/core/trail-queries"
+import type { TrailHead, TrailVerification } from "@audit/domain/trail/schema"
 import { rotateSecrets } from "@audit/core/admin/secret-rotation"
 import { readAppConfig } from "@audit/platform/config"
 import { migrateDatabase } from "@audit/platform/database"
@@ -16,6 +17,7 @@ import {
   backupCreated,
   backupDirectory,
   createBackup,
+  trailKeyPresent,
   staleBackupWarning,
 } from "./backup.ts"
 import { createOwner, reembed, reindex, resetPassword, type OwnerStatus } from "./operator.ts"
@@ -63,21 +65,33 @@ const serve = async () => {
   process.once("SIGTERM", () => void shutdown("SIGTERM"))
 }
 
+const parseHead = (value: string | undefined): TrailHead | undefined => {
+  if (value === undefined) return undefined
+  const [seq, hash] = value.split(":")
+  const n = Number(seq)
+  if (!Number.isInteger(n) || n < 0 || !hash) throw new Error("--head expects <seq>:<hash>")
+  return { seq: n, hash }
+}
+
+const describeVerdict = (verdict: TrailVerification): string => {
+  if (verdict.ok) return `Audit log intact: ${verdict.checked} entries checked.`
+  if (verdict.expectedHeadFound === false)
+    return `Audit log does not contain the expected head: its tail was removed (${verdict.checked} entries checked).`
+  return `Audit log BROKEN at seq ${verdict.firstBrokenSeq} (${verdict.checked} entries checked).`
+}
+
 const verify = async () => {
   const config = await loadConfig()
+  const expectedHead = parseHead(flagValue("--head"))
   const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
   const result = await runtime.runPromise(
-    verifyTrail.pipe(
+    verifyTrail(expectedHead === undefined ? {} : { expectedHead }).pipe(
       Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),
       Effect.orDie,
     ),
   )
   await runtime.dispose()
-  console.log(
-    result.ok
-      ? `Audit log intact: ${result.checked} entries checked.`
-      : `Audit log BROKEN at seq ${result.firstBrokenSeq} (${result.checked} entries checked).`,
-  )
+  console.log(describeVerdict(result))
   process.exit(result.ok ? 0 : 2)
 }
 
@@ -240,17 +254,27 @@ const backupCommand = async () => {
     out: flagValue("--out") ?? backupDirectory(config),
     recipients,
   })
+  const keyed = await trailKeyPresent(Redacted.value(config.databaseMigratorUrl))
   const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
   try {
-    await runtime.runPromise(
-      backupCreated
-        .execute({
-          name: basename(result.dir),
-          migrations: result.manifest.migrations.length,
-          encrypted: recipients.length > 0,
-        })
-        .pipe(Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }), Effect.orDie),
-    )
+    if (keyed) {
+      await runtime.runPromise(
+        backupCreated
+          .execute({
+            name: basename(result.dir),
+            migrations: result.manifest.migrations.length,
+            encrypted: recipients.length > 0,
+          })
+          .pipe(
+            Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),
+            Effect.orDie,
+          ),
+      )
+    } else {
+      console.warn(
+        `Backup not recorded in the audit trail: the schema has no trail key yet. Run \`audit migrate\` with this build, then back up again to record it.`,
+      )
+    }
   } finally {
     await runtime.dispose()
   }
@@ -270,26 +294,27 @@ const restoreCommand = async (path: string | undefined) => {
   })
   const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
   try {
+    const expectedHead = result.manifest.trail ?? undefined
+    const verdict = await runtime.runPromise(
+      verifyTrail(expectedHead === undefined ? {} : { expectedHead }).pipe(
+        Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),
+        Effect.orDie,
+      ),
+    )
+    if (!verdict.ok) {
+      console.error(`Restore refused, backup not recorded: ${describeVerdict(verdict)}`)
+      process.exitCode = 2
+      return
+    }
     await runtime.runPromise(
       backupRestored
         .execute({ name: basename(result.dir), migrations: result.migrationsApplied })
         .pipe(Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }), Effect.orDie),
     )
-    const verdict = await runtime.runPromise(
-      verifyTrail.pipe(
-        Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),
-        Effect.orDie,
-      ),
-    )
     console.log(
       `Restored ${result.dir}: backup had ${result.migrationsApplied} migrations, migrated to this build.`,
     )
-    console.log(
-      verdict.ok
-        ? `Audit log intact: ${verdict.checked} entries checked.`
-        : `Audit log BROKEN at seq ${verdict.firstBrokenSeq} (${verdict.checked} entries checked).`,
-    )
-    if (!verdict.ok) process.exitCode = 2
+    console.log(describeVerdict(verdict))
   } finally {
     await runtime.dispose()
   }
@@ -300,7 +325,7 @@ switch (command) {
     break
   case "migrate": {
     const config = await loadConfig()
-    await Effect.runPromise(migrateDatabase(config.databaseUrl))
+    await Effect.runPromise(migrateDatabase(config.databaseMigratorUrl))
     console.log("Migrations applied.")
     break
   }

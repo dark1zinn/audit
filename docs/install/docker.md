@@ -16,16 +16,16 @@ cd audit
 
 ## 2. Create `deploy/.env`
 
-Compose reads variables from `deploy/.env`. Set the three required values:
+Compose reads variables from `deploy/.env`. Set the four required values:
 
 ```dotenv
 AUDIT_URL=https://audit.example.com
 AUDIT_SECRET_KEY=<at least 32 random characters>
-POSTGRES_PASSWORD=<database password>
+POSTGRES_PASSWORD=<owner database password>
+APP_DB_PASSWORD=<app database password>
 ```
 
-Generate a secret with `openssl rand -base64 48`. Keep `AUDIT_SECRET_KEY` safe: it protects sealed
-AI provider keys and tokens, and backups cannot be restored usefully without the same key.
+Generate a secret with `openssl rand -base64 48`. `POSTGRES_PASSWORD` is the owner login that runs migrations. The server connects as `audit_app` with `APP_DB_PASSWORD`, which cannot delete audit trail rows. The app role is created when the Postgres volume is first initialized. Keep `AUDIT_SECRET_KEY` safe: it protects sealed AI provider keys and tokens, and backups cannot be restored usefully without the same key.
 
 Optional values, all documented in the [configuration reference](/configuration):
 

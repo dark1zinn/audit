@@ -289,8 +289,12 @@ msgid "Account"
 msgstr "Cuenta"
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "Account created"
-msgstr "Cuenta creada"
+#~ msgid "Account created"
+#~ msgstr "Cuenta creada"
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Account created. Go to sign in"
+msgstr "Cuenta creada. Ir a iniciar sesión"
 
 #: ../../apps/web/src/components/app-shell.tsx
 msgid "Account menu"
@@ -469,6 +473,10 @@ msgstr "¿Ya tienes una cuenta? Inicia sesión"
 msgid "Also viewing"
 msgstr "También viendo"
 
+#: ../../apps/web/src/routes/signup.tsx
+msgid "An administrator reviews new accounts. You can sign in once your request is approved."
+msgstr "Un administrador revisa las cuentas nuevas. Podrás iniciar sesión cuando se apruebe tu solicitud."
+
 #: ../../apps/web/src/components/board/filters-bar.tsx
 msgid "Any assignee"
 msgstr "Cualquier responsable"
@@ -529,6 +537,7 @@ msgid "Apply search"
 msgstr "Aplicar búsqueda"
 
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Approve"
 msgstr "Aprobar"
 
@@ -674,6 +683,10 @@ msgstr "N"
 #: ../../apps/web/src/routes/signup.tsx
 msgid "Back to sign in"
 msgstr "Volver a iniciar sesión"
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Back to sign-up"
+msgstr "Volver al registro"
 
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Backlinks"
@@ -884,6 +897,10 @@ msgstr "Cambios"
 msgid "Changes since the previous version"
 msgstr "Cambios desde la versión anterior"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Changing the base URL requires re-entering the API key."
+msgstr "Cambiar la URL base requiere volver a introducir la clave de API."
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Changing these affects new sessions and the look of the app for everyone."
 msgstr "Estos cambios afectan a las nuevas sesiones y al aspecto de la app para todos."
@@ -931,6 +948,7 @@ msgid "Check the highlighted fields and try again."
 msgstr "Revisa los campos marcados e inténtalo de nuevo."
 
 #: ../../apps/web/src/routes/forgot-password.tsx
+#: ../../apps/web/src/routes/signup.tsx
 msgid "Check your email"
 msgstr "Revisa tu correo"
 
@@ -1122,6 +1140,10 @@ msgstr "Confirmar"
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Confirm delete"
 msgstr "Confirmar eliminación"
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Confirm your sign-up"
+msgstr "Confirma tu registro"
 
 #: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Connected"
@@ -1695,6 +1717,7 @@ msgstr "Acceso efectivo"
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.email.tsx
 #: ../../apps/web/src/routes/_app.admin.index.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.settings.notifications.tsx
 #: ../../apps/web/src/routes/forgot-password.tsx
 #: ../../apps/web/src/routes/join.$token.tsx
@@ -1971,7 +1994,6 @@ msgid "Go to My tasks"
 msgstr "Ir a Mis tareas"
 
 #: ../../apps/web/src/routes/reset-password.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Go to sign in"
 msgstr "Ir a iniciar sesión"
 
@@ -2048,6 +2070,10 @@ msgstr "Tiempo de inactividad: {0} días"
 #: ../../apps/web/src/routes/forgot-password.tsx
 msgid "If an account exists for that address, a password-reset link is on its way. The link expires soon."
 msgstr "Si existe una cuenta con esa dirección, en camino llega un enlace para restablecer la contraseña. El enlace caduca pronto."
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "If this address can sign up, we sent a link to confirm it. The link is valid for 24 hours."
+msgstr "Si esta dirección puede registrarse, te enviamos un enlace para confirmarla. El enlace es válido durante 24 horas."
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Image"
@@ -3032,6 +3058,10 @@ msgstr "Compatible con OpenAI"
 msgid "Opening conversation…"
 msgstr "Abriendo conversación…"
 
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Opening the link from your email creates your account."
+msgstr "Abrir el enlace de tu correo crea tu cuenta."
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Optional"
 msgstr "Opcional"
@@ -3131,6 +3161,10 @@ msgstr "Enlace para restablecer la contraseña (compártelo en privado)"
 #: ../../apps/web/src/routes/_app.admin.access.tsx
 msgid "Path"
 msgstr "Ruta"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Pending sign-ups"
+msgstr "Registros pendientes"
 
 #: ../../apps/web/src/components/mentions/mention-picker-menu.tsx
 #: ../../apps/web/src/routes/_app.search.tsx
@@ -3358,6 +3392,10 @@ msgstr "Horas de silencio"
 msgid "Quote"
 msgstr "Cita"
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Re-enter the API key for the new base URL"
+msgstr "Vuelve a introducir la clave de API para la nueva URL base"
+
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "React with {emoji}"
 msgstr "Reaccionar con {emoji}"
@@ -3424,6 +3462,7 @@ msgid "Regenerate link"
 msgstr "Regenerar enlace"
 
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reject"
 msgstr "Rechazar"
 
@@ -3492,6 +3531,14 @@ msgstr "Responder"
 #: ../../apps/web/src/components/chat/thread-panel.tsx
 msgid "Reply in thread"
 msgstr "Responder en el hilo"
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Request received"
+msgstr "Solicitud recibida"
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Requested"
+msgstr "Solicitado"
 
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Required for admins"
@@ -4826,8 +4873,8 @@ msgid "Your account"
 msgstr "Tu cuenta"
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "Your account is ready. Sign in to continue."
-msgstr "Tu cuenta está lista. Inicia sesión para continuar."
+#~ msgid "Your account is ready. Sign in to continue."
+#~ msgstr "Tu cuenta está lista. Inicia sesión para continuar."
 
 #: ../../apps/web/src/routes/_app.calendar.tsx
 msgid "Your events, shared calendars and task due dates."

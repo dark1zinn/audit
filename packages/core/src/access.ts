@@ -34,6 +34,11 @@ const entryMatchesUser = (userId: SQL) => sql`(
     select wm.role from workspace_members wm where wm.user_id = ${userId}))
 )`
 
+/** Deactivated people hold no access at all, whatever their grants say. */
+const activeUser = (userId: SQL) => sql`exists (
+  select 1 from user_profiles act_p where act_p.user_id = ${userId} and act_p.deactivated_at is null
+)`
+
 /** The user's role on one entity, or no row when they have none. */
 export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
   with recursive chain as (
@@ -54,7 +59,8 @@ export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
     join access_entries ae on ae.resource_id = c.id
     where c.type not in (${containers}) and ${entryMatchesUser(sql`${userId}`)}
   )
-  select role from roles order by ${roleRank(sql`role`)} desc limit 1
+  select role from roles where ${activeUser(sql`${userId}`)}
+  order by ${roleRank(sql`role`)} desc limit 1
 `
 
 /**
@@ -62,7 +68,8 @@ export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
  * `vis_` so they never shadow the caller's aliases inside `idColumn`. Used by every list, search,
  * backlink, notification fan-out, realtime filter and AI retrieval query.
  */
-export const visibleTo = (userId: UserId, idColumn: SQL) => sql`exists (
+export const visibleTo = (userId: UserId | SQL, idColumn: SQL) => sql`(${activeUser(sql`${userId}`)}
+  and exists (
   with recursive vis_chain as (
     select vis_e.id, vis_e.parent_id, vis_e.type, vis_e.restricted, true as start
     from entities vis_e where vis_e.id = ${idColumn} and vis_e.deleted_at is null
@@ -79,7 +86,7 @@ export const visibleTo = (userId: UserId, idColumn: SQL) => sql`exists (
     or (vis_c.type not in (${containers}) and exists (
       select 1 from access_entries ae
       where ae.resource_id = vis_c.id and ${entryMatchesUser(sql`${userId}`)}))
-)`
+))`
 
 /** Highest own grant on container `c` for member `m`. */
 const ownGrant = sql`(

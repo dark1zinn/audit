@@ -13,6 +13,7 @@ import { icalFeed, listEvents } from "@audit/core/calendar/queries"
 import type { CalendarId, EventId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
 import { addPerson, exitAs, type Person, runAs, setupWorkspace } from "@audit/testkit/fixtures"
+import { renderIcs, type IcsEvent } from "@audit/core/calendar/ics"
 
 let database: TestDatabase
 let owner: Person
@@ -644,5 +645,61 @@ describe("invitee access", () => {
       dana.actor,
     )(rsvp.execute({ eventId: series.eventId, response: "declined" }))
     expect(refused._tag).toBe("Failure")
+  })
+})
+
+describe("ICS output escaping", () => {
+  const base: IcsEvent = {
+    uid: "series-1@audit",
+    title: "Standup",
+    location: "",
+    allDay: false,
+    timezone: "UTC",
+    startsAt: new Date("2026-03-02T09:00:00Z"),
+    endsAt: new Date("2026-03-02T09:30:00Z"),
+    rrule: "FREQ=DAILY;COUNT=3",
+    exdates: [],
+    recurrence: null,
+  }
+  const render = (overrides: Partial<IcsEvent>) =>
+    renderIcs([{ ...base, ...overrides }], new Date("2026-01-01T00:00:00Z"))
+  // Unfolds continuation lines, then splits into content lines.
+  const lines = (body: string) => body.replace(/\r\n /g, "").split("\r\n")
+
+  test("a title with CR, LF or semicolons is escaped and adds no property line", () => {
+    const body = render({ title: "Team\rATTENDEE:mailto:x@evil\r\nLOCATION:evil;ok\\n,end" })
+    const content = lines(body)
+    expect(content).toContain(
+      "SUMMARY:Team\\nATTENDEE:mailto:x@evil\\nLOCATION:evil\\;ok\\\\n\\,end",
+    )
+    expect(content.some((l) => l.startsWith("ATTENDEE"))).toBe(false)
+    expect(content.some((l) => l.startsWith("LOCATION"))).toBe(false)
+    expect(body).not.toMatch(/\r(?!\n)/)
+  })
+
+  test("a location with a lone CR cannot break the content line", () => {
+    const content = lines(render({ location: "Room 1\rX-EVIL:1" }))
+    expect(content).toContain("LOCATION:Room 1\\nX-EVIL:1")
+    expect(content.some((l) => l.startsWith("X-EVIL"))).toBe(false)
+  })
+
+  test("an RRULE containing a newline or a foreign property is not emitted", () => {
+    const injected = lines(render({ rrule: "FREQ=DAILY;COUNT=3\r\nATTENDEE:mailto:x@evil" }))
+    expect(injected.some((l) => l.startsWith("RRULE"))).toBe(false)
+    expect(injected.some((l) => l.startsWith("ATTENDEE"))).toBe(false)
+    expect(injected).toContain("SUMMARY:Standup")
+    const spaced = lines(render({ rrule: "FREQ=DAILY;COUNT=3 X=1" }))
+    expect(spaced.some((l) => l.startsWith("RRULE"))).toBe(false)
+    expect(lines(render({ rrule: "BYDAY=MO" })).some((l) => l.startsWith("RRULE"))).toBe(false)
+  })
+
+  test("a valid weekly or monthly rule is emitted unchanged", () => {
+    const weekly = "FREQ=WEEKLY;BYDAY=MO,WE;UNTIL=20261231T000000Z"
+    const monthly = "FREQ=MONTHLY;BYDAY=+1MO;COUNT=6"
+    const lastDay = "FREQ=MONTHLY;BYMONTHDAY=-1;INTERVAL=2"
+    expect(lines(render({ rrule: weekly }))).toContain(`RRULE:${weekly}`)
+    expect(lines(render({ rrule: monthly }))).toContain(`RRULE:${monthly}`)
+    expect(lines(render({ rrule: lastDay }))).toContain(`RRULE:${lastDay}`)
+    expect(lines(render({ rrule: "FREQ=weekly;BYDAY=mo" }))).toContain("RRULE:FREQ=WEEKLY;BYDAY=MO")
   })
 })

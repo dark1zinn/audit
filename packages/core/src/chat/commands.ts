@@ -32,6 +32,7 @@ import {
   UpdateChannelInput,
 } from "@audit/domain/chat/schema"
 import { Conflict, Forbidden, ValidationError } from "@audit/domain/errors"
+import { cleanRichDoc } from "../rich-text.ts"
 import type {
   BoardId,
   ChannelId,
@@ -802,7 +803,8 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
     yield* requireActive(channel)
     if (channel.projectId !== null) yield* assertWritable(channel.projectId as ProjectId)
     yield* ensureMember(channel, userId)
-    const bodyText = plainText(input.body).trim()
+    const body = yield* cleanRichDoc(input.body, "body")
+    const bodyText = plainText(body).trim()
     if (bodyText === "") return yield* invalid("Message is empty", "body")
     let root: MessageRow | null = null
     if (input.threadRootId) {
@@ -828,7 +830,7 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
         channelId,
         threadRootId: root?.id ?? null,
         authorId: userId,
-        body: input.body,
+        body,
         bodyText,
       })
       .pipe(Effect.orDie)
@@ -865,7 +867,7 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
     const projectId = channel.projectId as ProjectId | null
     const notified = yield* syncMentions(
       { id: messageId, channelId, projectId },
-      input.body,
+      body,
       userId,
       true,
     )
@@ -961,11 +963,12 @@ export const editMessage = Command.make("message.edit", {
       yield* requireActive(channel)
       const lock = yield* lockEntity(entityOf(input.messageId), "message")
       yield* checkVersion(lock, input.version, { message: input.messageId })
-      const bodyText = plainText(input.body).trim()
+      const body = yield* cleanRichDoc(input.body, "body")
+      const bodyText = plainText(body).trim()
       if (bodyText === "") return yield* invalid("Message is empty", "body")
       yield* db
         .update(messages)
-        .set({ body: input.body, bodyText, editedAt: new Date() })
+        .set({ body, bodyText, editedAt: new Date() })
         .where(eq(messages.id, input.messageId))
         .pipe(Effect.orDie)
       yield* syncMentions(
@@ -974,7 +977,7 @@ export const editMessage = Command.make("message.edit", {
           channelId: message.channelId as ChannelId,
           projectId: channel.projectId as ProjectId | null,
         },
-        input.body,
+        body,
         userId,
         false,
       )

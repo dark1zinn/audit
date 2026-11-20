@@ -4,12 +4,12 @@
 
 `audit backup` writes a directory named `audit-backup-<UTC timestamp>/` containing:
 
-| File            | Contents                                                                                              |
-| --------------- | ----------------------------------------------------------------------------------------------------- |
-| `database.dump` | PostgreSQL custom-format dump (`pg_dump -Fc`)                                                         |
-| `files.tar`     | The local file store. Not written for S3 storage; back up the bucket with your provider.              |
-| `manifest.json` | Format version, audit version, applied migrations, creation time, and a SHA-256 per file              |
-| `*.age`         | Present when encrypted: both data files are age-encrypted and the checksums cover the encrypted bytes |
+| File            | Contents                                                                                                 |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| `database.dump` | PostgreSQL custom-format dump (`pg_dump -Fc`)                                                            |
+| `files.tar`     | The local file store. Not written for S3 storage; back up the bucket with your provider.                 |
+| `manifest.json` | Format version, audit version, applied migrations, creation time, the trail head, and a SHA-256 per file |
+| `*.age`         | Present when encrypted: both data files are age-encrypted and the checksums cover the encrypted bytes    |
 
 The output directory is `--out <dir>`, else `BACKUP_DIR`, else `${DATA_DIR}/backups`.
 
@@ -37,7 +37,9 @@ audit restore <backup-directory> [--age-identity <file>] [--force]
 - Refuses to restore into a non-empty database unless `--force` is given.
 - Checks that the manifest's migration list is a prefix of the bundled migrations. A backup from a
   newer version is refused.
-- After restore, `audit trail verify` is run and should report a valid chain.
+- After restore, the trail is verified against the manifest's trail head. Restore refuses the backup if the trail does not contain that head, and the backup is not recorded.
+
+Deployments created before the separate app login have one login, and `audit_app` is not a login role. Before upgrading, run as the owner: `ALTER ROLE audit_app LOGIN PASSWORD '<password>';`. Then set `DATABASE_URL` to the `audit_app` login and `DATABASE_MIGRATOR_URL` to the owner login. The migration adds the trail key and the purge function.
 
 Restore into a fresh PostgreSQL database and a fresh file store. The repository includes a restore
 drill: `bun run drill` seeds demo data, backs it up, restores it into a new database, starts the

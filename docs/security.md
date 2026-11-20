@@ -64,16 +64,23 @@ signup is a `member`. Invited accounts take the role on the invite (`member` or 
 - `AUDIT_SECRET_KEY` derives keys with HKDF. AI provider API keys and generated VAPID private keys are
   sealed with AES-256-GCM. Only the last four characters of an AI key are shown.
 - Calendar subscription tokens are stored as SHA-256 hashes.
-- `audit rotate-secret --from <old>` reseals AI keys and VAPID keys under a new secret.
+- `audit rotate-secret --from <old>` reseals AI keys, VAPID keys, and the trail HMAC key under a new secret.
 
 ## Audit trail
 
-- Security-relevant and data-changing actions are written to `trail_events`, which is hash-chained.
-  The database triggers reject updates and deletes of trail rows.
-- The application role `audit_app` has no `UPDATE`, `DELETE`, or `TRUNCATE` on the trail. Only
-  `audit_retention` may purge rows, and each purge is itself recorded (`trail.purged`).
+- Security-relevant and data-changing actions are written to `trail_events`. Each row carries an
+  HMAC-SHA256 keyed by a trail key, stored sealed under `AUDIT_SECRET_KEY`. Rows written before
+  that key existed keep their unkeyed SHA-256 and are verified as such.
+- Database triggers reject updates and truncation of trail rows, and reject deletes except during a
+  purge. `DATABASE_URL` is the app login (`audit_app`), which cannot delete trail rows. Only the
+  `trail_purge` function, which enforces the retention cutoff, deletes rows, and each purge is
+  itself recorded (`trail.purged`).
 - Retention is `trailRetentionDays` (30–3650, default 365).
-- `audit trail verify` recomputes the chain. Admins can run the same check from the audit page.
+- `audit trail verify` recomputes the chain with the trail key. With `--head <seq>:<hash>` it also
+  checks that the trail still contains that entry, which catches removed tail rows. Backups record
+  the trail head, and restore refuses a backup whose trail does not contain it. A login with the
+  owner role can still rewrite the database; the head held outside the database (in the manifest)
+  is what detects that.
 
 ## HTTP hardening
 

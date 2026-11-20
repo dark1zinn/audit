@@ -28,6 +28,7 @@ import { Effect } from "effect"
 import { Authz } from "../authz.ts"
 import { fileLimits } from "../files/queries.ts"
 import { Mailer } from "../notifications/mail.ts"
+import { writeTrail } from "../trail.ts"
 
 const storageSummary = Effect.gen(function* () {
   const db = yield* Db
@@ -151,6 +152,7 @@ export const accessItem = (entityId: EntityId) =>
   Effect.gen(function* () {
     const authz = yield* Authz
     yield* authz.requireCapability("access.override")
+    yield* writeTrail({ action: "admin.access_inspected", entityId, entityType: "entity" })
     const db = yield* Db
 
     const [entity] = yield* db
@@ -214,6 +216,7 @@ export const accessPerson = (userId: UserId) =>
   Effect.gen(function* () {
     const authz = yield* Authz
     yield* authz.requireCapability("access.override")
+    yield* writeTrail({ action: "admin.access_inspected", entityId: userId, entityType: "user" })
     const db = yield* Db
 
     const workspaceRole = yield* authz.workspaceRole(userId)

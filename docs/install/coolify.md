@@ -11,11 +11,12 @@ Coolify's generated `SERVICE_*` values, so you do not manage secrets by hand.
 
 ## 2. Values Coolify generates
 
-| Variable            | Source                                                   |
-| ------------------- | -------------------------------------------------------- |
-| `AUDIT_URL`         | `${SERVICE_URL_APP}` (the assigned domain, HTTPS)        |
-| `AUDIT_SECRET_KEY`  | `${SERVICE_PASSWORD_64_AUDIT}` (64 generated characters) |
-| `POSTGRES_PASSWORD` | `${SERVICE_PASSWORD_POSTGRES}`                           |
+| Variable            | Source                                                           |
+| ------------------- | ---------------------------------------------------------------- |
+| `AUDIT_URL`         | `${SERVICE_URL_APP}` (the assigned domain, HTTPS)                |
+| `AUDIT_SECRET_KEY`  | `${SERVICE_PASSWORD_64_AUDIT}` (64 generated characters)         |
+| `POSTGRES_PASSWORD` | `${SERVICE_PASSWORD_POSTGRES}`                                   |
+| `APP_DB_PASSWORD`   | `${SERVICE_PASSWORD_APPDB}` (the app database login `audit_app`) |
 
 `LOG_LEVEL` defaults to `info`. To change it, set `LOG_LEVEL` in the resource environment.
 

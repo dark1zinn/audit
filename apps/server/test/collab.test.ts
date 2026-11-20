@@ -143,7 +143,7 @@ beforeAll(async () => {
   editorCookie = await signIn(editor.email)
   viewerCookie = await signIn(viewer.email)
   strangerCookie = await signIn(stranger.email)
-})
+}, 60_000)
 
 afterAll(async () => {
   for (const client of clients) {

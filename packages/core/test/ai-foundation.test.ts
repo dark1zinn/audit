@@ -17,7 +17,7 @@ import * as HttpClientResponse from "effect/http/HttpClientResponse"
 import * as LanguageModel from "effect/ai/LanguageModel"
 
 const SECRET = "sk-test-SECRETKEY-9876"
-const BASE_URL = "https://llm.test/v1"
+const BASE_URL = "https://93.184.216.34/v1"
 const FEATURES = {
   assistant: true,
   semantic_search: true,

@@ -3,7 +3,7 @@
  * provider keys (purpose `ai-key`) and the workspace VAPID private key (purpose `vapid`). One
  * command, so one transaction: either every sealed value moves to the new key or none does.
  */
-import { aiProviders, workspace } from "@audit/db/schema"
+import { aiProviders, trailKey, workspace } from "@audit/db/schema"
 import { ValidationError } from "@audit/domain/errors"
 import { CurrentActor } from "@audit/domain/actor"
 import { type Sealed, Secrets, type SecretsShape, makeSecrets } from "@audit/platform/crypto"
@@ -12,6 +12,7 @@ import { and, eq, isNotNull, sql } from "drizzle-orm"
 import { Effect, Redacted, Schema } from "effect"
 import * as Command from "../command.ts"
 import { record } from "../trail.ts"
+import { TRAIL_KEY_PURPOSE } from "../trail-key.ts"
 
 const AI_KEY_PURPOSE = "ai-key"
 const VAPID_PURPOSE = "vapid"
@@ -77,6 +78,28 @@ export const rotateSecrets = (previous: Redacted.Redacted<string>) =>
             .update(aiProviders)
             .set({ keyCiphertext: sealed.ciphertext, keyNonce: sealed.nonce })
             .where(eq(aiProviders.id, key.id))
+            .pipe(Effect.orDie)
+        }
+
+        // The trail HMAC key is sealed like the other values; a null key is generated later under
+        // the current secret, so there is nothing to move.
+        const [trailKeyRow] = yield* db
+          .select({ ciphertext: trailKey.keyCiphertext, nonce: trailKey.keyNonce })
+          .from(trailKey)
+          .where(eq(trailKey.id, 1))
+          .pipe(Effect.orDie)
+        if (trailKeyRow?.ciphertext != null && trailKeyRow.nonce != null) {
+          const sealed = yield* reseal(
+            old,
+            current,
+            TRAIL_KEY_PURPOSE,
+            { ciphertext: trailKeyRow.ciphertext, nonce: trailKeyRow.nonce },
+            "trail key",
+          )
+          yield* db
+            .update(trailKey)
+            .set({ keyCiphertext: sealed.ciphertext, keyNonce: sealed.nonce })
+            .where(eq(trailKey.id, 1))
             .pipe(Effect.orDie)
         }
 

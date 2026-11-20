@@ -543,6 +543,9 @@ export const threadRootOf = (messageId: MessageId) =>
 export const threadView = (rootId: MessageId, query: MessagePageQuery, viewerId: UserId) =>
   Effect.gen(function* () {
     const db = yield* Db
+    const authz = yield* Authz
+    const rootRow = yield* messageRow(rootId)
+    yield* authz.requireOn("channel.read", entityOf(rootRow.channelId))
     const [root] = yield* loadMessages(eq(messages.id, rootId), "desc", 1, viewerId)
     if (root === undefined) return yield* new NotFound({ entity: "message", id: rootId })
     const replies = yield* pageOf(eq(messages.threadRootId, rootId), query, viewerId, false)

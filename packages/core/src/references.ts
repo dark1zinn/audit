@@ -10,7 +10,7 @@ import type { BacklinkGroup, Backlink, EntityRef } from "@audit/domain/docs/sche
 import type { ReferenceKind } from "@audit/domain/entity"
 import type { EntityId } from "@audit/domain/ids"
 import { Db } from "@audit/platform/database"
-import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm"
+import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm"
 import { Effect } from "effect"
 import { Authz } from "./authz.ts"
 
@@ -38,17 +38,28 @@ export const syncReferences = (
     const wanted = new Map(targets.map((t) => [t.targetId as string, t.snippet ?? null]))
     const current = new Map(existing.map((r) => [r.targetId, r.snippet]))
 
-    const removed = [...current.keys()].filter((id) => !wanted.has(id))
+    const authz = yield* Authz
+    const visible = yield* authz.visible(sql`${entities.id}`)
+    const removable = [...current.keys()].filter((id) => !wanted.has(id))
+    const removed =
+      removable.length === 0
+        ? []
+        : yield* db
+            .select({ id: entities.id })
+            .from(entities)
+            .where(and(inArray(entities.id, removable), or(visible, isNotNull(entities.deletedAt))))
+            .pipe(Effect.orDie)
     if (removed.length > 0) {
-      yield* db
-        .delete(references)
-        .where(
-          and(
-            eq(references.sourceId, sourceId),
-            eq(references.kind, kind),
-            inArray(references.targetId, removed),
+      yield* db.delete(references).where(
+        and(
+          eq(references.sourceId, sourceId),
+          eq(references.kind, kind),
+          inArray(
+            references.targetId,
+            removed.map((row) => row.id),
           ),
-        )
+        ),
+      )
     }
 
     const candidates = [...wanted.keys()].filter((id) => !current.has(id))
@@ -58,7 +69,8 @@ export const syncReferences = (
         : yield* db
             .select({ id: entities.id })
             .from(entities)
-            .where(inArray(entities.id, candidates))
+            .where(and(inArray(entities.id, candidates), visible))
+            .pipe(Effect.orDie)
     const added = known.map((row) => row.id as EntityId).filter((id) => id !== sourceId)
     if (added.length > 0) {
       yield* db.insert(references).values(
@@ -118,7 +130,7 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
       if (row.deletedAt !== null) {
         out[id] = { id, type: row.type, restricted: false, deleted: true }
       } else if (!visibleIds.has(row.id)) {
-        out[id] = { id, type: row.type, restricted: true, deleted: false }
+        out[id] = { id, restricted: true, deleted: false }
       } else {
         out[id] = { id, type: row.type, title: row.title, restricted: false, deleted: false }
       }
@@ -132,6 +144,12 @@ export const backlinks = (entityId: EntityId) =>
     const db = yield* Db
     const authz = yield* Authz
     const visible = yield* authz.visible(sql`${entities.id}`)
+    const [target] = yield* db
+      .select({ id: entities.id })
+      .from(entities)
+      .where(and(eq(entities.id, entityId), visible))
+      .pipe(Effect.orDie)
+    if (target === undefined) return []
     const rows = yield* db
       .select({
         sourceId: references.sourceId,

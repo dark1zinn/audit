@@ -13,15 +13,14 @@ import { Authz } from "../authz.ts"
 import { isUniqueViolation } from "../command.ts"
 import { emit, record } from "../trail.ts"
 
-export interface NewAccount {
+export type NewAccount = {
   readonly name: string
   readonly email: string
-  readonly password: string
   readonly role: WorkspaceRole
   readonly invitedBy: UserId | null
   readonly locale?: Locale
   readonly timezone?: string
-}
+} & ({ readonly password: string } | { readonly passwordHash: string })
 
 export const hashPassword = (password: string) =>
   Effect.promise(() => Bun.password.hash(password, { algorithm: "argon2id" }))
@@ -33,7 +32,8 @@ export const createAccount = (input: NewAccount) =>
     const db = yield* Db
     const email = normalizeEmail(input.email)
     const userId = Bun.randomUUIDv7() as UserId
-    const passwordHash = yield* hashPassword(input.password)
+    const passwordHash =
+      "passwordHash" in input ? input.passwordHash : yield* hashPassword(input.password)
 
     yield* db
       .insert(user)

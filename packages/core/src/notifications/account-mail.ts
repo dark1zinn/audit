@@ -46,3 +46,32 @@ export const sendInviteEmail = (input: { readonly email: string; readonly url: s
       })
       .pipe(Effect.orDie)
   })
+
+/** Sign-up verification mail, in the workspace's default locale: the applicant has no account yet. */
+export const sendSignupVerificationEmail = (input: {
+  readonly email: string
+  readonly url: string
+}) =>
+  Effect.gen(function* () {
+    const mailer = yield* Mailer
+    if (!mailer.enabled) return
+    const locale = yield* workspaceLocale
+    yield* mailer
+      .send({
+        to: input.email,
+        subject: translate(locale, {
+          id: "email.signup_verify_subject",
+          message: "Confirm your sign-up",
+        }),
+        text: translate(
+          locale,
+          {
+            id: "email.signup_verify_body",
+            message:
+              "Open this link within 24 hours to create your account:\n\n{url}\n\nIf you did not sign up, ignore this email.",
+          },
+          { url: input.url },
+        ),
+      })
+      .pipe(Effect.orDie)
+  })

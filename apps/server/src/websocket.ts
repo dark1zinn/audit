@@ -10,7 +10,13 @@ import { Socket } from "effect/socket"
 export interface RpcSocketData {
   readonly kind: "rpc"
   readonly queue: Queue.Queue<Uint8Array | string, Socket.SocketError>
+  /** The upgrade request's headers, used to re-check the session. */
+  readonly headers: Headers
   socket?: ServerWebSocket<RpcSocketData>
+  /** Set once the socket is closed; stops late tracking. */
+  closed?: boolean
+  /** Removes this socket from the access sweep. Set once its session resolves. */
+  untrack?: (() => void) | undefined
 }
 
 /** Resolves the `fetch` promise for a request once its WebSocket upgrade happened. */
@@ -22,8 +28,8 @@ export const withBunUpgrade = (
 ): HttpServerRequest.HttpServerRequest => {
   const upgrade = Effect.gen(function* () {
     const queue = yield* Queue.make<Uint8Array | string, Socket.SocketError>()
-    const data: RpcSocketData = { kind: "rpc", queue }
     const source = request.source as Request
+    const data: RpcSocketData = { kind: "rpc", queue, headers: source.headers }
     if (!server.upgrade(source, { data })) {
       return yield* new HttpServerError.HttpServerError({
         reason: new HttpServerError.InternalError({

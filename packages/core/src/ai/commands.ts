@@ -4,7 +4,7 @@
  * one is set.
  */
 import { testConnection } from "@audit/ai/connection"
-import { supportsEmbeddings } from "@audit/ai/provider"
+import { supportsEmbeddings, validateBaseUrl } from "@audit/ai/provider"
 import { aiProviders } from "@audit/db/schema"
 import { ValidationError, NotFound } from "@audit/domain/errors"
 import {
@@ -16,6 +16,7 @@ import {
 } from "@audit/domain/ai/schema"
 import type { AiProviderKind } from "@audit/domain/ai/schema"
 import { AiProviderId } from "@audit/domain/ids"
+import { AppConfig } from "@audit/platform/config"
 import { Db } from "@audit/platform/database"
 import { Jobs } from "@audit/platform/jobs"
 import { eq } from "drizzle-orm"
@@ -64,6 +65,14 @@ const checkProvider = (
         message: "Embedding dimensions are required with an embedding model",
       })
     }
+  })
+
+/** Validates a custom endpoint; an empty base URL means the provider's default endpoint. */
+const checkBaseUrl = (baseUrl: string) =>
+  Effect.gen(function* () {
+    if (baseUrl === "") return
+    const config = yield* AppConfig
+    yield* validateBaseUrl(baseUrl, { allowPrivate: config.aiAllowPrivateBaseUrl })
   })
 
 const ProviderIdInput = Schema.Struct({ providerId: AiProviderId })
@@ -123,6 +132,7 @@ export const createProvider = Command.make("ai.createProvider", {
       const embeddingModel = input.embeddingModel ?? ""
       const dimensions = input.embeddingDimensions ?? 0
       yield* checkProvider(input.kind, baseUrl, embeddingModel, dimensions)
+      yield* checkBaseUrl(baseUrl)
       const sealed =
         input.apiKey === undefined || input.apiKey === "" ? null : yield* sealKey(input.apiKey)
       const [row] = yield* db
@@ -166,6 +176,14 @@ export const updateProvider = Command.make("ai.updateProvider", {
     Effect.gen(function* () {
       const db = yield* Db
       const row = yield* loadProvider(providerId)
+      if (patch.baseUrl !== undefined && patch.baseUrl !== row.baseUrl) {
+        if (patch.apiKey === undefined || patch.apiKey === "") {
+          return yield* new ValidationError({
+            message: "Changing the base URL requires a new API key",
+          })
+        }
+        yield* checkBaseUrl(patch.baseUrl)
+      }
       const next = {
         name: patch.name ?? row.name,
         baseUrl: patch.baseUrl ?? row.baseUrl,
@@ -239,6 +257,7 @@ export const testProvider = Command.make("ai.testProvider", {
     Effect.gen(function* () {
       const db = yield* Db
       const config = yield* providerConfigFor(providerId)
+      if (config.baseUrl !== null) yield* checkBaseUrl(config.baseUrl)
       const result = yield* testConnection(config)
       yield* db
         .update(aiProviders)

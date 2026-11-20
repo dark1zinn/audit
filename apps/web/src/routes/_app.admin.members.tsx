@@ -107,6 +107,7 @@ function MembersPage() {
           </CardContent>
         </Card>
       )}
+      <PendingSignups />
       {members.isPending && <LoadingRows />}
       {members.isError && <ErrorMessage error={members.error} />}
       {members.data !== undefined && (
@@ -339,6 +340,89 @@ function MembersPage() {
         <ChannelPicker member={channelPickerFor} onClose={() => setChannelPickerFor(null)} />
       )}
     </>
+  )
+}
+
+/**
+ * Sign-ups waiting for an admin (only when the server sends no mail). Approving opens the account;
+ * rejecting drops the request. Shown only while there is something to decide.
+ */
+function PendingSignups() {
+  const queryClient = useQueryClient()
+  const pending = useQuery({
+    queryKey: ["admin", "signups"],
+    queryFn: () => callApi((api) => api.admin.pendingSignups()),
+  })
+  const decide = useMutation({
+    mutationFn: ({ id, approve }: { readonly id: string; readonly approve: boolean }) =>
+      callApi((api) =>
+        approve
+          ? api.admin.approveSignup({ params: { id } })
+          : api.admin.rejectSignup({ params: { id } }),
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "signups"] })
+      await queryClient.invalidateQueries({ queryKey: keys.members })
+    },
+  })
+
+  if (pending.isError) return <ErrorMessage error={pending.error} />
+  if (pending.data === undefined || pending.data.length === 0) return null
+  return (
+    <div className="mb-4 space-y-2">
+      <h2 className="text-sm font-medium">
+        <Trans>Pending sign-ups</Trans>
+      </h2>
+      {decide.error !== null && <ErrorMessage error={decide.error} />}
+      <div className="overflow-x-auto rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <Trans>Name</Trans>
+              </TableHead>
+              <TableHead>
+                <Trans>Email</Trans>
+              </TableHead>
+              <TableHead>
+                <Trans>Requested</Trans>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="sr-only">
+                  <Trans>Actions</Trans>
+                </span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {pending.data.map((request) => (
+              <TableRow key={request.id}>
+                <TableCell>{request.name}</TableCell>
+                <TableCell>{request.email}</TableCell>
+                <TableCell>{request.requestedAt.toLocaleString()}</TableCell>
+                <TableCell className="space-x-2 text-right">
+                  <Button
+                    size="sm"
+                    disabled={decide.isPending}
+                    onClick={() => decide.mutate({ id: request.id, approve: true })}
+                  >
+                    <Trans>Approve</Trans>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={decide.isPending}
+                    onClick={() => decide.mutate({ id: request.id, approve: false })}
+                  >
+                    <Trans>Reject</Trans>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   )
 }
 

@@ -172,6 +172,23 @@ export const invites = pgTable(
   ],
 )
 
+/**
+ * Self sign-ups waiting for the emailed link (`tokenHash` set, only its SHA-256 stored) or an
+ * admin decision (`tokenHash` null). The password is kept only as its argon2 hash. The row is
+ * deleted when the account is created or the request is rejected.
+ */
+export const signupRequests = pgTable("signup_requests", {
+  id: id(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  locale: text("locale"),
+  timezone: text("timezone").notNull(),
+  tokenHash: text("token_hash").unique(),
+  expiresAt: timestamptz("expires_at"),
+  createdAt: createdAt(),
+})
+
 export const resourceRoles = ["viewer", "commenter", "editor", "manager"] as const
 type ResourceRoleColumn = (typeof resourceRoles)[number]
 
@@ -382,6 +399,21 @@ export const trailEvents = pgTable(
     index("trail_events_at_idx").on(t.at.desc()),
     index("trail_events_actor_idx").on(t.actorId, t.at.desc()),
   ],
+)
+
+/**
+ * The sealed HMAC key of the trail chain: one row, created by the migration and filled on first
+ * write. Entries with seq <= legacyThrough predate the key and were chained with unkeyed SHA-256.
+ */
+export const trailKey = pgTable(
+  "trail_key",
+  {
+    id: integer("id").primaryKey(),
+    keyCiphertext: text("key_ciphertext"),
+    keyNonce: text("key_nonce"),
+    legacyThrough: bigint("legacy_through", { mode: "number" }).notNull(),
+  },
+  (t) => [check("trail_key_singleton_check", sql`${t.id} = 1`)],
 )
 
 export const idempotencyKeys = pgTable(

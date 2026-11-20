@@ -163,7 +163,7 @@ export type ExportFormat = typeof ExportFormat.Type
 /** Entity lookup for mention and link chips. Invisible entities come back `restricted`, untitled. */
 export const EntityRef = Schema.Struct({
   id: EntityId,
-  type: Schema.String,
+  type: Schema.optionalKey(Schema.String),
   title: Schema.optionalKey(Schema.String),
   key: Schema.optionalKey(Schema.String),
   restricted: Schema.Boolean,

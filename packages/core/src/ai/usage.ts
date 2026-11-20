@@ -1,6 +1,6 @@
 /** Token accounting: what each call used, the monthly budget guard, and the admin report. */
 import { aiProviders, aiUsage, user } from "@audit/db/schema"
-import { Forbidden } from "@audit/domain/errors"
+import { Forbidden, RateLimited } from "@audit/domain/errors"
 import type { AiUsageReport, AiUsageRow, AiSettings } from "@audit/domain/ai/schema"
 import type { AiProviderId, UserId } from "@audit/domain/ids"
 import { Db } from "@audit/platform/database"
@@ -34,12 +34,36 @@ const tokensSince = (userId: UserId, start: Date) =>
     return Number(row?.used ?? 0)
   })
 
+const AI_CALLS_PER_MINUTE = 60
+const RATE_WINDOW_MS = 60_000
+const rateWindows = new Map<UserId, { count: number; resetAt: number }>()
+
+/** Caps provider calls per person per minute. In process memory, and applies with or without a budget. */
+const checkRate = (userId: UserId) =>
+  Effect.suspend(() => {
+    const now = Date.now()
+    const current = rateWindows.get(userId)
+    if (current === undefined || current.resetAt <= now) {
+      if (rateWindows.size > 10_000) {
+        for (const [id, window] of rateWindows) if (window.resetAt <= now) rateWindows.delete(id)
+      }
+      rateWindows.set(userId, { count: 1, resetAt: now + RATE_WINDOW_MS })
+      return Effect.void
+    }
+    current.count += 1
+    if (current.count <= AI_CALLS_PER_MINUTE) return Effect.void
+    return Effect.fail(
+      new RateLimited({ retryAfterSeconds: Math.ceil((current.resetAt - now) / 1000) }),
+    )
+  })
+
 /**
- * Fails before any provider call when the person has spent the workspace's monthly token budget.
- * No budget set means unlimited.
+ * Fails before any provider call when the person is calling too fast, or has spent the
+ * workspace's monthly token budget. No budget set means unlimited.
  */
 export const checkBudget = (userId: UserId, settings: AiSettings) =>
   Effect.gen(function* () {
+    yield* checkRate(userId)
     if (settings.monthlyTokenBudget === null) return
     const { start } = monthRange(currentMonth())
     const used = yield* tokensSince(userId, start)

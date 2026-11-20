@@ -1,7 +1,8 @@
+import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 import { Conflict, Forbidden, NotFound, RateLimited, ValidationError } from "../errors.ts"
 import { Authentication } from "../http.ts"
-import { EntityId, UserId } from "../ids.ts"
+import { EntityId, UserId, Uuid } from "../ids.ts"
 import {
   AccessItemReview,
   AccessPersonReview,
@@ -12,15 +13,18 @@ import {
   MaintenanceQueued,
   MaintenanceStatus,
   OrphanCleanupResult,
+  PendingSignup,
   RetentionInput,
   SecurityInput,
   SignedUp,
   SignupInput,
+  VerifySignupInput,
   StorageSummary,
 } from "./schema.ts"
 
 const entityParams = { params: { entityId: EntityId } }
 const userParams = { params: { userId: UserId } }
+const signupParams = { params: { id: Uuid } }
 
 /** Workspace administration; owners and admins only (each command checks its capability). */
 export const AdminApi = HttpApiGroup.make("admin")
@@ -110,13 +114,41 @@ export const AdminApi = HttpApiGroup.make("admin")
       error: [Forbidden],
     }),
   )
+  .add(
+    HttpApiEndpoint.get("pendingSignups", "/api/admin/signups", {
+      success: Schema.Array(PendingSignup),
+      error: [Forbidden],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("approveSignup", "/api/admin/signups/:id/approve", {
+      ...signupParams,
+      success: Schema.Void,
+      error: [Forbidden, NotFound, Conflict],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("rejectSignup", "/api/admin/signups/:id/reject", {
+      ...signupParams,
+      success: Schema.Void,
+      error: [Forbidden, NotFound],
+    }),
+  )
   .middleware(Authentication)
 
 /** Self sign-up, public; the workspace sign-up policy decides whether it is allowed. */
-export const SignupApi = HttpApiGroup.make("signup").add(
-  HttpApiEndpoint.post("signup", "/api/signup", {
-    payload: SignupInput,
-    success: SignedUp,
-    error: [Forbidden, Conflict, ValidationError, RateLimited],
-  }),
-)
+export const SignupApi = HttpApiGroup.make("signup")
+  .add(
+    HttpApiEndpoint.post("signup", "/api/signup", {
+      payload: SignupInput,
+      success: SignedUp,
+      error: [Forbidden, ValidationError, RateLimited],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post("verifySignup", "/api/signup/verify", {
+      payload: VerifySignupInput,
+      success: Schema.Void,
+      error: [ValidationError, Conflict, RateLimited],
+    }),
+  )

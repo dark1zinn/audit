@@ -289,7 +289,11 @@ msgid "Account"
 msgstr ""
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "Account created"
+#~ msgid "Account created"
+#~ msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Account created. Go to sign in"
 msgstr ""
 
 #: ../../apps/web/src/components/app-shell.tsx
@@ -469,6 +473,10 @@ msgstr ""
 msgid "Also viewing"
 msgstr ""
 
+#: ../../apps/web/src/routes/signup.tsx
+msgid "An administrator reviews new accounts. You can sign in once your request is approved."
+msgstr ""
+
 #: ../../apps/web/src/components/board/filters-bar.tsx
 msgid "Any assignee"
 msgstr ""
@@ -529,6 +537,7 @@ msgid "Apply search"
 msgstr ""
 
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Approve"
 msgstr ""
 
@@ -673,6 +682,10 @@ msgstr ""
 #: ../../apps/web/src/routes/forgot-password.tsx
 #: ../../apps/web/src/routes/signup.tsx
 msgid "Back to sign in"
+msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Back to sign-up"
 msgstr ""
 
 #: ../../apps/web/src/components/docs/doc-view.tsx
@@ -884,6 +897,10 @@ msgstr ""
 msgid "Changes since the previous version"
 msgstr ""
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Changing the base URL requires re-entering the API key."
+msgstr ""
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Changing these affects new sessions and the look of the app for everyone."
 msgstr ""
@@ -931,6 +948,7 @@ msgid "Check the highlighted fields and try again."
 msgstr ""
 
 #: ../../apps/web/src/routes/forgot-password.tsx
+#: ../../apps/web/src/routes/signup.tsx
 msgid "Check your email"
 msgstr ""
 
@@ -1121,6 +1139,10 @@ msgstr ""
 
 #: ../../apps/web/src/components/project-settings/boards-section.tsx
 msgid "Confirm delete"
+msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Confirm your sign-up"
 msgstr ""
 
 #: ../../apps/web/src/routes/_app.admin.ai.tsx
@@ -1695,6 +1717,7 @@ msgstr ""
 #: ../../apps/web/src/components/app-shell.tsx
 #: ../../apps/web/src/routes/_app.admin.email.tsx
 #: ../../apps/web/src/routes/_app.admin.index.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 #: ../../apps/web/src/routes/_app.settings.notifications.tsx
 #: ../../apps/web/src/routes/forgot-password.tsx
 #: ../../apps/web/src/routes/join.$token.tsx
@@ -1971,7 +1994,6 @@ msgid "Go to My tasks"
 msgstr ""
 
 #: ../../apps/web/src/routes/reset-password.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Go to sign in"
 msgstr ""
 
@@ -2047,6 +2069,10 @@ msgstr ""
 
 #: ../../apps/web/src/routes/forgot-password.tsx
 msgid "If an account exists for that address, a password-reset link is on its way. The link expires soon."
+msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "If this address can sign up, we sent a link to confirm it. The link is valid for 24 hours."
 msgstr ""
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
@@ -3032,6 +3058,10 @@ msgstr ""
 msgid "Opening conversation…"
 msgstr ""
 
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Opening the link from your email creates your account."
+msgstr ""
+
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Optional"
 msgstr ""
@@ -3130,6 +3160,10 @@ msgstr ""
 
 #: ../../apps/web/src/routes/_app.admin.access.tsx
 msgid "Path"
+msgstr ""
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Pending sign-ups"
 msgstr ""
 
 #: ../../apps/web/src/components/mentions/mention-picker-menu.tsx
@@ -3358,6 +3392,10 @@ msgstr ""
 msgid "Quote"
 msgstr ""
 
+#: ../../apps/web/src/routes/_app.admin.ai.tsx
+msgid "Re-enter the API key for the new base URL"
+msgstr ""
+
 #: ../../apps/web/src/components/chat/message-item.tsx
 msgid "React with {emoji}"
 msgstr ""
@@ -3424,6 +3462,7 @@ msgid "Regenerate link"
 msgstr ""
 
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
+#: ../../apps/web/src/routes/_app.admin.members.tsx
 msgid "Reject"
 msgstr ""
 
@@ -3491,6 +3530,14 @@ msgstr ""
 
 #: ../../apps/web/src/components/chat/thread-panel.tsx
 msgid "Reply in thread"
+msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Request received"
+msgstr ""
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Requested"
 msgstr ""
 
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
@@ -4817,8 +4864,8 @@ msgid "Your account"
 msgstr ""
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "Your account is ready. Sign in to continue."
-msgstr ""
+#~ msgid "Your account is ready. Sign in to continue."
+#~ msgstr ""
 
 #: ../../apps/web/src/routes/_app.calendar.tsx
 msgid "Your events, shared calendars and task due dates."

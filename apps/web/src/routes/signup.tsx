@@ -1,17 +1,18 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useState, type FormEvent } from "react"
+import { useMutation } from "@tanstack/react-query"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { AuthLayout } from "../components/auth-layout.tsx"
 import { ErrorMessage } from "../components/feedback.tsx"
 import { formValue, TextField } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
-import { authClient } from "../lib/auth.ts"
 import { errorKind } from "../lib/errors.ts"
-import { keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    verify: typeof search.verify === "string" ? search.verify : undefined,
+  }),
   component: SignupPage,
 })
 
@@ -19,37 +20,37 @@ type SignupInput = { readonly name: string; readonly email: string; readonly pas
 
 /**
  * Public self sign-up, outside `_app`: works signed out. The workspace sign-up policy decides
- * whether the server accepts the request; a closed policy answers `Forbidden`.
+ * whether the server accepts the request; a closed policy answers `Forbidden`. An accepted request
+ * waits for the emailed link (`?verify=`) or for an administrator's approval; it never signs in.
  */
 function SignupPage() {
   const { t } = useLingui()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [created, setCreated] = useState(false)
+  const { verify: verifyToken } = Route.useSearch()
+  const started = useRef(false)
 
   const signup = useMutation({
-    mutationFn: async (input: SignupInput) => {
-      await callApi((api) =>
+    mutationFn: (input: SignupInput) =>
+      callApi((api) =>
         api.signup.signup({
           payload: {
             ...input,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         }),
-      )
-      setCreated(true)
-      const result = await authClient.signIn.email({
-        email: input.email,
-        password: input.password,
-      })
-      return { signedIn: !result.error }
-    },
-    onSuccess: async ({ signedIn }) => {
-      if (!signedIn) return
-      queryClient.removeQueries({ queryKey: keys.session })
-      await navigate({ to: "/" })
-    },
+      ),
   })
+
+  const verify = useMutation({
+    mutationFn: (token: string) =>
+      callApi((api) => api.signup.verifySignup({ payload: { token } })),
+  })
+  const verifyLink = verify.mutate
+
+  useEffect(() => {
+    if (verifyToken === undefined || started.current) return
+    started.current = true
+    verifyLink(verifyToken)
+  }, [verifyToken, verifyLink])
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -59,6 +60,33 @@ function SignupPage() {
       email: formValue(form, "email"),
       password: formValue(form, "password"),
     })
+  }
+
+  if (verifyToken !== undefined) {
+    return (
+      <AuthLayout
+        title={t`Confirm your sign-up`}
+        description={t`Opening the link from your email creates your account.`}
+      >
+        {verify.isSuccess && (
+          <Link to="/login" className="text-sm underline underline-offset-4">
+            <Trans>Account created. Go to sign in</Trans>
+          </Link>
+        )}
+        {verify.isError && (
+          <>
+            <ErrorMessage error={verify.error} />
+            <Link
+              to="/signup"
+              search={{ verify: undefined }}
+              className="text-sm underline underline-offset-4"
+            >
+              <Trans>Back to sign-up</Trans>
+            </Link>
+          </>
+        )}
+      </AuthLayout>
+    )
   }
 
   if (signup.error !== null && errorKind(signup.error) === "forbidden") {
@@ -74,14 +102,23 @@ function SignupPage() {
     )
   }
 
-  if (created && signup.data?.signedIn !== true && !signup.isPending) {
-    return (
+  if (signup.isSuccess) {
+    return signup.data.delivery === "email" ? (
       <AuthLayout
-        title={t`Account created`}
-        description={t`Your account is ready. Sign in to continue.`}
+        title={t`Check your email`}
+        description={t`If this address can sign up, we sent a link to confirm it. The link is valid for 24 hours.`}
       >
         <Link to="/login" className="text-sm underline underline-offset-4">
-          <Trans>Go to sign in</Trans>
+          <Trans>Back to sign in</Trans>
+        </Link>
+      </AuthLayout>
+    ) : (
+      <AuthLayout
+        title={t`Request received`}
+        description={t`An administrator reviews new accounts. You can sign in once your request is approved.`}
+      >
+        <Link to="/login" className="text-sm underline underline-offset-4">
+          <Trans>Back to sign in</Trans>
         </Link>
       </AuthLayout>
     )

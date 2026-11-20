@@ -1,5 +1,8 @@
-/** The ProseMirror JSON shape the editor stores in `docs.content`, `tasks.description` and comments. */
-export interface JsonNode {
+/**
+ * The ProseMirror JSON shape the editor stores in `docs.content`, `tasks.description` and comments.
+ * A type alias, not an interface, so values fit the `jsonb` columns' `Record<string, unknown>`.
+ */
+export type JsonNode = {
   readonly type?: string
   readonly attrs?: Readonly<Record<string, unknown>>
   readonly content?: ReadonlyArray<JsonNode>

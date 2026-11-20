@@ -75,7 +75,7 @@ beforeAll(async () => {
     createProvider.execute({
       kind: "openai_compatible",
       name: "Doc edit",
-      baseUrl: "https://llm.test/v1",
+      baseUrl: "https://93.184.216.34/v1",
       apiKey: "sk-test-DOCEDIT-1111",
       chatModel: "chat-test",
     }),

@@ -21,10 +21,10 @@ export const testConnection = (
       message: response.text.trim().slice(0, 200) || "Connected",
       latencyMs: Math.round(Duration.toMillis(duration)),
     })),
-    Effect.catch((error) =>
+    Effect.catch(() =>
       Effect.succeed({
         ok: false,
-        message: error.message,
+        message: "Connection failed",
         latencyMs: 0,
       }),
     ),

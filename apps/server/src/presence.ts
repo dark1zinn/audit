@@ -104,6 +104,16 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
           yield* PubSub.publish(changes, snapshot(scope))
         })
 
+      // Focus names an entity, so each recipient sees it only when they can read that entity.
+      const maskFocus = (state: PresenceState) =>
+        Effect.forEach(state.viewers, (viewer) =>
+          Effect.gen(function* () {
+            if (viewer.focusEntityId === null) return viewer
+            const canSee = yield* authz.can("entity.read", viewer.focusEntityId)
+            return canSee ? viewer : { ...viewer, focusEntityId: null }
+          }),
+        ).pipe(Effect.map((viewers) => ({ ...state, viewers })))
+
       return Presence.of({
         join: (scope) =>
           Stream.unwrap(
@@ -131,7 +141,10 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
                 Stream.fromSubscription(queue).pipe(
                   Stream.filter((state) => state.scope === scope),
                 ),
-              ).pipe(Stream.onExit(() => leave(scope, userId)))
+              ).pipe(
+                Stream.mapEffect(maskFocus),
+                Stream.onExit(() => leave(scope, userId)),
+              )
             }),
           ),
 

@@ -51,7 +51,7 @@ const localStamp = (instant: Date, timezone: string) => {
 }
 
 const timeParam = (allDay: boolean, timezone: string) =>
-  allDay ? ";VALUE=DATE" : timezone === "UTC" ? "" : `;TZID=${timezone}`
+  allDay ? ";VALUE=DATE" : timezone === "UTC" ? "" : `;TZID=${oneLine(timezone)}`
 
 const timeValue = (instant: Date, allDay: boolean, timezone: string) =>
   allDay
@@ -61,7 +61,17 @@ const timeValue = (instant: Date, allDay: boolean, timezone: string) =>
       : localStamp(instant, timezone)
 
 const escapeText = (value: string) =>
-  value.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n")
+  value
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r\n|\r|\n/g, "\\n")
+
+/** Removes CR and LF so a value can never end its content line early. */
+const oneLine = (value: string) => value.replace(/[\r\n]/g, "")
+
+/** RRULE values may use only these characters and must start with FREQ=; others are dropped. */
+const isSafeRule = (rrule: string) => /^FREQ=[A-Z0-9=;,:+-]*$/.test(rrule)
 
 const unescapeText = (value: string) =>
   value.replace(/\\(.)/g, (_, c: string) => (c === "n" || c === "N" ? "\n" : c))
@@ -99,7 +109,7 @@ export const renderIcs = (events: ReadonlyArray<IcsEvent>, now: Date): string =>
   const stamp = utcStamp(now)
   for (const event of events) {
     const { allDay, timezone } = event
-    lines.push("BEGIN:VEVENT", `UID:${event.uid}`, `DTSTAMP:${stamp}`)
+    lines.push("BEGIN:VEVENT", `UID:${oneLine(event.uid)}`, `DTSTAMP:${stamp}`)
     if (event.recurrence !== null) {
       const r = event.recurrence
       lines.push(
@@ -111,9 +121,11 @@ export const renderIcs = (events: ReadonlyArray<IcsEvent>, now: Date): string =>
       `DTEND${timeParam(allDay, timezone)}:${timeValue(event.endsAt, allDay, timezone)}`,
     )
     if (event.rrule !== null) {
+      // Stored values may be lowercase (custom rules); RRULE keywords are uppercase on the wire.
+      const upper = event.rrule.toUpperCase()
       // A VALUE=DATE series needs a DATE UNTIL, not a date-time.
-      const rrule = allDay ? event.rrule.replace(/UNTIL=(\d{8})T\d{6}Z/, "UNTIL=$1") : event.rrule
-      lines.push(`RRULE:${rrule}`)
+      const rrule = allDay ? upper.replace(/UNTIL=(\d{8})T\d{6}Z/, "UNTIL=$1") : upper
+      if (isSafeRule(rrule)) lines.push(`RRULE:${rrule}`)
     }
     if (event.exdates.length > 0) {
       const values = event.exdates.map((d) => timeValue(d, allDay, timezone)).join(",")

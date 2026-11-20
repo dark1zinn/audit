@@ -100,7 +100,7 @@ const renderBlock = (node: JsonNode, key: string): ReactNode => {
       )
     case "image": {
       const src = stringAttr(node, "src")
-      if (!src.startsWith("/files/")) return null
+      if (!/^\/files\/[0-9a-f-]{36}$/i.test(src)) return null
       return (
         <img
           key={key}

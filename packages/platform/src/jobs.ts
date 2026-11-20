@@ -64,11 +64,12 @@ const transactionDb = (sql: SqlClient.SqlClient, context: Context.Context<never>
 })
 
 /**
- * pg-boss runs its own pool as the login role. Its schema is shared with `audit_app` so jobs can
- * be enqueued from request transactions.
+ * pg-boss keeps its schema in this database. The owner login (`setupUrl`) creates the schema,
+ * the queues and the grants to `audit_app`; the runtime pool then starts as the app login (`url`).
  */
 export const pgBossLayer = (options: {
   readonly url: Redacted.Redacted
+  readonly setupUrl: Redacted.Redacted
   readonly jobs: ReadonlyArray<JobDefinition>
 }) =>
   Layer.effect(
@@ -76,6 +77,30 @@ export const pgBossLayer = (options: {
     Effect.gen(function* () {
       const boss = yield* Effect.acquireRelease(
         Effect.promise(async () => {
+          const setup = new PgBoss({
+            connectionString: Redacted.value(options.setupUrl),
+            schema: "pgboss",
+            max: 2,
+          })
+          setup.on("error", (error) => console.error("pg-boss", error))
+          await setup.start()
+          try {
+            const db = setup.getDb()
+            await db.executeSql(`GRANT USAGE ON SCHEMA pgboss TO ${APP_ROLE}`)
+            await db.executeSql(
+              `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA pgboss TO ${APP_ROLE}`,
+            )
+            await db.executeSql(
+              `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA pgboss TO ${APP_ROLE}`,
+            )
+            await db.executeSql(`GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA pgboss TO ${APP_ROLE}`)
+            for (const job of options.jobs) {
+              if ((await setup.getQueue(job.name)) === null)
+                await setup.createQueue(job.name, job.queue)
+            }
+          } finally {
+            await setup.stop({ graceful: true, timeout: 30_000, close: true })
+          }
           const boss = new PgBoss({
             connectionString: Redacted.value(options.url),
             schema: "pgboss",
@@ -83,19 +108,6 @@ export const pgBossLayer = (options: {
           })
           boss.on("error", (error) => console.error("pg-boss", error))
           await boss.start()
-          const db = boss.getDb()
-          await db.executeSql(`GRANT USAGE ON SCHEMA pgboss TO ${APP_ROLE}`)
-          await db.executeSql(
-            `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA pgboss TO ${APP_ROLE}`,
-          )
-          await db.executeSql(
-            `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA pgboss TO ${APP_ROLE}`,
-          )
-          await db.executeSql(`GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA pgboss TO ${APP_ROLE}`)
-          for (const job of options.jobs) {
-            if ((await boss.getQueue(job.name)) === null)
-              await boss.createQueue(job.name, job.queue)
-          }
           return boss
         }),
         (boss) => Effect.promise(() => boss.stop({ graceful: true, timeout: 30_000, close: true })),
