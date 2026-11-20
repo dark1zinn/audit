@@ -78,7 +78,11 @@ const parseHead = (value: string | undefined): TrailHead | undefined => {
 }
 
 const describeVerdict = (verdict: TrailVerification): string => {
-  if (verdict.ok) return `Audit log intact: ${verdict.checked} entries checked.`
+  if (verdict.ok) {
+    // Recent entries wait for the server's chainer; they are checked once chained.
+    const pending = verdict.pending > 0 ? ` ${verdict.pending} recent entries not chained yet.` : ""
+    return `Audit log intact: ${verdict.checked} entries checked.${pending}`
+  }
   if (verdict.expectedHeadFound === false)
     return `Audit log does not contain the expected head: its tail was removed (${verdict.checked} entries checked).`
   if (verdict.firstBrokenPos !== null)
