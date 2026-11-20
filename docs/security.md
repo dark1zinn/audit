@@ -49,6 +49,8 @@ itself.
 - Rate limits: sign-in, 2FA verification and password reset allow 5 attempts per 60 seconds. Join and
   signup have application limits (join 20 per 10 minutes; signup 10 per 60 minutes). Responses are
   `429` with `retryAfterSeconds`.
+  Password reset requests are also limited per email address to 3 per hour, whatever the address
+  case, so one account cannot be flooded from many addresses.
 - Session cookies are `httpOnly`, `sameSite=lax`, and `secure` over HTTPS.
 - Password reset links and invite tokens are single-use secrets. Reset links expire after 24 hours.
   Invite tokens are stored hashed and shown once. Invites default to 7 days.
@@ -76,11 +78,13 @@ signup is a `member`. Invited accounts take the role on the invite (`member` or 
   `trail_purge` function, which enforces the retention cutoff, deletes rows, and each purge is
   itself recorded (`trail.purged`).
 - Retention is `trailRetentionDays` (30–3650, default 365).
-- `audit trail verify` recomputes the chain with the trail key. With `--head <seq>:<hash>` it also
-  checks that the trail still contains that entry, which catches removed tail rows. Backups record
-  the trail head, and restore refuses a backup whose trail does not contain it. A login with the
-  owner role can still rewrite the database; the head held outside the database (in the manifest)
-  is what detects that.
+- `audit trail verify` recomputes the chain with the trail key. Entries are chained after their
+  command commits, in commit order, so a command never waits on the chain. An entry that is not
+  chained yet is reported as pending; one left unchained for more than 60 seconds makes verify
+  fail. With `--head <chainPos>:<hash>` it also checks that the trail still contains that entry,
+  which catches removed tail rows. Backups record the trail head, and restore refuses a backup
+  whose trail does not contain it. A login with the owner role can still rewrite the database;
+  the head held outside the database (in the manifest) is what detects that.
 
 ## HTTP hardening
 
@@ -96,6 +100,17 @@ Client IP handling: the server sets `x-audit-client-ip` itself. A value sent by 
 removed. The forwarded header is trusted only when `TRUST_PROXY=true`.
 
 HSTS is **not** set by the application; configure it at your reverse proxy.
+
+## Rich text and exports
+
+- Every rich-text write (documents, task and event descriptions, chat, comments) is sanitised on
+  the server. Raw HTML and unknown node types are refused. Links with unsafe schemes are kept as
+  text without the link. Images are kept only when they point at an uploaded file (`/files/<id>`).
+  Documents allow 1 MiB and 20,000 nodes; messages and comments allow 256,000 characters and
+  5,000 nodes.
+- A comment anchor is limited to 4,096 characters.
+- The workspace export is `POST /api/admin/export`. A GET request is refused, so a cross-site link
+  cannot start an export with the admin's cookies.
 
 ## AI data handling
 

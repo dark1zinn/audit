@@ -1579,9 +1579,16 @@
                         ]
                       },
                       "createdBy": {
-                        "type": "string",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
-                        "format": "uuid"
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                            "format": "uuid"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "note": {
                         "anyOf": [
@@ -1730,9 +1737,16 @@
                           ]
                         },
                         "createdBy": {
-                          "type": "string",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
-                          "format": "uuid"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                              "format": "uuid"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "note": {
                           "anyOf": [
@@ -2745,7 +2759,17 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
-                    "firstBrokenSeq": {
+                    "pending": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "overdue": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "firstBrokenPos": {
                       "anyOf": [
                         {
                           "type": "integer",
@@ -2756,9 +2780,49 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "head": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "chainPos": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "hash": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["chainPos", "hash"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "expectedHeadFound": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
-                  "required": ["ok", "checked", "firstBrokenSeq"],
+                  "required": [
+                    "ok",
+                    "checked",
+                    "pending",
+                    "overdue",
+                    "firstBrokenPos",
+                    "head",
+                    "expectedHeadFound"
+                  ],
                   "additionalProperties": false
                 }
               }
@@ -15142,7 +15206,7 @@
                         "type": "boolean"
                       }
                     },
-                    "required": ["id", "type", "restricted", "deleted"],
+                    "required": ["id", "restricted", "deleted"],
                     "additionalProperties": false
                   }
                 }
@@ -27434,11 +27498,90 @@
         }
       }
     },
-    "/api/signup": {
-      "post": {
-        "tags": ["signup"],
-        "operationId": "signup.signup",
+    "/api/admin/signups": {
+      "get": {
+        "tags": ["admin"],
+        "operationId": "admin.pendingSignups",
         "parameters": [],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                        "format": "uuid"
+                      },
+                      "name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "requestedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "name", "email", "requestedAt"],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenEncoded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/signups/{id}/approve": {
+      "post": {
+        "tags": ["admin"],
+        "operationId": "admin.approveSignup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
         "security": [],
         "responses": {
           "200": {
@@ -27448,14 +27591,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "userId": {
-                      "type": "string",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
-                      "format": "uuid"
+                    "url": {
+                      "type": "string"
                     }
                   },
-                  "required": ["userId"],
+                  "required": ["url"],
                   "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedEncoded"
                 }
               }
             }
@@ -27470,12 +27621,114 @@
               }
             }
           },
+          "404": {
+            "description": "NotFound",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundEncoded"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConflictEncoded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/signups/{id}/reject": {
+      "post": {
+        "tags": ["admin"],
+        "operationId": "admin.rejectSignup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "<No Content>"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenEncoded"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NotFound",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundEncoded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/signup": {
+      "post": {
+        "tags": ["signup"],
+        "operationId": "signup.signup",
+        "parameters": [],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delivery": {
+                      "type": "string",
+                      "enum": ["email", "approval"]
+                    }
+                  },
+                  "required": ["delivery"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenEncoded"
                 }
               }
             }
@@ -27509,28 +27762,15 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "minLength": 1,
                     "maxLength": 120
                   },
                   "email": {
                     "type": "string",
                     "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
                     "maxLength": 320
-                  },
-                  "password": {
-                    "type": "string",
-                    "minLength": 5,
-                    "maxLength": 256
-                  },
-                  "locale": {
-                    "type": "string",
-                    "enum": ["en", "pt-BR", "es"]
-                  },
-                  "timezone": {
-                    "type": "string"
                   }
                 },
-                "required": ["name", "email", "password"],
+                "required": ["email"],
                 "additionalProperties": false
               }
             }

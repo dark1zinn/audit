@@ -1,4 +1,5 @@
 import { rotateSecrets } from "@audit/core/admin/secret-rotation"
+import { chainTrail } from "@audit/core/trail-chain"
 import { TRAIL_KEY_PURPOSE } from "@audit/core/trail-key"
 import { aiProviders, trailEvents, trailKey, workspace } from "@audit/db/schema"
 import { type Sealed, Secrets, makeSecrets } from "@audit/platform/crypto"
@@ -76,7 +77,9 @@ beforeAll(async () => {
   owner = await setupWorkspace(database)
   oldKey = await Effect.runPromise(makeSecrets(OLD).seal("ai-key", "sk-live-abcd1234"))
   oldVapid = await Effect.runPromise(makeSecrets(OLD).seal("vapid", "vapid-private-key"))
-  // setupWorkspace wrote trail events, which created the trail key under the test secret; move it to OLD.
+  // setupWorkspace wrote trail events; chaining them creates the trail key under the test secret.
+  // Move that key to OLD.
+  await runAs(database, system)(chainTrail)
   const trailPlain = await openCurrent(TRAIL_KEY_PURPOSE, await storedTrailKey())
   const trailOld = await Effect.runPromise(makeSecrets(OLD).seal(TRAIL_KEY_PURPOSE, trailPlain))
   await runAs(

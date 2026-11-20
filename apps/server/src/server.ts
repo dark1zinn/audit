@@ -12,6 +12,8 @@ import { join, normalize } from "node:path"
 import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { liveAiModels } from "@audit/core/ai/models"
+import { loadTrailKey } from "@audit/core/trail-key"
+import { trailChainer } from "@audit/core/trail-chain"
 import { Mailer } from "@audit/core/notifications/mail"
 import { assertPasswordAllowed, PasswordBreaches } from "@audit/core/admin/passwords"
 import { LiveDocuments } from "@audit/core/docs/live-documents"
@@ -28,8 +30,9 @@ import { BlobStore } from "@audit/platform/blob-store"
 import { Secrets } from "@audit/platform/crypto"
 import { APP_ROLE, databaseLayer, migrateDatabase, migrationStatus } from "@audit/platform/database"
 import { pgBossLayer } from "@audit/platform/jobs"
-import { Context, Effect, Layer, ManagedRuntime, Option, Redacted } from "effect"
-import { FetchHttpClient, HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
+import { outboundHttp } from "@audit/platform/http"
+import { Context, Effect, Fiber, Layer, ManagedRuntime, Option, Redacted } from "effect"
+import { HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import type { ServerWebSocket } from "bun"
 import { type AuthHandle, makeAuth } from "./auth.ts"
@@ -37,7 +40,7 @@ import { type CollabSocketData, createCollab } from "./collab.ts"
 import { withClientIp } from "./client-ip.ts"
 import { isSameOriginRequest, needsOriginCheck } from "./origin.ts"
 import { resolveStaticPath } from "./static-path.ts"
-import { createSocketTracker, resolveSession } from "./socket-tracker.ts"
+import { createSocketTracker, recheckSession, resolveSession } from "./socket-tracker.ts"
 import {
   consoleContext,
   observabilityLayer,
@@ -117,8 +120,8 @@ export const makeCoreLayer = (config: AppConfigShape) => {
     EventBus.layer,
     BlobStore.layer,
     PasswordBreaches.live,
-    FetchHttpClient.layer,
-    liveAiModels.pipe(Layer.provide(FetchHttpClient.layer)),
+    outboundHttp,
+    liveAiModels.pipe(Layer.provide(outboundHttp)),
     Secrets.layer,
     notificationTransports(config),
     pgBossLayer({
@@ -129,6 +132,11 @@ export const makeCoreLayer = (config: AppConfigShape) => {
   )
   return services.pipe(Layer.provideMerge(base))
 }
+/** Database and secrets only: enough to chain the trail without starting the job runner. */
+export const makeTrailLayer = (config: AppConfigShape) =>
+  Layer.mergeAll(databaseLayer({ url: config.databaseUrl, role: APP_ROLE }), Secrets.layer).pipe(
+    Layer.provide(Layer.succeed(AppConfig, config)),
+  )
 
 export interface RunningServer {
   readonly server: Bun.Server<SocketData>
@@ -140,7 +148,10 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
 
   const core = makeCoreLayer(config)
   const runtime = ManagedRuntime.make(core)
-  await runtime.runPromise(Effect.void)
+  // Refuse to start under a secret that cannot open the trail key: every audit write needs it.
+  await runtime.runPromise(loadTrailKey)
+  // Chains the audit trail as commands commit; stopped with the server, before the runtime goes.
+  const chainer = runtime.runFork(Effect.scoped(trailChainer))
 
   const auth: AuthHandle = makeAuth({
     config,
@@ -261,7 +272,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       userId: session.value.actor.userId,
       close: (code, reason) => ws.close(code, reason),
       stillAllowed: async () => {
-        const current = await resolveSession(collabRuntime, ws.data.headers)
+        const current = await recheckSession(collabRuntime, ws.data.headers)
         return current._tag === "Some" && !current.value.twoFactorRequired
       },
     })
@@ -339,17 +350,30 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   return {
     server,
     stop: async () => {
-      // Stop accepting new connections; in-flight requests finish.
-      await server.stop(false)
-      // Collab stores must land while the runtime that runs them is still alive.
-      await collab.shutdown()
-      await tracker.stop()
-      // Then drop what remains (open RPC sockets) before the services underneath go away.
-      await server.stop(true)
-      await app.dispose()
-      await collabRuntime.dispose()
-      await runtime.dispose()
-      await auth.close()
+      // In order: stop accepting connections (in-flight requests finish); land collab stores while
+      // their runtime is alive; then drop what remains (open RPC sockets) before the services
+      // underneath go away. A failing step must not skip the rest, so the first error is rethrown
+      // only after every step ran.
+      const steps: ReadonlyArray<() => Promise<unknown>> = [
+        () => server.stop(false),
+        () => collab.shutdown(),
+        () => tracker.stop(),
+        () => server.stop(true),
+        () => app.dispose(),
+        () => collabRuntime.dispose(),
+        () => runtime.runPromise(Fiber.interrupt(chainer)),
+        () => runtime.dispose(),
+        () => auth.close(),
+      ]
+      let failure: { readonly error: unknown } | undefined
+      for (const step of steps) {
+        try {
+          await step()
+        } catch (error) {
+          failure ??= { error }
+        }
+      }
+      if (failure !== undefined) throw failure.error
     },
   }
 }

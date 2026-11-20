@@ -120,7 +120,7 @@ function OverviewPage() {
                 {verify.data.ok ? (
                   <Trans>Chain intact ({verify.data.checked} checked)</Trans>
                 ) : (
-                  <Trans>Chain broken at sequence {verify.data.firstBrokenSeq ?? "?"}</Trans>
+                  <Trans>Chain broken at sequence {verify.data.firstBrokenPos ?? "?"}</Trans>
                 )}
               </p>
             )}

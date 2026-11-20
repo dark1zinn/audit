@@ -1,6 +1,7 @@
 import { createBackup, readManifest } from "../src/backup.ts"
+import { chainTrail } from "@audit/core/trail-chain"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
-import { setupWorkspace } from "@audit/testkit/fixtures"
+import { runAs, setupWorkspace, system } from "@audit/testkit/fixtures"
 import { rm, mkdtemp } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -26,11 +27,14 @@ afterAll(async () => {
 })
 
 test("the manifest records the trail head the dump contains", async () => {
-  const [head] = await database.superuser<{ seq: number; hash: string }[]>`
-    select seq::int as seq, hash from trail_events order by seq desc limit 1`
+  // The CLI chains committed entries before dumping; do the same here.
+  await runAs(database, system)(chainTrail)
+  const [head] = await database.superuser<{ chainPos: number; hash: string }[]>`
+    select chain_pos::int as "chainPos", hash from trail_events
+    where chain_pos is not null order by chain_pos desc limit 1`
   const result = await createBackup({ config: database.config, out, recipients: [] })
 
-  expect(result.manifest.trail).toEqual({ seq: head?.seq ?? -1, hash: head?.hash ?? "" })
+  expect(result.manifest.trail).toEqual({ chainPos: head?.chainPos ?? -1, hash: head?.hash ?? "" })
   expect((await readManifest(result.dir)).trail).toEqual(result.manifest.trail ?? null)
 })
 

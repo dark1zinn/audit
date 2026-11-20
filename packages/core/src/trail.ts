@@ -1,6 +1,6 @@
 /**
  * The audit log (trail). Entries are written inside the command's transaction, so an entry exists
- * exactly when the change it describes committed.
+ * exactly when the change it describes committed. The hash chain is extended after commit.
  */
 import { trailEvents } from "@audit/db/schema"
 import { type Actor, CurrentActor } from "@audit/domain/actor"
@@ -9,9 +9,7 @@ import type { EntityId, ProjectId } from "@audit/domain/ids"
 import type { TrailDiff } from "@audit/domain/trail/schema"
 import { Db } from "@audit/platform/database"
 import { Context, Effect } from "effect"
-import { SqlClient } from "effect/sql"
 import { RequestMeta } from "./request.ts"
-import { loadTrailKey } from "./trail-key.ts"
 
 export interface TrailEntry {
   readonly action: string
@@ -47,34 +45,25 @@ const actorColumns = (actor: Actor) => {
 export const writeTrail = (entry: TrailEntry) =>
   Effect.gen(function* () {
     const db = yield* Db
-    const sql = yield* SqlClient.SqlClient
     const actor = yield* CurrentActor
     const request = yield* RequestMeta
-    const key = yield* loadTrailKey
     const meta = {
       ...request,
       ...(entry.details === undefined ? {} : { details: entry.details }),
       ...(actor._tag === "system" ? { system: actor.reason } : {}),
     }
-    // The chain trigger reads the key from this transaction-local setting, so it must share the
-    // insert's transaction.
-    yield* sql.withTransaction(
-      Effect.gen(function* () {
-        yield* sql`select set_config('audit.trail_key', ${key}, true)`
-        yield* db.insert(trailEvents).values({
-          ...actorColumns(actor),
-          action: entry.action,
-          entityId: entry.entityId ?? null,
-          entityType: entry.entityType ?? null,
-          projectId: entry.projectId ?? null,
-          diff: entry.diff ?? null,
-          meta,
-        })
-      }),
-    )
+    yield* db.insert(trailEvents).values({
+      ...actorColumns(actor),
+      action: entry.action,
+      entityId: entry.entityId ?? null,
+      entityType: entry.entityType ?? null,
+      projectId: entry.projectId ?? null,
+      diff: entry.diff ?? null,
+      meta,
+    })
   }).pipe(Effect.orDie)
 
-/** Records an audit entry for the running command. */
+/** Records an audit entry for the running command, inside the command's transaction. */
 export const record = (entry: TrailEntry) =>
   Effect.gen(function* () {
     const scope = yield* CommandScope

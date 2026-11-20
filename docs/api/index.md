@@ -34,7 +34,7 @@ Other operational endpoints are outside `/api/`: `GET /healthz`, `GET /readyz`.
 
 Some routes are plain HTTP handlers rather than part of the typed API, so they are not in the
 OpenAPI document: `POST /api/admin/branding/logo` (PNG, JPEG or WebP, up to 2 MiB) and
-`GET /api/admin/export` (NDJSON workspace export). Files are served under `/files/*`, calendar feeds
+`POST /api/admin/export` (NDJSON workspace export). Files are served under `/files/*`, calendar feeds
 under `/ical/*`, and the realtime endpoints are `/rpc` (WebSocket) and `/collab` (WebSocket).
 
 ## Limits

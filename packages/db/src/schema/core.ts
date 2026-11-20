@@ -59,6 +59,15 @@ export const entities = pgTable(
     deletedAt: timestamptz("deleted_at"),
     version: integer("version").notNull().default(1),
     search: tsvector("search"),
+    /**
+     * The entity, then its ancestors up to the first restricted or container node: the chain
+     * `visibleTo` and `roleOnEntity` check grants along. Maintained by triggers on
+     * `parent_id`, `restricted` and `type`, so it is never written by application code.
+     */
+    accessPath: uuid("access_path")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
   },
   (t) => [
     check("entities_type_check", inList(t.type, entityTypes)),
@@ -66,6 +75,7 @@ export const entities = pgTable(
     index("entities_title_trgm").using("gin", t.title.op("gin_trgm_ops")),
     index("entities_project_idx").on(t.projectId, t.type),
     index("entities_parent_idx").on(t.parentId),
+    index("entities_access_path_gin").using("gin", t.accessPath),
   ],
 )
 
@@ -160,9 +170,7 @@ export const invites = pgTable(
     maxUses: integer("max_uses").notNull().default(1),
     useCount: integer("use_count").notNull().default(0),
     revokedAt: timestamptz("revoked_at"),
-    createdBy: uuid("created_by")
-      .notNull()
-      .references(() => user.id),
+    createdBy: uuid("created_by").references(() => user.id),
     note: text("note"),
     createdAt: createdAt(),
   },
@@ -173,19 +181,15 @@ export const invites = pgTable(
 )
 
 /**
- * Self sign-ups waiting for the emailed link (`tokenHash` set, only its SHA-256 stored) or an
- * admin decision (`tokenHash` null). The password is kept only as its argon2 hash. The row is
- * deleted when the account is created or the request is rejected.
+ * Sign-up requests waiting for an admin's decision (only when no mail is configured). One live
+ * request per address; a newer one replaces it. Approval or rejection deletes the row, and so
+ * does expiry.
  */
 export const signupRequests = pgTable("signup_requests", {
   id: id(),
   email: text("email").notNull().unique(),
-  name: text("name").notNull(),
-  passwordHash: text("password_hash").notNull(),
-  locale: text("locale"),
-  timezone: text("timezone").notNull(),
-  tokenHash: text("token_hash").unique(),
-  expiresAt: timestamptz("expires_at"),
+  name: text("name"),
+  expiresAt: timestamptz("expires_at").notNull(),
   createdAt: createdAt(),
 })
 
@@ -373,13 +377,16 @@ export const files = pgTable(
   ],
 )
 
-/** Append-only and hash-chained; `seq`, `prev_hash` and `hash` are set by a trigger. */
+/**
+ * Append-only audit log. A row is inserted with its change and gets `seq` (insert order) at once.
+ * It joins the hash chain after commit: `trail_chain()` sets `chain_pos`, `prev_hash` and `hash`,
+ * so `chain_pos` is NULL while the row is pending.
+ */
 export const trailEvents = pgTable(
   "trail_events",
   {
     id: id(),
-    // seq, prev_hash and hash are overwritten by the trail_events_chain trigger.
-    seq: bigint("seq", { mode: "number" }).notNull().unique().default(0),
+    seq: bigint("seq", { mode: "number" }).notNull().unique().generatedByDefaultAsIdentity(),
     at: timestamptz("at").notNull().defaultNow(),
     actorType: text("actor_type").notNull().$type<"user" | "ai" | "system">(),
     actorId: uuid("actor_id"),
@@ -390,20 +397,25 @@ export const trailEvents = pgTable(
     projectId: uuid("project_id"),
     diff: jsonb("diff"),
     meta: jsonb("meta").notNull().default({}),
+    chainPos: bigint("chain_pos", { mode: "number" }).unique(),
     prevHash: text("prev_hash"),
-    hash: text("hash").notNull().default(""),
+    hash: text("hash"),
   },
   (t) => [
     check("trail_events_actor_type_check", inList(t.actorType, ["user", "ai", "system"])),
     index("trail_events_entity_idx").on(t.entityId, t.at.desc()),
     index("trail_events_at_idx").on(t.at.desc()),
     index("trail_events_actor_idx").on(t.actorId, t.at.desc()),
+    index("trail_events_pending_idx")
+      .on(t.seq)
+      .where(sql`${t.chainPos} is null`),
   ],
 )
 
 /**
  * The sealed HMAC key of the trail chain: one row, created by the migration and filled on first
- * write. Entries with seq <= legacyThrough predate the key and were chained with unkeyed SHA-256.
+ * write. Entries with chain_pos <= legacyThrough predate the key and were chained with unkeyed
+ * SHA-256.
  */
 export const trailKey = pgTable(
   "trail_key",
@@ -415,6 +427,17 @@ export const trailKey = pgTable(
   },
   (t) => [check("trail_key_singleton_check", sql`${t.id} = 1`)],
 )
+
+/**
+ * The first chained entry kept by the latest purge: the chain starts from it. Written by
+ * trail_purge().
+ */
+export const trailAnchor = pgTable("trail_anchor", {
+  keptPos: bigint("kept_pos", { mode: "number" }).primaryKey(),
+  keptPrevHash: text("kept_prev_hash"),
+  purged: bigint("purged", { mode: "number" }).notNull(),
+  purgedAt: timestamptz("purged_at").notNull().defaultNow(),
+})
 
 export const idempotencyKeys = pgTable(
   "idempotency_keys",

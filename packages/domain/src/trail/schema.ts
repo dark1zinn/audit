@@ -55,9 +55,9 @@ export const TrailPage = Schema.Struct({
 })
 export type TrailPage = typeof TrailPage.Type
 
-/** The newest entry of the trail: the value a backup records and a restore checks against. */
+/** The newest chained entry of the trail: the value a backup records and a restore checks against. */
 export const TrailHead = Schema.Struct({
-  seq: Schema.Int,
+  chainPos: Schema.Int,
   hash: Schema.String,
 })
 export type TrailHead = typeof TrailHead.Type
@@ -65,7 +65,11 @@ export type TrailHead = typeof TrailHead.Type
 export const TrailVerification = Schema.Struct({
   ok: Schema.Boolean,
   checked: Schema.Int,
-  firstBrokenSeq: Schema.NullOr(Schema.Int),
+  /** Committed entries not yet chained. */
+  pending: Schema.Int,
+  /** Pending entries older than the chainer's grace period: the chainer is not running. */
+  overdue: Schema.Int,
+  firstBrokenPos: Schema.NullOr(Schema.Int),
   head: Schema.NullOr(TrailHead),
   expectedHeadFound: Schema.NullOr(Schema.Boolean),
 })

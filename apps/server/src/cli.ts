@@ -3,13 +3,14 @@
  * `audit <command>`: the server binary's entry point.
  */
 import { CurrentActor } from "@audit/domain/actor"
+import { chainTrail } from "@audit/core/trail-chain"
 import { verifyTrail } from "@audit/core/trail-queries"
 import type { TrailHead, TrailVerification } from "@audit/domain/trail/schema"
 import { rotateSecrets } from "@audit/core/admin/secret-rotation"
-import { readAppConfig } from "@audit/platform/config"
+import { type AppConfigShape, readAppConfig } from "@audit/platform/config"
 import { migrateDatabase } from "@audit/platform/database"
 import { Effect, Layer, ManagedRuntime, Redacted } from "effect"
-import { makeCoreLayer, startServer } from "./server.ts"
+import { makeCoreLayer, makeTrailLayer, startServer } from "./server.ts"
 import { seedDemo } from "./seed-demo.ts"
 import { basename } from "node:path"
 import {
@@ -17,6 +18,8 @@ import {
   backupCreated,
   backupDirectory,
   createBackup,
+  manifestTrailHead,
+  trailChainPresent,
   trailKeyPresent,
   staleBackupWarning,
 } from "./backup.ts"
@@ -67,17 +70,20 @@ const serve = async () => {
 
 const parseHead = (value: string | undefined): TrailHead | undefined => {
   if (value === undefined) return undefined
-  const [seq, hash] = value.split(":")
-  const n = Number(seq)
-  if (!Number.isInteger(n) || n < 0 || !hash) throw new Error("--head expects <seq>:<hash>")
-  return { seq: n, hash }
+  const [position, hash] = value.split(":")
+  const n = Number(position)
+  if (!Number.isInteger(n) || n < 0 || !hash)
+    throw new Error("--head expects <chain position>:<hash>")
+  return { chainPos: n, hash }
 }
 
 const describeVerdict = (verdict: TrailVerification): string => {
   if (verdict.ok) return `Audit log intact: ${verdict.checked} entries checked.`
   if (verdict.expectedHeadFound === false)
     return `Audit log does not contain the expected head: its tail was removed (${verdict.checked} entries checked).`
-  return `Audit log BROKEN at seq ${verdict.firstBrokenSeq} (${verdict.checked} entries checked).`
+  if (verdict.firstBrokenPos !== null)
+    return `Audit log BROKEN at chain position ${verdict.firstBrokenPos} (${verdict.checked} entries checked).`
+  return `Audit log has ${verdict.overdue} committed entries not chained (${verdict.pending} pending): the trail chainer is not running.`
 }
 
 const verify = async () => {
@@ -246,18 +252,34 @@ const reembedCommand = async () => {
   }
 }
 
+/**
+ * Chains committed trail entries without the job runner: a runtime that starts it registers a
+ * row in pgboss.instance, which would make a backup or restore differ from its source.
+ */
+const chainCommitted = async (config: AppConfigShape) => {
+  const runtime = ManagedRuntime.make(makeTrailLayer(config).pipe(Layer.orDie))
+  try {
+    await runtime.runPromise(chainTrail.pipe(Effect.orDie))
+  } finally {
+    await runtime.dispose()
+  }
+}
+
 const backupCommand = async () => {
   const config = await loadConfig()
   const recipients = flagValues("--age-recipient")
+  const databaseUrl = Redacted.value(config.databaseMigratorUrl)
+  // Chain committed entries first, so the dump holds the head the manifest records.
+  const chained = await trailChainPresent(databaseUrl)
+  if (chained) await chainCommitted(config)
   const result = await createBackup({
     config,
     out: flagValue("--out") ?? backupDirectory(config),
     recipients,
   })
-  const keyed = await trailKeyPresent(Redacted.value(config.databaseMigratorUrl))
-  const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
-  try {
-    if (keyed) {
+  if (chained && (await trailKeyPresent(databaseUrl))) {
+    const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
+    try {
       await runtime.runPromise(
         backupCreated
           .execute({
@@ -270,13 +292,13 @@ const backupCommand = async () => {
             Effect.orDie,
           ),
       )
-    } else {
-      console.warn(
-        `Backup not recorded in the audit trail: the schema has no trail key yet. Run \`audit migrate\` with this build, then back up again to record it.`,
-      )
+    } finally {
+      await runtime.dispose()
     }
-  } finally {
-    await runtime.dispose()
+  } else {
+    console.warn(
+      `Backup not recorded in the audit trail: the schema predates the chained trail. Run \`audit migrate\` with this build, then back up again to record it.`,
+    )
   }
   const encrypted = recipients.length > 0 ? ", age-encrypted" : ""
   console.log(
@@ -292,9 +314,11 @@ const restoreCommand = async (path: string | undefined) => {
     force: args.includes("--force"),
     ageIdentityFile: flagValue("--age-identity"),
   })
+  // The dump can hold committed entries the chainer had not reached yet; chain them first.
+  await chainCommitted(config)
   const runtime = ManagedRuntime.make(makeCoreLayer(config).pipe(Layer.orDie))
   try {
-    const expectedHead = result.manifest.trail ?? undefined
+    const expectedHead = manifestTrailHead(result.manifest) ?? undefined
     const verdict = await runtime.runPromise(
       verifyTrail(expectedHead === undefined ? {} : { expectedHead }).pipe(
         Effect.provideService(CurrentActor, { _tag: "system", reason: "cli" }),

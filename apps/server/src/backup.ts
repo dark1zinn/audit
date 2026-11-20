@@ -45,8 +45,21 @@ export interface BackupManifest {
     | (StoredFile & { readonly driver: "local" })
     | { readonly driver: "s3"; readonly skipped: true }
   readonly encryption: { readonly format: "age"; readonly recipients: number } | null
-  /** Newest trail entry at dump time (null for an empty trail). Absent when the schema predates the trail key, and in older backups; restore skips the check then. */
-  readonly trail?: TrailHead | null
+  /** Newest chained trail entry at dump time (null for an empty trail). Absent when the schema predates the trail key, and in older backups; restore skips the check then. Backups from before chain positions stored `seq`; see `manifestTrailHead`. */
+  readonly trail?: TrailHead | LegacyTrailHead | null
+}
+
+/** Trail head as older backups recorded it: the entry's `seq`, which equals its chain position. */
+export interface LegacyTrailHead {
+  readonly seq: number
+  readonly hash: string
+}
+
+/** The trail head a manifest recorded, in chain positions. */
+export const manifestTrailHead = (manifest: BackupManifest): TrailHead | null | undefined => {
+  const trail = manifest.trail
+  if (trail === undefined || trail === null) return trail
+  return "chainPos" in trail ? trail : { chainPos: trail.seq, hash: trail.hash }
 }
 
 /** Runs an external tool, streaming stdin/stdout to files when given. */
@@ -145,8 +158,13 @@ const applicationMigrations = async (databaseUrl: string): Promise<ReadonlyArray
 const trailHead = async (databaseUrl: string): Promise<TrailHead | null> => {
   const sql = new SQL(databaseUrl)
   try {
-    const rows = await sql<{ seq: number; hash: string }[]>`
-      select seq::int as seq, hash from trail_events order by seq desc limit 1`
+    // Before the chain migration the head is the newest row (the migration sets chain_pos = seq).
+    const rows = (await trailChainPresent(databaseUrl))
+      ? await sql<{ chainPos: number; hash: string }[]>`
+          select chain_pos::int as "chainPos", hash from trail_events
+          where chain_pos is not null order by chain_pos desc limit 1`
+      : await sql<{ chainPos: number; hash: string }[]>`
+          select seq::int as "chainPos", hash from trail_events order by seq desc limit 1`
     return rows[0] ?? null
   } catch {
     throw new BackupError({ message: "the database has no audit trail; run `audit migrate` first" })
@@ -161,6 +179,21 @@ export const trailKeyPresent = async (databaseUrl: string): Promise<boolean> => 
   try {
     const rows = await sql<{ present: boolean }[]>`
       select to_regclass('public.trail_key') is not null as present`
+    return rows[0]?.present === true
+  } finally {
+    await sql.close()
+  }
+}
+
+/** Whether the schema has the chained trail columns, at or past the chain migration. */
+export const trailChainPresent = async (databaseUrl: string): Promise<boolean> => {
+  const sql = new SQL(databaseUrl)
+  try {
+    const rows = await sql<{ present: boolean }[]>`
+      select exists (
+        select 1 from information_schema.columns
+        where table_schema = 'public' and table_name = 'trail_events' and column_name = 'chain_pos'
+      ) as present`
     return rows[0]?.present === true
   } finally {
     await sql.close()
@@ -182,7 +215,7 @@ const dumpDatabase = async (databaseUrl: string, file: string): Promise<TrailHea
     const unchanged =
       before === null || after === null
         ? before === after
-        : before.seq === after.seq && before.hash === after.hash
+        : before.chainPos === after.chainPos && before.hash === after.hash
     if (unchanged) return after
   }
   throw new BackupError({

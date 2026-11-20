@@ -82,7 +82,7 @@ function AuditPage() {
                     other="# events checked."
                   />
                 ) : (
-                  <Trans>Broken at sequence {verify.data.firstBrokenSeq ?? "?"}.</Trans>
+                  <Trans>Broken at sequence {verify.data.firstBrokenPos ?? "?"}.</Trans>
                 )}
               </CardDescription>
             </CardHeader>

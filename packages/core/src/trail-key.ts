@@ -33,9 +33,16 @@ export const loadTrailKey = Effect.gen(function* () {
   if (row?.ciphertext == null || row.nonce == null) {
     return yield* Effect.die(new Error("trail key row is missing"))
   }
-  const key = yield* secrets.open(TRAIL_KEY_PURPOSE, {
-    ciphertext: row.ciphertext,
-    nonce: row.nonce,
-  })
+  const key = yield* secrets
+    .open(TRAIL_KEY_PURPOSE, { ciphertext: row.ciphertext, nonce: row.nonce })
+    .pipe(
+      Effect.catchDefect(() =>
+        Effect.die(
+          new Error(
+            "AUDIT_SECRET_KEY does not open the trail key; restore with the original secret",
+          ),
+        ),
+      ),
+    )
   return Redacted.value(key)
 })
