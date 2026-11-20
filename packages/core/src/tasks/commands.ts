@@ -51,7 +51,7 @@ import { Effect, Schema } from "effect"
 import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
-import { cleanRichDoc } from "../rich-text.ts"
+import { boundAnchor, cleanRichDoc } from "../rich-text.ts"
 import { currentUser } from "../current-user.ts"
 import { boardRow } from "../projects/board-read.ts"
 import { assertWritable } from "../projects/read.ts"
@@ -540,7 +540,7 @@ export const createTask = Command.make("task.create", {
 
       const position = yield* placeInColumn(columnId as ColumnId, undefined, null)
       const description = input.description
-        ? yield* cleanRichDoc(input.description, "description")
+        ? yield* cleanRichDoc(input.description, "description", "doc")
         : input.description
       const key = `${project?.key ?? ""}-${number}`
       const id = (yield* createEntity({
@@ -622,7 +622,7 @@ export const updateTask = Command.make("task.update", {
         yield* requireParent(input.parentId, state.boardId, input.taskId)
       }
       const description = input.description
-        ? yield* cleanRichDoc(input.description, "description")
+        ? yield* cleanRichDoc(input.description, "description", "doc")
         : input.description
 
       const patch: Partial<typeof tasks.$inferInsert> = {}
@@ -988,7 +988,7 @@ export const createComment = Command.make("comment.create", {
           .pipe(Effect.orDie)
         if (!parent) return yield* invalid("Parent comment must be on this task", "parentCommentId")
       }
-      const body = yield* cleanRichDoc(input.body, "body")
+      const body = yield* cleanRichDoc(input.body, "body", "message")
       const id = (yield* createEntity({
         type: "comment",
         title: "",
@@ -1002,7 +1002,7 @@ export const createComment = Command.make("comment.create", {
           id,
           targetId: input.taskId,
           authorId: userId,
-          anchor: input.anchor ?? null,
+          anchor: input.anchor ? yield* boundAnchor(input.anchor, "anchor") : null,
           body,
           bodyText: plainText(body),
           parentCommentId: input.parentCommentId ?? null,
@@ -1063,7 +1063,8 @@ export const updateComment = Command.make("comment.update", {
       const lock = yield* lockEntity(input.commentId, "comment")
       yield* checkVersion(lock, input.version, { comment: input.commentId })
       yield* assertWritable(state.projectId)
-      const body = input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body")
+      const body =
+        input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body", "message")
       if (body !== undefined) {
         yield* db
           .update(comments)

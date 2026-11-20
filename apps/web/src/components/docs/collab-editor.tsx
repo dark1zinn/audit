@@ -5,6 +5,7 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import * as Y from "yjs"
 import type { Editor, JSONContent, Range } from "@tiptap/core"
+import { CHANGES_NOT_SAVED } from "@audit/domain/collab"
 import type { DocId, TaskId } from "@audit/domain/ids"
 import type { ResourceRole } from "@audit/domain/roles"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -48,7 +49,12 @@ interface Live {
 }
 
 /** Opens the Hocuspocus connection for one doc; cleaned up on unmount or doc change. */
-const useLiveDoc = (docId: DocId, user: CollabUser, onFailed: () => void): Live | null => {
+const useLiveDoc = (
+  docId: DocId,
+  user: CollabUser,
+  onFailed: () => void,
+  onUnsaved: () => void,
+): Live | null => {
   const [live, setLive] = useState<Live | null>(null)
   useEffect(() => {
     const ydoc = new Y.Doc()
@@ -57,6 +63,12 @@ const useLiveDoc = (docId: DocId, user: CollabUser, onFailed: () => void): Live 
       name: `doc:${docId}`,
       document: ydoc,
       onAuthenticationFailed: onFailed,
+    })
+    provider.on("close", ({ event }: { event: CloseEvent }) => {
+      if (event.code !== CHANGES_NOT_SAVED) return
+      // The server refused this user's edits, so reconnecting would only replay them.
+      onUnsaved()
+      provider.disconnect()
     })
     setLive({ ydoc, provider })
     return () => {
@@ -87,7 +99,13 @@ interface DocEditorProps {
 /** The live editor. Mounted only after its provider exists so the editor never starts empty. */
 export const DocEditor = (props: DocEditorProps) => {
   const [failed, setFailed] = useState(false)
-  const live = useLiveDoc(props.docId, props.user, () => setFailed(true))
+  const [unsaved, setUnsaved] = useState(false)
+  const live = useLiveDoc(
+    props.docId,
+    props.user,
+    () => setFailed(true),
+    () => setUnsaved(true),
+  )
   if (failed)
     return (
       <p role="alert" className="text-destructive text-sm">
@@ -95,7 +113,16 @@ export const DocEditor = (props: DocEditorProps) => {
       </p>
     )
   if (live === null) return <div className="text-muted-foreground p-4 text-sm">…</div>
-  return <LiveEditor {...props} ydoc={live.ydoc} provider={live.provider} />
+  return (
+    <>
+      {unsaved && (
+        <p role="alert" className="text-destructive text-sm">
+          <Trans>Your latest changes were not saved.</Trans>
+        </p>
+      )}
+      <LiveEditor {...props} ydoc={live.ydoc} provider={live.provider} />
+    </>
+  )
 }
 
 const LiveEditor = (

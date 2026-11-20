@@ -104,16 +104,6 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
           yield* PubSub.publish(changes, snapshot(scope))
         })
 
-      // Focus names an entity, so each recipient sees it only when they can read that entity.
-      const maskFocus = (state: PresenceState) =>
-        Effect.forEach(state.viewers, (viewer) =>
-          Effect.gen(function* () {
-            if (viewer.focusEntityId === null) return viewer
-            const canSee = yield* authz.can("entity.read", viewer.focusEntityId)
-            return canSee ? viewer : { ...viewer, focusEntityId: null }
-          }),
-        ).pipe(Effect.map((viewers) => ({ ...state, viewers })))
-
       return Presence.of({
         join: (scope) =>
           Stream.unwrap(
@@ -141,10 +131,7 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
                 Stream.fromSubscription(queue).pipe(
                   Stream.filter((state) => state.scope === scope),
                 ),
-              ).pipe(
-                Stream.mapEffect(maskFocus),
-                Stream.onExit(() => leave(scope, userId)),
-              )
+              ).pipe(Stream.onExit(() => leave(scope, userId)))
             }),
           ),
 
@@ -152,6 +139,11 @@ export class Presence extends Context.Service<Presence, PresenceShape>()("@audit
           Effect.gen(function* () {
             const userId = actorUserId(yield* CurrentActor)
             if (userId === null) return yield* new Unauthorized({ message: "Not signed in" })
+            // Focus only ever names the entity whose scope the viewer already joined, so every
+            // subscriber of that scope may read it; anywhere else it is refused.
+            if (focusEntityId !== null && scope !== `entity:${focusEntityId}`) {
+              return { accepted: false }
+            }
             const entry = scopes.get(scope)?.get(userId)
             if (entry === undefined) return { accepted: false }
             const now = Date.now()

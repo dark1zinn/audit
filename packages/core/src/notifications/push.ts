@@ -3,7 +3,14 @@
  * both with WebCrypto. The HTTP call is injected so tests can stub the boundary.
  */
 import { Context, Effect, Layer } from "effect"
-import { endpointAllowed, type Resolve, resolveHost } from "./push-address.ts"
+import {
+  type Resolve,
+  hostAddresses,
+  isLocalName,
+  isPublicAddress,
+  normalizeHost,
+  resolveHost,
+} from "@audit/platform/address"
 
 export interface PushSubscription {
   readonly endpoint: string
@@ -22,6 +29,9 @@ export interface VapidConfig {
 
 export type PostFn = (url: string, init: RequestInit) => Promise<Response>
 
+/** The real HTTP call. Redirects are not followed: a 3xx counts as failed, as the host was checked. */
+export const postPush: PostFn = (url, init) => fetch(url, { ...init, redirect: "manual" })
+
 export class PushTransport extends Context.Service<
   PushTransport,
   {
@@ -38,7 +48,7 @@ export class PushTransport extends Context.Service<
    */
   static readonly live = <R>(
     vapid: Effect.Effect<VapidConfig, never, R>,
-    post: PostFn = (url, init) => fetch(url, init),
+    post: PostFn = postPush,
     resolve: Resolve = resolveHost,
   ) =>
     Layer.effect(
@@ -59,6 +69,17 @@ export class PushTransport extends Context.Service<
         }
       }),
     )
+}
+
+/**
+ * Whether a push endpoint's host may receive a push. A host name must resolve, and every address it
+ * resolves to must be public. `localhost` names are refused without a lookup.
+ */
+export const endpointAllowed = async (endpoint: string, resolve: Resolve): Promise<boolean> => {
+  const host = normalizeHost(new URL(endpoint).hostname)
+  if (isLocalName(host)) return false
+  const addresses = await hostAddresses(host, resolve)
+  return addresses.length > 0 && addresses.every(isPublicAddress)
 }
 
 const deliver = async (

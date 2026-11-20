@@ -26,6 +26,11 @@ export interface ResolvedSession {
 
 export interface SessionsShape {
   readonly resolve: (headers: Headers) => Effect.Effect<ResolvedSession, Unauthorized>
+  /**
+   * Same checks as `resolve`, but the read does not extend the session. Background rechecks use it
+   * so an idle socket cannot keep its session alive past the idle timeout.
+   */
+  readonly resolveWithoutRefresh: (headers: Headers) => Effect.Effect<ResolvedSession, Unauthorized>
   /** Whether a user may be given a session at all. */
   readonly canSignIn: (userId: UserId) => Effect.Effect<boolean>
 }
@@ -71,38 +76,40 @@ export const sessionsLayer = (auth: AuthHandle) =>
 
       const unauthorized = (message: string) => Effect.fail(new Unauthorized({ message }))
 
+      const lookup = (headers: Headers, disableRefresh: boolean) =>
+        Effect.gen(function* () {
+          const found = yield* Effect.promise(() => auth.getSession(headers, { disableRefresh }))
+          if (found === null) return yield* unauthorized("Not signed in")
+          const userId = found.user.id as UserId
+          const row = yield* member(userId)
+          if (row === undefined || row.deactivatedAt !== null) {
+            return yield* unauthorized("This account is not active in the workspace")
+          }
+          const policy = yield* settings
+          // Better Auth extends a session when it refreshes `updatedAt` (at most daily), so both the
+          // rolling lifetime and the idle timeout count from that refresh; the shorter one applies.
+          const lifetimeDays = Math.min(policy.sessionDays, policy.idleDays)
+          if (Date.now() - found.session.updatedAt.getTime() > lifetimeDays * DAY_MS) {
+            yield* db
+              .delete(sessionTable)
+              .where(eq(sessionTable.id, found.session.id))
+              .pipe(Effect.orDie)
+            return yield* unauthorized("The session expired after inactivity")
+          }
+          const needsTwoFactor =
+            policy.twoFactorPolicy === "everyone" ||
+            (policy.twoFactorPolicy === "admins" && (row.role === "owner" || row.role === "admin"))
+          return {
+            actor: { _tag: "user", userId, role: row.role },
+            twoFactorRequired: needsTwoFactor && row.twoFactorEnabled !== true,
+          } satisfies ResolvedSession
+        })
+
       return Sessions.of({
         canSignIn: (userId) =>
           Effect.map(member(userId), (row) => row !== undefined && row.deactivatedAt === null),
-        resolve: (headers) =>
-          Effect.gen(function* () {
-            const found = yield* Effect.promise(() => auth.getSession(headers))
-            if (found === null) return yield* unauthorized("Not signed in")
-            const userId = found.user.id as UserId
-            const row = yield* member(userId)
-            if (row === undefined || row.deactivatedAt !== null) {
-              return yield* unauthorized("This account is not active in the workspace")
-            }
-            const policy = yield* settings
-            // Better Auth extends a session when it refreshes `updatedAt` (at most daily), so both the
-            // rolling lifetime and the idle timeout count from that refresh; the shorter one applies.
-            const lifetimeDays = Math.min(policy.sessionDays, policy.idleDays)
-            if (Date.now() - found.session.updatedAt.getTime() > lifetimeDays * DAY_MS) {
-              yield* db
-                .delete(sessionTable)
-                .where(eq(sessionTable.id, found.session.id))
-                .pipe(Effect.orDie)
-              return yield* unauthorized("The session expired after inactivity")
-            }
-            const needsTwoFactor =
-              policy.twoFactorPolicy === "everyone" ||
-              (policy.twoFactorPolicy === "admins" &&
-                (row.role === "owner" || row.role === "admin"))
-            return {
-              actor: { _tag: "user", userId, role: row.role },
-              twoFactorRequired: needsTwoFactor && row.twoFactorEnabled !== true,
-            } satisfies ResolvedSession
-          }),
+        resolve: (headers) => lookup(headers, false),
+        resolveWithoutRefresh: (headers) => lookup(headers, true),
       })
     }),
   )

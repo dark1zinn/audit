@@ -252,7 +252,7 @@ const insertEvent = (input: {
     const description =
       input.description === null || input.description === undefined
         ? input.description
-        : yield* cleanRichDoc(input.description, "description")
+        : yield* cleanRichDoc(input.description, "description", "doc")
     yield* createEntity({
       id: input.id,
       type: "event",
@@ -834,9 +834,15 @@ export const updateEvent = Command.make("event.update", {
   input: Schema.Struct({ eventId: Schema.String, patch: S.UpdateEventInput }),
   output: Schema.Void,
   authorize: (input) => requireOn("event.update", input.eventId as EntityId),
-  run: ({ eventId: rawId, patch }) =>
+  run: ({ eventId: rawId, patch: rawPatch }) =>
     Effect.gen(function* () {
       const actorId = yield* currentUser("event.update")
+      const patch = {
+        ...rawPatch,
+        ...(rawPatch.description === null || rawPatch.description === undefined
+          ? {}
+          : { description: yield* cleanRichDoc(rawPatch.description, "description", "doc") }),
+      }
       const eventId = rawId as EventId
       const entityRow = yield* lockEntity(eventId, "event")
       yield* checkVersion(entityRow, patch.version)

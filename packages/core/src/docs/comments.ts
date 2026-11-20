@@ -21,7 +21,7 @@ import {
 } from "../entities.ts"
 import { plainText } from "../notifications/notify.ts"
 import { emit, record } from "../trail.ts"
-import { cleanRichDoc } from "../rich-text.ts"
+import { boundAnchor, cleanRichDoc } from "../rich-text.ts"
 import { assertWritable } from "../projects/read.ts"
 import { loadDoc } from "./read.ts"
 
@@ -120,7 +120,7 @@ export const createDocComment = Command.make("doc.comment.create", {
           })
         }
       }
-      const body = yield* cleanRichDoc(input.body, "body")
+      const body = yield* cleanRichDoc(input.body, "body", "message")
       const id = (yield* createEntity({
         type: "comment",
         title: "",
@@ -134,7 +134,7 @@ export const createDocComment = Command.make("doc.comment.create", {
           id,
           targetId: input.docId,
           authorId: userId,
-          anchor: input.anchor ?? null,
+          anchor: input.anchor ? yield* boundAnchor(input.anchor, "anchor") : null,
           body,
           bodyText: plainText(body),
           parentCommentId: input.parentCommentId ?? null,
@@ -183,7 +183,8 @@ export const updateDocComment = Command.make("doc.comment.update", {
       const doc = yield* loadDoc(target.docId)
       const lock = yield* lockEntity(input.commentId, "comment")
       yield* checkVersion(lock, input.version, { comment: input.commentId })
-      const body = input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body")
+      const body =
+        input.body === undefined ? undefined : yield* cleanRichDoc(input.body, "body", "message")
       if (doc.projectId !== null) yield* assertWritable(doc.projectId)
       if (body !== undefined) {
         yield* db

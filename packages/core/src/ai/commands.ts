@@ -4,7 +4,7 @@
  * one is set.
  */
 import { testConnection } from "@audit/ai/connection"
-import { supportsEmbeddings, validateBaseUrl } from "@audit/ai/provider"
+import { guardedHttp, supportsEmbeddings, validateBaseUrl } from "@audit/ai/provider"
 import { aiProviders } from "@audit/db/schema"
 import { ValidationError, NotFound } from "@audit/domain/errors"
 import {
@@ -21,6 +21,7 @@ import { Db } from "@audit/platform/database"
 import { Jobs } from "@audit/platform/jobs"
 import { eq } from "drizzle-orm"
 import { Effect, Schema } from "effect"
+import { HttpClient } from "effect/http/HttpClient"
 import { Authz } from "../authz.ts"
 import * as Command from "../command.ts"
 import { reembedJob } from "./reembed.ts"
@@ -258,7 +259,14 @@ export const testProvider = Command.make("ai.testProvider", {
       const db = yield* Db
       const config = yield* providerConfigFor(providerId)
       if (config.baseUrl !== null) yield* checkBaseUrl(config.baseUrl)
-      const result = yield* testConnection(config)
+      const http = yield* HttpClient
+      const app = yield* AppConfig
+      const result = yield* testConnection(config).pipe(
+        Effect.provideService(
+          HttpClient,
+          guardedHttp(http, { allowPrivate: app.aiAllowPrivateBaseUrl }),
+        ),
+      )
       yield* db
         .update(aiProviders)
         .set({

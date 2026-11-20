@@ -703,3 +703,27 @@ describe("ICS output escaping", () => {
     expect(lines(render({ rrule: "FREQ=weekly;BYDAY=mo" }))).toContain("RRULE:FREQ=WEEKLY;BYDAY=MO")
   })
 })
+
+describe("event description on update", () => {
+  test("an update with a description the editor schema refuses is refused", async () => {
+    await runAs(
+      database,
+      owner.actor,
+    )(createEvent.execute(seriesInput({ rrule: null, title: "Solo" })))
+    const solo = (await listAs(owner)).find((o) => o.title === "Solo")!
+    const refused = await exitAs(
+      database,
+      owner.actor,
+    )(
+      updateEvent.execute({
+        eventId: solo.eventId,
+        patch: {
+          scope: "all",
+          description: { type: "rawHtml", attrs: {} },
+          version: solo.version,
+        },
+      }),
+    )
+    expect(refused._tag).toBe("Failure")
+  })
+})

@@ -1102,33 +1102,19 @@ const SignupLive = HttpApiBuilder.group(AuditApi, "signup", (handlers) =>
   Effect.gen(function* () {
     const core = yield* coreContext
     const limiter = yield* RateLimiter
-    return handlers
-      .handle("signup", ({ payload }) =>
-        Effect.gen(function* () {
-          const meta = yield* clientMeta
-          yield* limiter.check("signup", meta.ip ?? "unknown")
-          return yield* adminSignup.signup
-            .execute(payload)
-            .pipe(
-              systemActor("signup"),
-              Effect.provideService(RequestMeta, meta),
-              Effect.provide(core),
-            )
-        }),
-      )
-      .handle("verifySignup", ({ payload }) =>
-        Effect.gen(function* () {
-          const meta = yield* clientMeta
-          yield* limiter.check("signup", meta.ip ?? "unknown")
-          return yield* adminSignup.verifySignup
-            .execute(payload)
-            .pipe(
-              systemActor("signup"),
-              Effect.provideService(RequestMeta, meta),
-              Effect.provide(core),
-            )
-        }),
-      )
+    return handlers.handle("signup", ({ payload }) =>
+      Effect.gen(function* () {
+        const meta = yield* clientMeta
+        yield* limiter.check("signup", meta.ip ?? "unknown")
+        return yield* adminSignup.signup
+          .execute(payload)
+          .pipe(
+            systemActor("signup"),
+            Effect.provideService(RequestMeta, meta),
+            Effect.provide(core),
+          )
+      }),
+    )
   }),
 )
 

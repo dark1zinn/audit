@@ -1,21 +1,37 @@
 /**
  * Server-side gate for rich text. Every stored document (command inputs, collab state, AI edits)
  * passes through `sanitizeRichDoc`: it checks the structure against the editor schema, keeps only
- * allowlisted attributes and marks, and enforces size, depth and reference rules. Anything it
- * cannot normalise is rejected with `RichDocError`; nothing is stored half-cleaned.
+ * allowlisted attributes and marks, and enforces size, depth and reference rules. Structural
+ * violations are rejected with `RichDocError`; content that is merely unsafe to render (an external
+ * image, a link to a script URL) loses that element and keeps its text. Nothing is stored
+ * half-cleaned.
  */
+import { STORED_FILE_SRC } from "./extensions.ts"
 import { schema } from "./schema.ts"
 import { type JsonNode, isJsonNode } from "./json.ts"
 
+/** Chat and comments are `message`s; documents, task and event descriptions are `doc`s. */
+export type RichDocKind = "message" | "doc"
+
 export const RICH_DOC_LIMITS = {
-  /** Serialised JSON size in characters. */
-  chars: 256 * 1024,
+  message: {
+    /** Serialised JSON size in characters. */
+    chars: 256 * 1024,
+    /** Total number of nodes, marks excluded. */
+    nodes: 5_000,
+  },
+  doc: {
+    chars: 1024 * 1024,
+    nodes: 20_000,
+  },
   /** Nesting depth of the node tree, the root counting as 1. */
   depth: 32,
-  /** Total number of nodes, marks excluded. */
-  nodes: 5_000,
-  /** Maximum length of a text node, a label or any other free-text attribute. */
+  /** Maximum length of a free-text attribute. */
   text: 2_000,
+  /** Maximum length of a mention label. */
+  mentionLabel: 300,
+  /** Longer link destinations lose their link mark. */
+  href: 2_048,
 } as const
 
 /** Mention targets the web editor can insert. Anything else is refused. */
@@ -34,10 +50,11 @@ export const MENTION_TYPES = [
 const BROADCAST_MENTIONS: ReadonlyArray<unknown> = ["channel", "here"]
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-/** An image may only point at a stored file served by the files route. */
-const FILE_SRC = /^\/files\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-/** Links may only navigate to web or mail destinations. */
-const SAFE_HREF = /^(https?:\/\/|mailto:)/i
+const SCHEME = /^[a-z][a-z0-9+.-]*:/i
+/** Schemes a link may navigate to. Everything else, including `javascript:`, is dropped. */
+const LINK_SCHEME = /^(https?|mailto|tel):/i
+/** Protocol-relative and backslash forms ("//host", "/\host") name another host in browsers. */
+const HOST_RELATIVE = /^[/\\]{2}/
 const isControl = (char: string) => {
   const code = char.codePointAt(0) ?? 0
   return code < 0x20 || code === 0x7f
@@ -65,12 +82,18 @@ const boundedText = (value: unknown, field: string, max: number = RICH_DOC_LIMIT
 const optionalText = (value: unknown, field: string, max?: number): string | null =>
   value === null || value === undefined ? null : boundedText(value, field, max)
 
+/** Table column widths: one finite number or `null` per column. */
+const isColumnWidths = (value: unknown): value is ReadonlyArray<number | null> =>
+  Array.isArray(value) &&
+  value.every((width) => width === null || (typeof width === "number" && Number.isFinite(width)))
+
 /** The allowlisted attributes of one node type, validated; unknown keys are dropped. */
 const sanitizeAttrs = (type: string, attrs: Record<string, unknown>): Record<string, unknown> => {
   switch (type) {
     case "image": {
       const src = attrs.src
-      if (typeof src !== "string" || !FILE_SRC.test(src)) fail("image source is not a stored file")
+      if (typeof src !== "string" || !STORED_FILE_SRC.test(src))
+        fail("image source is not a stored file")
       const out: Record<string, unknown> = { src }
       if (attrs.alt !== undefined) out.alt = optionalText(attrs.alt, "alt")
       if (attrs.title !== undefined) out.title = optionalText(attrs.title, "title")
@@ -85,7 +108,7 @@ const sanitizeAttrs = (type: string, attrs: Record<string, unknown>): Record<str
       return {
         id: attrs.id,
         type: attrs.type,
-        label: optionalText(attrs.label, "mention label", 200),
+        label: optionalText(attrs.label, "mention label", RICH_DOC_LIMITS.mentionLabel),
       }
     }
     case "taskEmbed":
@@ -112,7 +135,8 @@ const sanitizeAttrs = (type: string, attrs: Record<string, unknown>): Record<str
         if (value === null || typeof value === "boolean") out[key] = value
         else if (typeof value === "number" && Number.isFinite(value)) out[key] = value
         else if (typeof value === "string") out[key] = boundedText(value, key)
-        else fail(`attribute ${key} has an unsupported value`)
+        else if (key === "colwidth" && isColumnWidths(value)) out[key] = value
+        // Any other shape is not something the editor writes; the attribute is dropped.
       }
       return out
     }
@@ -121,20 +145,42 @@ const sanitizeAttrs = (type: string, attrs: Record<string, unknown>): Record<str
 
 type JsonMark = NonNullable<JsonNode["marks"]>[number]
 
-const sanitizeMark = (mark: unknown): JsonMark => {
+/**
+ * The mark, or `null` when its destination is unsafe to navigate to. The caller keeps the text.
+ * Browsers ignore control characters and spaces inside a URL, so the check strips them first.
+ */
+const sanitizeMark = (mark: unknown): JsonMark | null => {
   if (!isJsonNode(mark) || typeof mark.type !== "string") fail("mark is malformed")
   const type = mark.type
   if (schema.marks[type] === undefined) fail(`mark ${type} is not allowed`)
   if (type !== "link") return { type }
   const attrs = mark.attrs ?? {}
-  if (typeof attrs.href !== "string" || !SAFE_HREF.test(attrs.href)) {
-    fail("link destination is not allowed")
-  }
-  if (attrs.href.length > 2048) fail("link destination is too long")
-  return { type, attrs: { href: attrs.href } }
+  if (typeof attrs.href !== "string") fail("link destination must be text")
+  const href = attrs.href
+  const effective = [...href].filter((char) => char.charCodeAt(0) > 0x20).join("")
+  const safe = SCHEME.test(effective) ? LINK_SCHEME.test(effective) : !HOST_RELATIVE.test(effective)
+  if (!safe || href.length > RICH_DOC_LIMITS.href) return null
+  return { type, attrs: { href } }
 }
 
-const sanitizeNode = (node: unknown, depth: number, budget: { nodes: number }): JsonNode => {
+/** Whether an image node points at a stored file. Others are dropped, not refused. */
+const isStoredImage = (attrs: Readonly<Record<string, unknown>> | undefined): boolean => {
+  const src = attrs?.src
+  return typeof src === "string" && STORED_FILE_SRC.test(src)
+}
+
+interface Budget {
+  nodes: number
+}
+
+/** Sanitises a sibling list; dropped nodes (unstored images) are simply absent from the result. */
+const keepNodes = (nodes: ReadonlyArray<unknown>, depth: number, budget: Budget): JsonNode[] =>
+  nodes.flatMap((child) => {
+    const kept = sanitizeNode(child, depth, budget)
+    return kept === null ? [] : [kept]
+  })
+
+const sanitizeNode = (node: unknown, depth: number, budget: Budget): JsonNode | null => {
   if (depth > RICH_DOC_LIMITS.depth) fail("document is nested too deeply")
   if (!isJsonNode(node) || typeof node.type !== "string") fail("node is malformed")
   budget.nodes -= 1
@@ -143,19 +189,28 @@ const sanitizeNode = (node: unknown, depth: number, budget: { nodes: number }): 
   const type = node.type
   if (type === "text") {
     if (typeof node.text !== "string" || node.text.length === 0) fail("text node is empty")
-    if (node.text.length > RICH_DOC_LIMITS.chars) fail("text node is too long")
-    const marks = Array.isArray(node.marks) ? node.marks.map(sanitizeMark) : []
+    const marks = Array.isArray(node.marks)
+      ? node.marks.flatMap((mark) => {
+          const kept = sanitizeMark(mark)
+          return kept === null ? [] : [kept]
+        })
+      : []
     return marks.length > 0 ? { type, text: node.text, marks } : { type, text: node.text }
   }
   if (schema.nodes[type] === undefined) fail(`node ${type} is not allowed`)
   if (node.text !== undefined) fail(`node ${type} cannot carry text`)
+  if (type === "image" && !isStoredImage(node.attrs)) return null
 
   const attrs = node.attrs ?? {}
   if (!isJsonNode(attrs)) fail(`node ${type} has malformed attributes`)
   const cleaned = sanitizeAttrs(type, attrs)
   const children = node.content === undefined ? [] : node.content
   if (!Array.isArray(children)) fail(`node ${type} has malformed content`)
-  const content = children.map((child) => sanitizeNode(child, depth + 1, budget))
+  const content = keepNodes(children, depth + 1, budget)
+  // Dropped children can leave a required container empty; a paragraph keeps it valid.
+  if (content.length === 0 && schema.nodes[type]?.contentMatch.validEnd === false) {
+    content.push({ type: "paragraph" })
+  }
   return {
     type,
     ...(Object.keys(cleaned).length > 0 ? { attrs: cleaned } : {}),
@@ -167,20 +222,19 @@ const sanitizeNode = (node: unknown, depth: number, budget: { nodes: number }): 
  * Returns the document rebuilt from its allowlisted parts. Throws `RichDocError` when the input is
  * not a document the editor schema accepts. The result is safe to store and render.
  */
-export const sanitizeRichDoc = (input: unknown): JsonNode => {
+export const sanitizeRichDoc = (input: unknown, kind: RichDocKind): JsonNode => {
+  const limits = RICH_DOC_LIMITS[kind]
   if (!isJsonNode(input)) fail("document must be an object")
   const serialised = JSON.stringify(input) ?? ""
-  if (serialised.length > RICH_DOC_LIMITS.chars) fail("document is too large")
+  if (serialised.length > limits.chars) fail("document is too large")
   if (input.type !== "doc") fail("document root must be a doc")
 
-  const budget = { nodes: RICH_DOC_LIMITS.nodes }
-  const content = Array.isArray(input.content) ? input.content : []
-  const root: JsonNode = {
-    type: "doc",
-    content: content.map((child) => sanitizeNode(child, 2, budget)),
-  }
-  if (root.content!.length === 0) return { type: "doc", content: [{ type: "paragraph" }] }
+  const children = keepNodes(Array.isArray(input.content) ? input.content : [], 2, {
+    nodes: limits.nodes,
+  })
+  if (children.length === 0) return { type: "doc", content: [{ type: "paragraph" }] }
 
+  const root: JsonNode = { type: "doc", content: children }
   // The schema's content rules (what may nest in what, required children) have the final say.
   try {
     schema.nodeFromJSON(root).check()
@@ -191,9 +245,9 @@ export const sanitizeRichDoc = (input: unknown): JsonNode => {
 }
 
 /** Whether a value is a document `sanitizeRichDoc` accepts; the normalised copy is discarded. */
-export const isValidRichDoc = (input: unknown): boolean => {
+export const isValidRichDoc = (input: unknown, kind: RichDocKind): boolean => {
   try {
-    sanitizeRichDoc(input)
+    sanitizeRichDoc(input, kind)
     return true
   } catch (cause) {
     if (cause instanceof RichDocError) return false

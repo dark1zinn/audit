@@ -19,9 +19,17 @@ import * as OpenRouterLanguageModel from "@effect/ai-openrouter/OpenRouterLangua
 import { Effect, Layer, type Redacted } from "effect"
 import * as EmbeddingModel from "effect/ai/EmbeddingModel"
 import * as LanguageModel from "effect/ai/LanguageModel"
-import type { HttpClient } from "effect/http/HttpClient"
-import { lookup } from "node:dns/promises"
-import { isIP } from "node:net"
+import { HttpClient, make as makeHttpClient } from "effect/http/HttpClient"
+import * as HttpClientError from "effect/http/HttpClientError"
+import type * as HttpClientResponse from "effect/http/HttpClientResponse"
+import {
+  type Resolve,
+  hostAddresses,
+  isLocalName,
+  isPublicAddress,
+  normalizeHost,
+  resolveHost,
+} from "@audit/platform/address"
 
 /** What a provider layer needs; the decrypted key only lives here, never in the domain view. */
 export interface ProviderConfig {
@@ -36,6 +44,9 @@ export interface ProviderConfig {
 export const GOOGLE_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
 const OPENROUTER_REFERRER = "https://github.com/audit"
+
+const NOT_HTTPS = "The base URL must use https"
+const NOT_PRIVATE = "The base URL must not point at a private or local address"
 
 /** Kinds whose embedding endpoint the layers below can call. */
 export const supportsEmbeddings = (kind: AiProviderKind): boolean =>
@@ -118,131 +129,69 @@ export const embeddingModelLayer = (
   }
 }
 
-/** IPv4 octets from dotted-quad text; null when malformed. */
-const parseIPv4 = (text: string): ReadonlyArray<number> | null => {
-  const parts = text.split(".")
-  if (parts.length !== 4 || !parts.every((part) => /^\d{1,3}$/.test(part))) return null
-  const octets = parts.map(Number)
-  return octets.every((octet) => octet <= 255) ? octets : null
-}
-
-/** Hextets of a canonical IPv6 address (as WHATWG URL and `dns.lookup` print it); null if malformed. */
-const parseIPv6 = (address: string): ReadonlyArray<number> | null => {
-  const halves = address.split("::")
-  if (halves.length > 2) return null
-  const hextets = (part: string): Array<number> | null => {
-    if (part === "") return []
-    const pieces = part.split(":")
-    const out: Array<number> = []
-    for (const [index, piece] of pieces.entries()) {
-      if (piece.includes(".")) {
-        const octets = parseIPv4(piece)
-        if (octets === null || index !== pieces.length - 1) return null
-        const [a = 0, b = 0, c = 0, d = 0] = octets
-        out.push(a * 256 + b, c * 256 + d)
-      } else if (/^[0-9a-f]{1,4}$/i.test(piece)) {
-        out.push(Number.parseInt(piece, 16))
-      } else {
-        return null
-      }
-    }
-    return out
-  }
-  const head = hextets(halves[0] ?? "")
-  if (head === null) return null
-  if (halves.length === 1) return head.length === 8 ? head : null
-  const tail = hextets(halves[1] ?? "")
-  if (tail === null) return null
-  const fill = 8 - head.length - tail.length
-  return fill < 1 ? null : [...head, ...Array.from({ length: fill }, () => 0), ...tail]
-}
-
-/** Blocked IPv4 ranges: unspecified, loopback, RFC1918, link-local, CGNAT. */
-const blockedIPv4 = (octets: ReadonlyArray<number>): boolean => {
-  const [a = -1, b = -1] = octets
-  return (
-    a === 0 ||
-    a === 10 ||
-    a === 127 ||
-    (a === 100 && b >= 64 && b <= 127) ||
-    (a === 169 && b === 254) ||
-    (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168)
-  )
-}
-
-/** Whether a canonical IP literal falls in a blocked range. Unparsable input is blocked. */
-const addressIsBlocked = (address: string): boolean => {
-  const version = isIP(address)
-  if (version === 4) {
-    const octets = parseIPv4(address)
-    return octets === null || blockedIPv4(octets)
-  }
-  if (version !== 6) return true
-  const hextets = parseIPv6(address)
-  if (hextets === null) return true
-  const bytes = hextets.flatMap((hextet) => [hextet >> 8, hextet & 0xff])
-  const leadingZeros = (count: number) => bytes.slice(0, count).every((byte) => byte === 0)
-  // IPv4-mapped (::ffff:a.b.c.d) and IPv4-compatible (::a.b.c.d, which also covers :: and ::1).
-  if (leadingZeros(10) && bytes[10] === 0xff && bytes[11] === 0xff) {
-    return blockedIPv4(bytes.slice(12))
-  }
-  if (leadingZeros(12)) return blockedIPv4(bytes.slice(12))
-  const [b0 = 0, b1 = 0] = bytes
-  // Link-local fe80::/10 and unique-local fc00::/7.
-  return (b0 === 0xfe && (b1 & 0xc0) === 0x80) || (b0 & 0xfe) === 0xfc
-}
-
-const isLocalName = (host: string): boolean => host === "localhost" || host.endsWith(".localhost")
-
 /**
- * Rejects provider base URLs that carry credentials, are not https, or (unless `allowPrivate`)
- * reach loopback, private, link-local, CGNAT or unspecified addresses. Every address a name
- * resolves to must be public, and a name that does not resolve is rejected. With `allowPrivate`,
- * plain http is also accepted when the host is local or private (self-hosted model servers rarely
- * have TLS), never for a public host, where the API key would travel in cleartext.
+ * Why a provider endpoint may not be contacted, or null when it may. Rejects URLs that carry
+ * credentials, are not https, or (unless `allowPrivate`) reach a non-public address. Every address
+ * a name resolves to must be public, and a name that does not resolve is rejected. With
+ * `allowPrivate`, plain http is also accepted when the host is local or private (self-hosted model
+ * servers rarely have TLS), never for a public host, where the API key would travel in cleartext.
  */
+export const endpointProblem = async (
+  raw: string,
+  options: { readonly allowPrivate: boolean; readonly resolve?: Resolve },
+): Promise<string | null> => {
+  if (!URL.canParse(raw)) return "The base URL is not a valid URL"
+  const url = new URL(raw)
+  if (url.protocol !== "https:" && url.protocol !== "http:") return NOT_HTTPS
+  if (url.username !== "" || url.password !== "") return "The base URL must not contain credentials"
+  if (url.protocol === "https:" && options.allowPrivate) return null
+  if (url.protocol === "http:" && !options.allowPrivate) return NOT_HTTPS
+
+  const host = normalizeHost(url.hostname)
+  const local = isLocalName(host)
+  const addresses = local ? [] : await hostAddresses(host, options.resolve ?? resolveHost)
+  if (url.protocol === "http:") {
+    const privateHost =
+      local || (addresses.length > 0 && addresses.every((address) => !isPublicAddress(address)))
+    return privateHost ? null : NOT_HTTPS
+  }
+  if (local) return NOT_PRIVATE
+  if (addresses.length === 0) return "The base URL host could not be resolved"
+  return addresses.every(isPublicAddress) ? null : NOT_PRIVATE
+}
+
+/** Rejects a base URL that `endpointProblem` refuses; the message is shown to the admin. */
 export const validateBaseUrl = (
   raw: string,
-  options: { readonly allowPrivate: boolean },
+  options: { readonly allowPrivate: boolean; readonly resolve?: Resolve },
 ): Effect.Effect<void, ValidationError> =>
-  Effect.gen(function* () {
-    if (!URL.canParse(raw)) {
-      return yield* new ValidationError({ message: "The base URL is not a valid URL" })
-    }
-    const url = new URL(raw)
-    const notHttps = new ValidationError({ message: "The base URL must use https" })
-    if (url.protocol !== "https:" && url.protocol !== "http:") return yield* notHttps
-    if (url.username !== "" || url.password !== "") {
-      return yield* new ValidationError({ message: "The base URL must not contain credentials" })
-    }
-    if (url.protocol === "https:" && options.allowPrivate) return
-    if (url.protocol === "http:" && !options.allowPrivate) return yield* notHttps
+  Effect.promise(() => endpointProblem(raw, options)).pipe(
+    Effect.flatMap((problem) =>
+      problem === null ? Effect.void : Effect.fail(new ValidationError({ message: problem })),
+    ),
+  )
 
-    const host = url.hostname.replace(/^\[(.*)\]$/, "$1").replace(/\.$/, "")
-    const addresses: ReadonlyArray<string> = isLocalName(host)
-      ? []
-      : isIP(host) !== 0
-        ? [host]
-        : yield* Effect.promise(() =>
-            lookup(host, { all: true, verbatim: true }).then(
-              (records) => records.map((record) => record.address),
-              (): Array<string> => [],
-            ),
-          )
-    if (url.protocol === "http:") {
-      // allowPrivate is set: http only when every address is local or private.
-      const privateHost =
-        isLocalName(host) || (addresses.length > 0 && addresses.every(addressIsBlocked))
-      if (!privateHost) return yield* notHttps
-      return
-    }
-    const blocked = new ValidationError({
-      message: "The base URL must not point at a private or local address",
-    })
-    if (isLocalName(host)) return yield* blocked
-    if (addresses.length === 0) {
-      return yield* new ValidationError({ message: "The base URL host could not be resolved" })
-    }
-    if (addresses.some(addressIsBlocked)) return yield* blocked
-  })
+/**
+ * Checks every request against the endpoint policy right before it is sent. The base URL was
+ * validated when it was saved, but DNS may have moved it onto a private address since then.
+ */
+export const guardedHttp = (
+  http: HttpClient,
+  options: { readonly allowPrivate: boolean; readonly resolve?: Resolve },
+): HttpClient =>
+  makeHttpClient((request) =>
+    Effect.promise(() => endpointProblem(request.url, options)).pipe(
+      Effect.flatMap(
+        (
+          problem,
+        ): Effect.Effect<HttpClientResponse.HttpClientResponse, HttpClientError.HttpClientError> =>
+          problem === null
+            ? http.execute(request)
+            : Effect.fail(
+                new HttpClientError.HttpClientError({
+                  reason: new HttpClientError.TransportError({ request, description: problem }),
+                }),
+              ),
+      ),
+    ),
+  )

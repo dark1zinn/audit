@@ -3,7 +3,8 @@
  *
  * - Trail: entries older than `trailRetentionDays` are deleted. Only the retention role may delete
  *   trail rows (the append-only trigger enforces it), so the command switches role for that one
- *   statement and then records the purge as the normal role. Verification tolerates a purged start.
+ *   statement and then records the purge as the normal role. Verification accepts a purged start
+ *   only where `trail_anchor` records the cut, which `trail_purge` writes.
  * - Soft-deleted entities: an entity deleted more than `softDeleteRetentionDays` ago is removed
  *   with its type row and dependents (foreign keys cascade from `entities`). Its whole tree is
  *   removed only when every row under it is past the window, so a live or recent row keeps its

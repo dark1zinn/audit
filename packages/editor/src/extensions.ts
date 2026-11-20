@@ -113,12 +113,29 @@ export const Callout = Node.create({
   },
 })
 
+/** Images may only show stored files served by the files route; the server sanitiser enforces it too. */
+export const STORED_FILE_SRC =
+  /^\/files\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Pasted or dropped HTML keeps only images of stored files; others are dropped on parse. */
+const StoredImage = Image.extend({
+  parseHTML() {
+    return [
+      {
+        tag: "img[src]",
+        getAttrs: (element) =>
+          STORED_FILE_SRC.test(element.getAttribute("src") ?? "") ? null : false,
+      },
+    ]
+  },
+})
+
 export const extensions = [
   StarterKit.configure({ undoRedo: false }),
   TaskList,
   TaskItem.configure({ nested: true }),
   TableKit,
-  Image,
+  StoredImage,
   Mention,
   TaskEmbed,
   FileAttachment,

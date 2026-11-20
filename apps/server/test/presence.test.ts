@@ -20,27 +20,71 @@ beforeAll(async () => {
 
 afterAll(() => database.drop())
 
-describe("presence focus", () => {
-  test("a viewer who cannot read the focused entity sees the focus cleared", async () => {
-    const secret = await runAs(
-      database,
-      owner.actor,
-    )(createDoc.execute({ parentId: WORKSPACE_SPACE_ID as EntityId, title: "Board plan" }))
-    await database.superuser`update entities set restricted = true where id = ${secret.id}`
-    const focusEntityId = secret.id as EntityId
+const createPage = (title: string) =>
+  runAs(
+    database,
+    owner.actor,
+  )(createDoc.execute({ parentId: WORKSPACE_SPACE_ID as EntityId, title })).then(
+    (doc) => doc.id as EntityId,
+  )
 
-    const seenByMember = await database.runtime.runPromise(
+const run = <A, E>(effect: Effect.Effect<A, E, Presence>) =>
+  database.runtime.runPromise(effect.pipe(Effect.provide(Presence.layer), Effect.scoped))
+
+describe("presence focus", () => {
+  test("focus is refused outside the entity scope it names", async () => {
+    const page = await createPage("Board plan")
+    const outcome = await run(
       Effect.gen(function* () {
         const presence = yield* Presence
-        const ownerJoin = yield* presence
+        const join = yield* presence
           .join("workspace")
           .pipe(Stream.provideService(CurrentActor, owner.actor), Stream.runDrain, Effect.forkChild)
         yield* Effect.sleep("50 millis")
+        const workspace = yield* presence
+          .update({ scope: "workspace", focusEntityId: page })
+          .pipe(Effect.provideService(CurrentActor, owner.actor))
+        yield* Fiber.interrupt(join)
+        return workspace
+      }),
+    )
+    expect(outcome).toEqual({ accepted: false })
+  })
+
+  test("focus on a different entity than the scope is refused", async () => {
+    const page = await createPage("Scope page")
+    const other = await createPage("Other page")
+    const outcome = await run(
+      Effect.gen(function* () {
+        const presence = yield* Presence
+        const join = yield* presence
+          .join(`entity:${page}`)
+          .pipe(Stream.provideService(CurrentActor, owner.actor), Stream.runDrain, Effect.forkChild)
+        yield* Effect.sleep("50 millis")
+        const result = yield* presence
+          .update({ scope: `entity:${page}`, focusEntityId: other })
+          .pipe(Effect.provideService(CurrentActor, owner.actor))
+        yield* Fiber.interrupt(join)
+        return result
+      }),
+    )
+    expect(outcome).toEqual({ accepted: false })
+  })
+
+  test("viewers of an entity scope see the focus on that entity", async () => {
+    const page = await createPage("Shared page")
+    const seenByMember = await run(
+      Effect.gen(function* () {
+        const presence = yield* Presence
+        const ownerJoin = yield* presence
+          .join(`entity:${page}`)
+          .pipe(Stream.provideService(CurrentActor, owner.actor), Stream.runDrain, Effect.forkChild)
+        yield* Effect.sleep("50 millis")
         yield* presence
-          .update({ scope: "workspace", focusEntityId })
+          .update({ scope: `entity:${page}`, focusEntityId: page })
           .pipe(Effect.provideService(CurrentActor, owner.actor))
         yield* Effect.sleep("50 millis")
-        const [first] = yield* presence.join("workspace").pipe(
+        const [first] = yield* presence.join(`entity:${page}`).pipe(
           Stream.provideService(CurrentActor, member.actor),
           Stream.take(1),
           Stream.runCollect,
@@ -48,11 +92,10 @@ describe("presence focus", () => {
         )
         yield* Fiber.interrupt(ownerJoin)
         return first
-      }).pipe(Effect.provide(Presence.layer), Effect.scoped),
+      }),
     )
 
     const ownerView = seenByMember?.viewers.find((viewer) => viewer.userId === owner.userId)
-    expect(ownerView).toBeDefined()
-    expect(ownerView?.focusEntityId).toBeNull()
+    expect(ownerView?.focusEntityId).toBe(page)
   })
 })

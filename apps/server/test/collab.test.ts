@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { createDoc, createDocVersion } from "@audit/core/docs/commands"
+import { CHANGES_NOT_SAVED } from "@audit/domain/collab"
 import { WORKSPACE_SPACE_ID } from "@audit/domain/docs/schema"
 import type { DocId, EntityId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
@@ -259,6 +260,62 @@ describe("collab", () => {
         const persisted = await stored()
         return persisted.includes("marker-before") && !persisted.includes("marker-after")
       }, "restored content stored")
+    },
+    TIMEOUT,
+  )
+
+  test(
+    "an external image written through raw Yjs is dropped from live sessions and storage",
+    async () => {
+      const writer = connect(editorCookie)
+      const reader = connect(viewerCookie)
+      expect((await writer.outcome).ok).toBe(true)
+      expect((await reader.outcome).ok).toBe(true)
+
+      // The web editor refuses to parse such an image; a hostile client can still send it.
+      writer.doc.transact(() => {
+        const fragment = writer.doc.getXmlFragment(FIELD)
+        const image = new Y.XmlElement("image")
+        image.setAttribute("src", "https://tracker.example/pixel.png")
+        fragment.insert(fragment.length, [image])
+      })
+      append(writer.doc, "kept beside the image")
+
+      await waitFor(
+        () =>
+          [writer.doc, reader.doc].every((document) => {
+            const content = text(document)
+            return content.includes("kept beside the image") && !content.includes("tracker.example")
+          }),
+        "the repair to reach both sessions",
+      )
+      const [row] = await db.superuser<{ ydoc: Uint8Array | null }[]>`
+        select ydoc from docs where id = ${docId}`
+      const persisted = new Y.Doc()
+      if (row?.ydoc) Y.applyUpdate(persisted, row.ydoc)
+      expect(text(persisted)).not.toContain("tracker.example")
+      expect(text(persisted)).toContain("kept beside the image")
+    },
+    TIMEOUT,
+  )
+
+  test(
+    "edits the store refuses are not saved, and the socket is told so",
+    async () => {
+      const leaver = await addPerson(db, owner, "Lee", "member")
+      await db.superuser`insert into access_entries (resource_id, principal_type, principal_id, role, granted_by) values (${docId}, 'user', ${leaver.userId}, 'editor', ${owner.userId})`
+      const client = connect(await signIn(leaver.email))
+      expect((await client.outcome).ok).toBe(true)
+      const closed = Promise.withResolvers<number>()
+      client.provider.on("close", ({ event }: { event: { code: number } }) =>
+        closed.resolve(event.code),
+      )
+
+      await db.superuser`delete from access_entries where resource_id = ${docId} and principal_id = ${leaver.userId}`
+      append(client.doc, "refused paragraph")
+      expect(await closed.promise).toBe(CHANGES_NOT_SAVED)
+      client.socket.destroy()
+      expect(await stored()).not.toContain("refused paragraph")
     },
     TIMEOUT,
   )

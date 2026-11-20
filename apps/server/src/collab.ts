@@ -10,6 +10,7 @@ import { Authz } from "@audit/core/authz"
 import { EventBus } from "@audit/core/event-bus"
 import { loadDocState, saveDocContent } from "@audit/core/docs/content"
 import { CurrentActor, type UserActor, UserActor as UserActorSchema } from "@audit/domain/actor"
+import { CHANGES_NOT_SAVED } from "@audit/domain/collab"
 import { DocChanged } from "@audit/domain/events"
 import type { DocId, UserId } from "@audit/domain/ids"
 import { docs, projects } from "@audit/db/schema"
@@ -24,11 +25,11 @@ import {
 } from "@hocuspocus/server"
 import type { ServerWebSocket } from "bun"
 import { eq } from "drizzle-orm"
-import { Effect, Fiber, type ManagedRuntime, Schema, Stream } from "effect"
+import { Cause, Effect, Exit, Fiber, type ManagedRuntime, Schema, Stream } from "effect"
 import type { SqlClient } from "effect/sql"
 import * as Y from "yjs"
 import { Sessions } from "./sessions.ts"
-import { type SocketTracker, resolveSession } from "./socket-tracker.ts"
+import { type SocketTracker, recheckSession, resolveSession } from "./socket-tracker.ts"
 
 const DOC_NAME = /^doc:([0-9a-f-]{36})$/
 /** Field name used by the Tiptap collaboration extension (see `@audit/editor/ydoc`). */
@@ -75,6 +76,18 @@ export interface Collab {
   readonly documentsCount: () => number
   /** True while a session holds the doc in memory. */
   readonly isOpen: (docId: DocId) => boolean
+}
+
+/** Errors that mean this user's edits can never be saved, so retrying the store cannot help. */
+const REFUSAL_TAGS: Record<string, true> = {
+  Unauthorized: true,
+  Forbidden: true,
+  NotFound: true,
+  ValidationError: true,
+}
+const isRefusal = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null || !("_tag" in error)) return false
+  return typeof error._tag === "string" && REFUSAL_TAGS[error._tag] === true
 }
 
 const rejected = (reason: string): Error => Object.assign(new Error(reason), { reason })
@@ -144,11 +157,16 @@ const replaceFragment = (live: Y.Doc, restored: Uint8Array) => {
 export const createCollab = (options: CollabOptions): Collab => {
   const { runtime, tracker } = options
   const pendingStores = new Set<Promise<void>>()
+  // Documents whose latest store was refused. Hocuspocus keeps a document whose store failed, so
+  // shutdown unloads these itself once they have no sockets left.
+  const refusedDocs = new Set<DocId>()
+  /** Every open collab socket, so the sockets of a doc whose edits were refused can be closed. */
+  const sockets = new Set<CollabSocketData>()
   const socketsByRequest = new WeakMap<Request, CollabSocketData>()
 
   /** Re-checks a socket's session and every doc grant. Any mismatch means the socket must close. */
   const socketStillAllowed = async (socket: CollabSocketData) => {
-    const session = await resolveSession(runtime, socket.request.headers)
+    const session = await recheckSession(runtime, socket.request.headers)
     if (session._tag === "None" || session.value.twoFactorRequired) return false
     for (const [docId, readOnly] of socket.grants) {
       const access = await runtime.runPromise(docAccess(session.value.actor.userId, docId))
@@ -197,14 +215,29 @@ export const createCollab = (options: CollabOptions): Collab => {
       const actor = actorOf(data.lastContext)
       const state = Y.encodeStateAsUpdate(data.document)
       const store = runtime
-        .runPromise(
+        .runPromiseExit(
           Effect.provideService(
             saveDocContent.execute({ docId, ydocState: state }),
             CurrentActor,
             actor,
           ),
         )
-        .then(() => undefined)
+        .then((exit) => {
+          if (Exit.isSuccess(exit)) {
+            refusedDocs.delete(docId)
+            return
+          }
+          const error = Cause.squash(exit.cause)
+          // Transient failures keep the document in memory so the next store retries it.
+          if (!isRefusal(error)) throw error
+          // These edits can never be saved for this user. Closing their sockets with a dedicated
+          // code tells the client, and the document unloads once its last socket has closed.
+          refusedDocs.add(docId)
+          for (const socket of sockets) {
+            if (socket.grants.has(docId)) socket.ws?.close(CHANGES_NOT_SAVED, "changes-not-saved")
+          }
+          throw new Error(`edits to ${docId} were refused and not saved`)
+        })
       pendingStores.add(store)
       try {
         await store
@@ -230,7 +263,7 @@ export const createCollab = (options: CollabOptions): Collab => {
   }
 
   const isRestored = (event: unknown): event is typeof DocChanged.Type =>
-    Schema.is(DocChanged)(event) && event.kind === "restored"
+    Schema.is(DocChanged)(event) && (event.kind === "restored" || event.kind === "repaired")
 
   const watchRestores = (ready: PromiseWithResolvers<void>) =>
     Effect.gen(function* () {
@@ -267,6 +300,7 @@ export const createCollab = (options: CollabOptions): Collab => {
 
     open(ws) {
       ws.data.ws = ws
+      sockets.add(ws.data)
       ws.data.connection = hocuspocus.handleConnection(
         socketOf(ws),
         ws.data.request,
@@ -280,6 +314,7 @@ export const createCollab = (options: CollabOptions): Collab => {
 
     close(ws, code, reason) {
       ws.data.closed = true
+      sockets.delete(ws.data)
       ws.data.untrack?.()
       ws.data.untrack = undefined
       ws.data.connection?.handleClose({ code, reason })
@@ -303,6 +338,10 @@ export const createCollab = (options: CollabOptions): Collab => {
       while (hocuspocus.getDocumentsCount() > 0 || pendingStores.size > 0) {
         if (Date.now() > deadline) throw new Error("collab shutdown timed out")
         await Promise.allSettled(pendingStores)
+        for (const docId of refusedDocs) {
+          const document = hocuspocus.documents.get(`doc:${docId}`)
+          if (document !== undefined) await hocuspocus.unloadDocument(document)
+        }
         await Bun.sleep(25)
       }
     },

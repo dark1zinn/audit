@@ -17,6 +17,7 @@ import { RESET_IDENTIFIER_PREFIX, resetIdentifier } from "@audit/core/identity/r
 import { Redacted } from "effect"
 import { CLIENT_IP_HEADER } from "./client-ip.ts"
 import { makeSignInLockout } from "./signin-lockout.ts"
+import { makeResetRequestLimit } from "./reset-request-limit.ts"
 import type { TrailWriter } from "./trail-writer.ts"
 
 const recordOf = (value: unknown): Record<string, unknown> =>
@@ -104,13 +105,17 @@ export interface AuthSession {
 /** The parts of Better Auth the rest of the server uses. */
 export interface AuthHandle {
   readonly handler: (request: Request) => Promise<Response>
-  readonly getSession: (headers: Headers) => Promise<AuthSession | null>
+  readonly getSession: (
+    headers: Headers,
+    options?: { readonly disableRefresh?: boolean },
+  ) => Promise<AuthSession | null>
   readonly close: () => Promise<void>
 }
 
 export const makeAuth = (options: AuthOptions): AuthHandle => {
   const { config } = options
   const signInLockout = makeSignInLockout()
+  const resetRequests = makeResetRequestLimit()
   const client = new SQL(Redacted.value(config.databaseUrl), { max: 4 })
   const db = drizzle({ client, relations: defineRelations(authSchema) })
   const secure = config.url.protocol === "https:"
@@ -202,6 +207,15 @@ export const makeAuth = (options: AuthOptions): AuthHandle => {
           }
           return
         }
+        if (ctx.path === "/request-password-reset") {
+          const email = emailOf(ctx.body)
+          if (email !== null && !resetRequests.allow(email)) {
+            throw new APIError("TOO_MANY_REQUESTS", {
+              message: "Too many password reset requests for this address. Try again later.",
+            })
+          }
+          return
+        }
         const password = passwordOf(ctx.path, ctx.body)
         if (password !== undefined) {
           const refusal = await options.checkPassword(password)
@@ -246,7 +260,8 @@ export const makeAuth = (options: AuthOptions): AuthHandle => {
 
   return {
     handler: (request) => auth.handler(request),
-    getSession: (headers) => auth.api.getSession({ headers }),
+    getSession: (headers, options) =>
+      auth.api.getSession({ headers, query: { disableRefresh: options?.disableRefresh === true } }),
     close: () => client.close(),
   }
 }

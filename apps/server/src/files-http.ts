@@ -206,7 +206,7 @@ export const FilesHttpLive = Layer.unwrap(
     return Layer.mergeAll(
       HttpRouter.add("POST", "/api/files", uploadRoute(deps)),
       HttpRouter.add("POST", "/api/admin/branding/logo", logoRoute(deps)),
-      HttpRouter.add("GET", "/api/admin/export", exportRoute(deps)),
+      HttpRouter.add("POST", "/api/admin/export", exportRoute(deps)),
       HttpRouter.add("GET", "/files/:id", downloadRoute(deps, "original")),
       HttpRouter.add("GET", "/files/:id/thumb", downloadRoute(deps, "thumbnail")),
     )

@@ -61,12 +61,19 @@ function MaintenancePage() {
     },
   })
 
-  // The server streams the file, so the browser downloads it straight from the route.
-  const downloadExport = () => {
+  // POST keeps the export out of cross-site navigations; the blob is saved from an object URL.
+  const downloadExport = async () => {
+    const response = await fetch("/api/admin/export", {
+      method: "POST",
+      credentials: "same-origin",
+    })
+    if (!response.ok) throw new Error(`Export failed with status ${response.status}`)
+    const url = URL.createObjectURL(await response.blob())
     const link = document.createElement("a")
-    link.href = "/api/admin/export"
+    link.href = url
     link.download = "workspace-export.jsonl"
     link.click()
+    URL.revokeObjectURL(url)
     void queryClient.invalidateQueries({ queryKey: keys.adminOverview })
   }
 

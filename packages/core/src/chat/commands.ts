@@ -803,7 +803,7 @@ const postMessageRun = (input: Schema.Schema.Type<typeof PostMessageInput>, chan
     yield* requireActive(channel)
     if (channel.projectId !== null) yield* assertWritable(channel.projectId as ProjectId)
     yield* ensureMember(channel, userId)
-    const body = yield* cleanRichDoc(input.body, "body")
+    const body = yield* cleanRichDoc(input.body, "body", "message")
     const bodyText = plainText(body).trim()
     if (bodyText === "") return yield* invalid("Message is empty", "body")
     let root: MessageRow | null = null
@@ -963,7 +963,7 @@ export const editMessage = Command.make("message.edit", {
       yield* requireActive(channel)
       const lock = yield* lockEntity(entityOf(input.messageId), "message")
       yield* checkVersion(lock, input.version, { message: input.messageId })
-      const body = yield* cleanRichDoc(input.body, "body")
+      const body = yield* cleanRichDoc(input.body, "body", "message")
       const bodyText = plainText(body).trim()
       if (bodyText === "") return yield* invalid("Message is empty", "body")
       yield* db

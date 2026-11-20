@@ -59,6 +59,21 @@ export const resolveSession = (
     }),
   )
 
+/**
+ * Like `resolveSession`, for periodic rechecks of an open socket: it does not extend the session,
+ * so an idle connection still runs into the idle timeout.
+ */
+export const recheckSession = (
+  runtime: ManagedRuntime.ManagedRuntime<CollabServices, unknown>,
+  headers: Headers,
+) =>
+  runtime.runPromise(
+    Effect.gen(function* () {
+      const sessions = yield* Sessions
+      return yield* sessions.resolveWithoutRefresh(headers).pipe(Effect.option)
+    }),
+  )
+
 const isAccessChange = (event: unknown): boolean =>
   Schema.is(ProjectChanged)(event) ||
   Schema.is(WorkspaceUpdated)(event) ||

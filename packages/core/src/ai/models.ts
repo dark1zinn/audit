@@ -4,12 +4,13 @@
  * the process.
  */
 import type { ProviderConfig } from "@audit/ai/provider"
-import { embeddingModelLayer, languageModelLayer } from "@audit/ai/provider"
+import { embeddingModelLayer, guardedHttp, languageModelLayer } from "@audit/ai/provider"
 import type { AiUnavailable } from "@audit/domain/ai/errors"
 import { Context, Effect, Layer } from "effect"
 import type * as EmbeddingModel from "effect/ai/EmbeddingModel"
 import type * as LanguageModel from "effect/ai/LanguageModel"
 import { HttpClient } from "effect/http/HttpClient"
+import { AppConfig } from "@audit/platform/config"
 
 export interface AiModelsShape {
   readonly language: (
@@ -22,15 +23,21 @@ export interface AiModelsShape {
 
 export class AiModels extends Context.Service<AiModels, AiModelsShape>()("@audit/core/AiModels") {}
 
-/** Provider layers over the ambient `HttpClient`; the server provides it, tests fake it. */
+/**
+ * Provider layers over the ambient `HttpClient`, with every request checked against the endpoint
+ * policy (see `guardedHttp`). The server provides the client; tests replace the service.
+ */
 export const liveAiModels = Layer.effect(
   AiModels,
   Effect.gen(function* () {
+    const config = yield* AppConfig
     const http = yield* HttpClient
-    const withHttp = Layer.provide(Layer.succeed(HttpClient, http))
+    const withHttp = Layer.provide(
+      Layer.succeed(HttpClient, guardedHttp(http, { allowPrivate: config.aiAllowPrivateBaseUrl })),
+    )
     return AiModels.of({
-      language: (config) => languageModelLayer(config).pipe(withHttp),
-      embedding: (config) => embeddingModelLayer(config).pipe(withHttp),
+      language: (provider) => languageModelLayer(provider).pipe(withHttp),
+      embedding: (provider) => embeddingModelLayer(provider).pipe(withHttp),
     })
   }),
 )

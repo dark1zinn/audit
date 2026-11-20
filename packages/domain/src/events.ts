@@ -117,6 +117,8 @@ export const DocChanged = Schema.TaggedStruct("DocChanged", {
     "verified",
     "access_changed",
     "edited",
+    /** A save whose unsafe content was dropped; live sessions take the stored state. */
+    "repaired",
     "version_created",
     "version_restored",
     "comment_created",

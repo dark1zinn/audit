@@ -106,7 +106,7 @@ Message purging keeps pinned messages; replies to purged messages become tombsto
 - **Compact docs**: merges stored document updates to reduce size.
 - **Reindex search**: rebuilds full-text search entries.
 - **Reembed**: regenerates semantic-search vectors for the current embedding provider.
-- **Export**: downloads a full NDJSON export of the workspace (`GET /api/admin/export`).
+- **Export**: downloads a full NDJSON export of the workspace (`POST /api/admin/export`).
 
 ## AI
 
