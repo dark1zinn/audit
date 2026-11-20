@@ -245,3 +245,52 @@ match, which is inherent to the current ranking.
 
 The quick path (ILIKE over titles, with per-row visibility) is not optimized yet. Its p50 is about
 65 ms.
+
+## Confirmation run (a96b085)
+
+Fresh image from `git archive a96b085` (build exit 0). Fresh stack, app `--cpus 2 --memory 4g`,
+`migrate` exit 0, `seed --demo` exit 0. Scenario: `RAMP=60s`, 200 API VUs, 5 to 15 s think, 5 min
+hold, plus 25 `/rpc` and 25 `/collab` sockets. k6 exit 0.
+
+- Failed requests: 0 (`http_req_failed` 0 of 6,729). The earlier single failure (gate B) did not
+  recur.
+- API p50 28.8, p95 133.0, p99 1,377.7 ms (6,700 requests, max 3,085 ms).
+
+| Endpoint        | Requests |  p50 |   p95 |     p99 |
+| --------------- | -------: | ---: | ----: | ------: |
+| board view      |    1,619 | 39.0 |  76.9 |   904.8 |
+| doc open        |    1,341 |  8.0 |  34.7 |   549.7 |
+| channel history |    1,354 | 24.0 |  58.0 | 1,352.1 |
+| search          |    1,031 | 36.9 | 268.7 | 1,457.1 |
+| task move       |      681 | 24.3 | 366.5 | 1,783.4 |
+| message post    |      674 | 22.1 | 241.7 | 2,076.5 |
+
+Stalls: none at start (ramp holds). Mid-run there are slow windows, 100 requests over 1 s between
+t+212 and t+294 s, in 4 bursts (t+212–214, t+245–246, t+261, t+292–294). This is worse than the
+earlier ramped run (0 slow requests, p99 74 ms), so the ramp fix holds but the run is not a clean
+confirmation. Cause not investigated.
+
+Idle memory gate (330 s hold, 25 sockets): app 165.9 MiB, Postgres 194.1 MiB. Pass.
+
+## Burst investigation (a96b085, instrumented)
+
+Two ramped gates (`RAMP=60s`, `API_VUS=200`) on a fresh stack with Postgres `log_lock_waits`,
+`log_checkpoints`, `log_min_duration_statement=250`, and Bun `BUN_JSC_logGC=1`. No request exceeded
+1 s in either run, so the earlier t+212–294 s bursts did not reproduce.
+
+- Run 1: API p50 23.7, p95 51.3, p99 73.3, max 185.4 ms.
+- Run 2: API p50 23.8, p95 59.2, p99 112.2, max 725.1 ms.
+
+Postgres logged six lock waits in the whole session, all on a `COMMIT` and all on
+`AccessExclusiveLock` of a shared `pg_database` object. Each waited 200–530 ms behind a `COMMIT` that
+ran 294–580 ms. Run 2 slow API spans (250–724 ms, about 15 requests) fall in the same windows
+(15:12:04, 15:12:30, 15:13:00 UTC). Bun GC pauses were sub-millisecond, and checkpoints and
+autovacuum did not coincide with the waits.
+
+Cause: that lock is PostgreSQL's notification-queue lock. A transaction that ran `NOTIFY` takes an
+`AccessExclusiveLock` on the shared `pg_database` object at commit, so all such commits run one at
+a time. The trail-chaining migration had added a trigger that ran `pg_notify` on every trail insert
+to wake the chainer, so every command commit queued on that one lock, and under bursts of writes
+commits stacked up behind it. Migration `20261120151955_drop_trail_notify` removes the trigger.
+The chainer now wakes in process when commands publish their events after commit, and still sweeps
+every second. A test asserts that no trigger on `trail_events` calls `NOTIFY`.

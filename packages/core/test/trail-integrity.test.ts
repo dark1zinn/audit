@@ -170,6 +170,18 @@ describe("trail integrity", () => {
     expect(gaps.n).toBe(0)
   })
 
+  test("no trigger on the trail notifies: a NOTIFY would serialise every commit", async () => {
+    const database = await seeded()
+    const triggers = await database.superuser<{ name: string; body: string }[]>`
+      select t.tgname as name, p.prosrc as body
+      from pg_trigger t join pg_proc p on p.oid = t.tgfoid
+      where t.tgrelid = 'trail_events'::regclass and not t.tgisinternal`
+    expect(triggers.length).toBeGreaterThan(0)
+    expect(triggers.filter((trigger) => /notify/i.test(trigger.body)).map((t) => t.name)).toEqual(
+      [],
+    )
+  })
+
   test("entries left unchained past the grace period fail verification", async () => {
     const database = await makeTestDatabase()
     created.push(database)
