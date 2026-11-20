@@ -27,7 +27,7 @@
     "i18n:compile": "bun run --cwd packages/i18n compile",
     "i18n:check": "bun run --cwd packages/i18n check",
     "docs:dev": "bunx --bun vitepress dev docs",
-    "docs:openapi": "bun packages/domain/scripts/docs-openapi.ts",
+    "docs:openapi": "bun packages/domain/scripts/docs-openapi.ts && oxfmt docs/api",
     "docs:build": "bun run docs:openapi && bunx --bun vitepress build docs",
     "licenses": "bun scripts/check-licenses.ts"
   },
