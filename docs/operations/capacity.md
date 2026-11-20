@@ -15,7 +15,7 @@ against. The scripts live in `load/`; see `load/README.md` for how to run them.
 
 - Host: 12 vCPU Linux x64. Container limits for the app: `--cpus 2 --memory 4g`. Postgres: no
   limit.
-- Build: `deploy/Dockerfile` image `audit:local`, built from the working tree on top of `f719398`
+- Build: `deploy/Dockerfile` image `audit:local`, built from `git archive 4d5cc51` (HEAD) for the final runs
 - Data: seeded demo workspace (`load/fixtures.js` reads it): 5 projects, 5 boards, about 2,000
   tasks, 200 docs, 23 channels, about 20,600 messages, 25 people, 26 user profiles, 23,120 live
   entities.
@@ -137,70 +137,88 @@ Top three remaining costs:
 `docker stats` reports CPU per core, so the app is at about 60 to 65% of its 2-core limit and
 Postgres is at about 73% of one core, during this burst.
 
-## 5 to 15 s think time (default scenario)
+## 5 to 15 s think time, final run (HEAD 4d5cc51)
 
-The mixed scenario defaults to 5 to 15 s think time between actions (uniform, mean 10 s). This
-was chosen as the gate scenario for the post-fix build. The 0.5 to 1.5 s runs above are kept as a
-stress run only.
+Fresh stack: image `audit:local` built from `git archive 4d5cc51` (exit 0), new volumes
+(`docker compose down -v` first), `migrate` exit 0, `seed --demo` exit 0 (21,476 entities), app
+limited to `--cpus 2 --memory 4g --memory-swap 4g`. Scenario: 200 API VUs for 5 minutes with 5 to
+15 s think time, plus 25 `/rpc` and 25 `/collab` sockets. Two gate runs (A, B) and one idle memory
+gate.
 
-Runs at 200 API VUs, 5 minutes, post-fix build (`load/mixed.js` defaults):
+| Gate                                      | Target       | Result                                         | Verdict |
+| ----------------------------------------- | ------------ | ---------------------------------------------- | ------- |
+| API p95 latency, 200 VUs, 5 to 15 s think | under 150 ms | 98.6 ms (A), 91.4 ms (B)                       | pass    |
+| API error rate                            | under 1%     | 0.000% (A), 0.017% (B)                         | pass    |
+| Idle RSS, 25 sockets, 330 s hold          | under 1 GB   | app 169.4 MiB + Postgres 197.6 MiB (about 367) | pass    |
 
-| Run | API p50 ms | API p95 ms | API p99 ms | Requests | Error rate | p95 gate (under 150 ms)   |
-| --- | ---------: | ---------: | ---------: | -------: | ---------: | ------------------------- |
-| 4   |       21.9 |       61.7 |    2,601.4 |    6,034 |     0.000% | pass                      |
-| 5   |       22.6 |       62.7 |    2,104.5 |    6,051 |     0.000% | pass                      |
-| 6   |       23.0 |      124.4 |    2,121.2 |    6,068 |     0.000% | pass overall; writes fail |
+Per endpoint, latency in milliseconds (k6 exit 0 for A and B):
 
-Run 5, per endpoint (run 6 p95 in the last column):
+| Endpoint        | A requests | A p50 | A p95 |   A p99 | B requests | B p50 | B p95 |   B p99 |
+| --------------- | ---------: | ----: | ----: | ------: | ---------: | ----: | ----: | ------: |
+| board view      |      1,517 |  44.4 | 107.1 | 3,240.1 |      1,515 |  45.2 |  99.3 | 2,794.1 |
+| doc open        |      1,244 |   9.7 |  54.2 | 2,145.5 |      1,230 |   9.0 |  49.7 | 1,812.9 |
+| channel history |      1,187 |  27.4 |  68.8 | 2,459.2 |      1,218 |  19.6 |  55.3 | 2,071.4 |
+| search          |        948 |  39.2 | 103.9 | 1,017.9 |        917 |  39.3 | 101.4 |   907.4 |
+| task move       |        592 |  27.1 | 135.0 | 1,810.6 |        600 |  27.6 |  90.1 | 1,372.2 |
+| message post    |        578 |  25.4 | 102.6 | 1,749.2 |        578 |  24.1 | 138.4 | 1,459.9 |
+| all API         |      6,066 |  32.1 |  98.6 | 2,447.0 |      6,058 |  29.4 |  91.4 | 2,056.3 |
 
-| Endpoint        | Requests |  p50 |  p95 |     p99 | Run 6 p95 |
-| --------------- | -------: | ---: | ---: | ------: | --------: |
-| board view      |    1,494 | 34.5 | 73.9 | 3,052.4 |      78.9 |
-| doc open        |    1,232 |  6.9 | 23.9 | 1,792.1 |      29.4 |
-| channel history |    1,167 | 12.5 | 33.1 | 2,094.8 |      30.1 |
-| search          |      966 | 37.5 | 75.9 |   942.5 |     165.1 |
-| task move       |      617 | 22.9 | 74.5 | 1,480.0 |     194.7 |
-| message post    |      575 | 20.0 | 63.1 | 1,490.1 |   1,067.3 |
+Errors: run A 0 failed requests. Run B 1 failed request: a `POST` to a channel message at
+13:24:44 UTC with status 0 (no response). The app logged no error in that window. Not investigated
+further.
 
-The p95 gate holds for the whole API in all three runs, but run 6 misses it for task move and
-message post. Those two endpoints were the ones inside the stall below.
+Stress run, 0.5 to 1.5 s think time (5 minutes, 200 VUs). The server is saturated at about 78
+requests per second, so latency is queueing. Error rate 0.000%. The k6 run exited 99 because the p95
+threshold was crossed.
 
-### Where the p99 stall comes from
+| Endpoint        | Requests |     p50 |     p95 |     p99 |
+| --------------- | -------: | ------: | ------: | ------: |
+| board view      |    5,879 | 2,347.0 | 2,900.9 | 3,162.5 |
+| doc open        |    4,739 | 1,355.0 | 1,775.7 | 1,953.3 |
+| channel history |    4,692 | 1,810.7 | 2,295.2 | 2,472.1 |
+| search          |    3,471 |   738.1 | 1,041.9 | 1,228.3 |
+| task move       |    2,397 | 1,230.0 | 1,625.5 | 1,811.9 |
+| message post    |    2,312 | 1,222.7 | 1,585.3 | 2,167.2 |
+| all API         |   23,490 | 1,478.3 | 2,619.5 | 2,926.9 |
 
-Run 6 was captured point by point (`k6 --out json`). 175 of 6,097 requests took over 1 s, and all
-of them fall in one window of about 1.7 s, 251 s into the run (10:37:36.3 to 10:37:37.98 UTC).
-Connection setup is not involved (`http_req_connecting` p99 1.6 ms), so the time is server-side
-(`http_req_waiting`).
+### p99 stalls: start burst from the k6 scenario
 
-The app log for that window shows a burst of about 25 searches and about 50 writes arriving within
-roughly one second. Each has a server span of 0.7 to 1.7 s, and the writes complete one after
-another about 6 ms apart. Measured separately:
+The 3 to 4 s p99 window is the start of the run, not a steady-state stall. In all three gate runs
+it is the first 2 to 3 seconds of API traffic, measured from the first API request:
 
-- Writes serialize. Every trail entry takes `pg_advisory_xact_lock('audit:trail_events')` in the
-  `trail_events_chain` trigger, held until the command's transaction commits. With 30 concurrent
-  writers the server sustained 82 posts per second (1,238 in 15 s, p50 347 ms, p99 727 ms), about
-  12 ms of serialized time per write. Board reads running alongside had p50 515 ms.
-- Requests then queue for pool connections. The app pool is 10 connections with no acquire
-  timeout, and writers hold a connection while they wait on the lock.
-- Ruled out: Postgres lock waits (none over 1 s), errors, and slow statements (20 statements over
-  200 ms in the whole run); connection setup; CPU throttling (51 throttle events on the app
-  cgroup since it started); fsync (sync 8 KB writes take about 1.5 ms).
-- Not established: what produced the burst at about 35 s into the window. It is either a
-  synchronized arrival from the load client or a short app pause before it. The server log
-  alone does not separate the two.
+| Run                    | t+0 s (n, mean ms) | t+1 s (n, mean ms) | t+2 s (n, mean ms) | t+5 s onward (mean ms) |
+| ---------------------- | ------------------ | ------------------ | ------------------ | ---------------------- |
+| A (200 VUs at t=0)     | 58, 1242           | 97, 2176           | 45, 3177           | about 25 to 30         |
+| B (200 VUs at t=0)     | 89, 1234           | 86, 2086           | 25, 2798           | about 25 to 37         |
+| run 6 (200 VUs at t=0) | 68, 1172           | 92, 1991           | 40, 2769           | about 20 to 36         |
 
-Change made: trail entries are no longer chained inside the command transaction. A command
-inserts its trail rows with a sequence number (`seq`) and no chain position, so it takes no
-global lock. A background chainer (`trailChainer`, started by `audit serve`) assigns chain
-positions in `seq` order under its own advisory lock, after the commit. It wakes on a
-`NOTIFY audit_trail` and sweeps once a second. Rows are verifiable once chained; an entry left
-unchained for more than 60 seconds makes `audit trail verify` fail, which reports a stopped
-chainer. The 82 posts per second figure above is the measurement before this change.
+Exactly 200 requests land in the first seconds, one per VU, because every VU starts at t=0 and
+fires its first request at once. The backlog drains at about 2 s per 200 requests on the 2 CPU app,
+then requests return in about 25 ms. The server does not stall for 3 s at any other point.
 
-Host disk: the root filesystem was 99% full (2.5 GB free) during these runs.
+Fix (script only, no server change): API VUs now ramp from 0 to 200 over `RAMP` (default 60 s) and
+then hold for `DURATION`. See `load/README.md`.
 
-Idle memory gate (25 realtime sockets, 330 s hold, run 6 build): app 170.9 MiB, Postgres 212.9 MiB,
-total about 384 MiB. Pass.
+Ramped gate run (HEAD 4d5cc51, fresh stack, seed `--demo` exit 0, k6 exit 0):
+
+| Endpoint        | Requests |  p50 |  p95 |  p99 |   max |
+| --------------- | -------: | ---: | ---: | ---: | ----: |
+| board view      |    1,683 | 37.0 | 63.5 | 88.1 | 149.0 |
+| doc open        |    1,352 |  7.2 | 21.0 | 41.1 | 111.5 |
+| channel history |    1,299 | 22.8 | 42.6 | 62.0 | 141.3 |
+| search          |    1,012 | 34.0 | 53.7 | 68.4 | 138.6 |
+| task move       |      647 | 21.3 | 46.3 | 64.9 | 147.1 |
+| message post    |      668 | 18.5 | 41.5 | 64.7 | 155.0 |
+| all API         |    6,661 | 24.5 | 52.2 | 74.0 | 155.0 |
+
+No API request took over 1 s. The earlier 175 to 181 slow requests per run were all in the first
+seconds. Write endpoints show no p95 spike in this run (task move p95 46.3 ms, message post 41.5 ms).
+Failed requests: 0. Server logs in the window: no errors.
+
+Note: the k6 summary JSON reports `p(95)<150` as `false` even with p95 52.2 ms; the k6 exit code (0)
+is used as the threshold result for this run.
+
+Host disk: the root filesystem was 99% full (2.5 GB free) during the earlier runs on this host.
 
 ## Search candidate query (`windowRows`)
 

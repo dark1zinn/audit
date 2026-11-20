@@ -50,12 +50,19 @@ docker stats --no-stream audit-app-1 audit-postgres-1
 | `AUDIT_URL`            | `http://localhost:3000`        | Base URL. Also sent as the `Origin` header on every request.            |
 | `API_VUS`              | `200`                          | VUs for the API mix.                                                    |
 | `DURATION`             | `5m`                           | API mix duration.                                                       |
+| `RAMP`                 | `60s`                          | Ramp from 0 to `API_VUS` before the `DURATION` hold (see below).        |
 | `HOLD_SECONDS`         | `300`                          | How long each realtime socket stays open.                               |
 | `THINK_MIN`            | `5`                            | Minimum think time per API iteration, in seconds (scenario definition). |
 | `THINK_MAX`            | `15`                           | Maximum think time per API iteration, in seconds (scenario definition). |
 | `PRESENCE_INTERVAL_MS` | `2000`                         | Interval between `presence.update` calls per `/rpc` socket.             |
 | `USERS`                | `25`                           | Limit the number of seeded people. Smoke runs only.                     |
 | `DEMO_PASSWORD`        | `correct horse battery staple` | Password for the seeded people.                                         |
+
+The API VUs ramp in over `RAMP` and then hold at `API_VUS` for `DURATION`. Without the ramp all 200
+VUs fire their first request in the same second. That first request backlog (about 200 requests,
+queued for about 3 s behind a cold server) showed up as a 3 to 4 s p99 window at the start of every
+earlier run. With the ramp, the same build shows no request over 1 s. The gate summary covers the
+whole run, ramp included.
 
 `USERS` below 25 makes several sockets share one user. The presence throttle is per user
 (1 update per second), so most updates from shared users are rejected. Use the full 25 for

@@ -7,6 +7,9 @@
 // Each API VU takes a think time of 5-15 s between actions (THINK_MIN/THINK_MAX). This is the
 // scenario definition the user chose; 0.5-1.5 s is kept only as a stress run. Requests are tagged
 // `kind:api`.
+// The API VUs ramp from 0 to API_VUS over RAMP (default 60s), then hold for DURATION. Starting all
+// VUs at t=0 puts about 200 first requests in the same second, which queues for about 3 s on the
+// app and dominates p99. The summary covers the whole run, ramp included.
 
 import http from "k6/http"
 import { sleep } from "k6"
@@ -19,6 +22,7 @@ export { rpcHold, collabHold }
 
 const API_VUS = Number(__ENV.API_VUS || 200)
 const DURATION = __ENV.DURATION || "5m"
+const RAMP = __ENV.RAMP || "60s"
 const SOCKET_HOLD = `${__ENV.HOLD_SECONDS || 300}s`
 const THINK_MIN = Number(__ENV.THINK_MIN || 5)
 const THINK_MAX = Number(__ENV.THINK_MAX || 15)
@@ -28,9 +32,12 @@ export const options = {
   summaryTrendStats: ["avg", "min", "med", "max", "count", "p(50)", "p(95)", "p(99)"],
   scenarios: {
     api: {
-      executor: "constant-vus",
-      vus: API_VUS,
-      duration: DURATION,
+      executor: "ramping-vus",
+      startVUs: 0,
+      stages: [
+        { duration: RAMP, target: API_VUS },
+        { duration: DURATION, target: API_VUS },
+      ],
       exec: "apiMix",
       gracefulStop: "30s",
     },
