@@ -18,7 +18,7 @@ import {
   SecurityInput,
   SignedUp,
   SignupInput,
-  VerifySignupInput,
+  ApprovedSignup,
   StorageSummary,
 } from "./schema.ts"
 
@@ -123,7 +123,7 @@ export const AdminApi = HttpApiGroup.make("admin")
   .add(
     HttpApiEndpoint.post("approveSignup", "/api/admin/signups/:id/approve", {
       ...signupParams,
-      success: Schema.Void,
+      success: ApprovedSignup,
       error: [Forbidden, NotFound, Conflict],
     }),
   )
@@ -137,18 +137,10 @@ export const AdminApi = HttpApiGroup.make("admin")
   .middleware(Authentication)
 
 /** Self sign-up, public; the workspace sign-up policy decides whether it is allowed. */
-export const SignupApi = HttpApiGroup.make("signup")
-  .add(
-    HttpApiEndpoint.post("signup", "/api/signup", {
-      payload: SignupInput,
-      success: SignedUp,
-      error: [Forbidden, ValidationError, RateLimited],
-    }),
-  )
-  .add(
-    HttpApiEndpoint.post("verifySignup", "/api/signup/verify", {
-      payload: VerifySignupInput,
-      success: Schema.Void,
-      error: [ValidationError, Conflict, RateLimited],
-    }),
-  )
+export const SignupApi = HttpApiGroup.make("signup").add(
+  HttpApiEndpoint.post("signup", "/api/signup", {
+    payload: SignupInput,
+    success: SignedUp,
+    error: [Forbidden, ValidationError, RateLimited],
+  }),
+)

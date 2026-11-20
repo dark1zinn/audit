@@ -31,6 +31,7 @@ import { dueSoonJob, overdueJob, remindDueSoon, remindOverdue } from "@audit/cor
 import { calendarReminder, calendarReminderJob } from "@audit/core/calendar/reminders"
 import { deliverNotification } from "@audit/core/notifications/deliver"
 import { deliverJob } from "@audit/core/notifications/notify"
+import { inviteMailJob, sendInviteEmail } from "@audit/core/notifications/account-mail"
 import type { Mailer } from "@audit/core/notifications/mail"
 import type { PushTransport } from "@audit/core/notifications/push"
 import { CurrentActor } from "@audit/domain/actor"
@@ -55,6 +56,7 @@ export const jobDefinitions: ReadonlyArray<JobDefinition> = [
   trailRetentionJob,
   softDeleteRetentionJob,
   deliverJob,
+  inviteMailJob,
   embeddingSyncJob,
   reembedJob,
   aiDigestJob,
@@ -141,6 +143,7 @@ export const jobWorkersLayer = Layer.effectDiscard(
     yield* jobs.work(deliverJob, (data) =>
       deliverNotification(data).pipe(asSystem, Effect.provide(context)),
     )
+    yield* jobs.work(inviteMailJob, (data) => sendInviteEmail(data).pipe(Effect.provide(context)))
     yield* jobs.work(trailRetentionJob, () =>
       purgeTrail.execute({}).pipe(asSystem, Effect.provide(context)),
     )

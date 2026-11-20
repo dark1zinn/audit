@@ -288,14 +288,6 @@ msgstr "Revisión de acceso"
 msgid "Account"
 msgstr "Cuenta"
 
-#: ../../apps/web/src/routes/signup.tsx
-#~ msgid "Account created"
-#~ msgstr "Cuenta creada"
-
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Account created. Go to sign in"
-msgstr "Cuenta creada. Ir a iniciar sesión"
-
 #: ../../apps/web/src/components/app-shell.tsx
 msgid "Account menu"
 msgstr "Menú de cuenta"
@@ -474,8 +466,8 @@ msgid "Also viewing"
 msgstr "También viendo"
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "An administrator reviews new accounts. You can sign in once your request is approved."
-msgstr "Un administrador revisa las cuentas nuevas. Podrás iniciar sesión cuando se apruebe tu solicitud."
+msgid "An administrator reviews new requests. Once approved, you receive an invite link to choose your password."
+msgstr "Un administrador revisa las nuevas solicitudes. Al aprobarla, recibirás un enlace de invitación para elegir tu contraseña."
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
 msgid "Any assignee"
@@ -600,10 +592,6 @@ msgstr "Asignar {0}"
 msgid "Assign selected to"
 msgstr "Asignar seleccionados a"
 
-#: ../../apps/web/src/components/ai/assistant-parts.tsx
-#~ msgid "Assign task"
-#~ msgstr "Asignar tarea"
-
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Assign to"
 msgstr "Asignar a"
@@ -636,7 +624,6 @@ msgstr "Configuración del asistente"
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/reset-password.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "At least 10 characters."
 msgstr "Al menos 10 caracteres."
 
@@ -683,10 +670,6 @@ msgstr "N"
 #: ../../apps/web/src/routes/signup.tsx
 msgid "Back to sign in"
 msgstr "Volver a iniciar sesión"
-
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Back to sign-up"
-msgstr "Volver al registro"
 
 #: ../../apps/web/src/components/docs/doc-view.tsx
 msgid "Backlinks"
@@ -769,13 +752,7 @@ msgstr "Verificación de contraseñas filtradas activada"
 msgid "Break down"
 msgstr "Desglosar"
 
-#. placeholder {0}: task.title
-#. placeholder {1}: task.id
-#: ../../apps/web/src/components/task-panel/task-panel.tsx
-#~ msgid "Break the task \"{0}\" (id {1}) into subtasks and propose each one as a task."
-#~ msgstr "Desglosa la tarea \"{0}\" (id {1}) en subtareas y propón cada una como tarea."
-
-#. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
+#. placeholder {0}: verify.data.firstBrokenPos ?? "?"
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Broken at sequence {0}."
 msgstr "Roto en la secuencia {0}."
@@ -871,7 +848,7 @@ msgstr "Categoría"
 msgid "Chain broken"
 msgstr "Cadena rota"
 
-#. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
+#. placeholder {0}: verify.data.firstBrokenPos ?? "?"
 #: ../../apps/web/src/routes/_app.admin.index.tsx
 msgid "Chain broken at sequence {0}"
 msgstr "Cadena interrumpida en la secuencia {0}"
@@ -1141,10 +1118,6 @@ msgstr "Confirmar"
 msgid "Confirm delete"
 msgstr "Confirmar eliminación"
 
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Confirm your sign-up"
-msgstr "Confirma tu registro"
-
 #: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Connected"
 msgstr "Conectado"
@@ -1191,6 +1164,10 @@ msgstr "Copiar"
 #: ../../apps/web/src/components/ai/ai-text-dialog.tsx
 msgid "Copy failed. Select the text and copy it manually."
 msgstr "No se pudo copiar. Selecciona el texto y cópialo manualmente."
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Copy invite link"
+msgstr "Copiar enlace de invitación"
 
 #: ../../apps/web/src/components/docs/doc-ai-menu.tsx
 msgid "Corrected text"
@@ -2072,8 +2049,8 @@ msgid "If an account exists for that address, a password-reset link is on its wa
 msgstr "Si existe una cuenta con esa dirección, en camino llega un enlace para restablecer la contraseña. El enlace caduca pronto."
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "If this address can sign up, we sent a link to confirm it. The link is valid for 24 hours."
-msgstr "Si esta dirección puede registrarse, te enviamos un enlace para confirmarla. El enlace es válido durante 24 horas."
+msgid "If this address can sign up, we sent it an invite link. Open it to choose your password."
+msgstr "Si esta dirección puede registrarse, le enviamos un enlace de invitación. Ábralo para elegir su contraseña."
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "Image"
@@ -3058,10 +3035,6 @@ msgstr "Compatible con OpenAI"
 msgid "Opening conversation…"
 msgstr "Abriendo conversación…"
 
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Opening the link from your email creates your account."
-msgstr "Abrir el enlace de tu correo crea tu cuenta."
-
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Optional"
 msgstr "Opcional"
@@ -3146,7 +3119,6 @@ msgstr "Claves de acceso"
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/login.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Password"
 msgstr "Contraseña"
 
@@ -3428,10 +3400,6 @@ msgstr "Reconstrucción en cola. Esta página se actualizará cuando termine."
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuild search index"
 msgstr "Reconstruir índice de búsqueda"
-
-#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
-#~ msgid "Rebuild the search index and export workspace data."
-#~ msgstr "Reconstruye el índice de búsqueda y exporta los datos del espacio de trabajo."
 
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuild the search index, rebalance boards, compact docs and export workspace data."
@@ -3770,11 +3738,6 @@ msgstr "Filtros de búsqueda"
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Search index"
 msgstr "Índice de búsqueda"
-
-#. placeholder {0}: result.updated
-#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
-#~ msgid "Search index rebuilt for {0} items"
-#~ msgstr "Índice de búsqueda reconstruido para {0} elementos"
 
 #. placeholder {0}: reindexStatus.data.updated ?? 0
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
@@ -4833,10 +4796,6 @@ msgstr "Estás viendo este canal sin haberte unido."
 msgid "You can comment on this document but not edit it."
 msgstr "Puedes comentar en este documento pero no editarlo."
 
-#: ../../apps/web/src/components/docs/doc-view.tsx
-#~ msgid "You can read this document."
-#~ msgstr "Puedes leer este documento."
-
 #: ../../apps/web/src/components/docs/collab-editor.tsx
 msgid "You can read this document. Ask an editor to change it."
 msgstr "Puedes leer este documento. Pide a un editor que lo cambie."
@@ -4872,19 +4831,22 @@ msgstr "Te invitaron a {workspace}"
 msgid "Your account"
 msgstr "Tu cuenta"
 
-#: ../../apps/web/src/routes/signup.tsx
-#~ msgid "Your account is ready. Sign in to continue."
-#~ msgstr "Tu cuenta está lista. Inicia sesión para continuar."
-
 #: ../../apps/web/src/routes/_app.calendar.tsx
 msgid "Your events, shared calendars and task due dates."
 msgstr "Tus eventos, calendarios compartidos y fechas límite de tareas."
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Your latest changes were not saved."
+msgstr "Tus cambios más recientes no se guardaron."
+
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Your name"
 msgstr "Tu nombre"
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Your name (optional)"
+msgstr "Tu nombre (opcional)"
 
 #: ../../apps/web/src/routes/reset-password.tsx
 msgid "Your password was changed. You can now sign in with it."

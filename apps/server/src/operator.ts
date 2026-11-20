@@ -8,6 +8,7 @@ import { Authz } from "@audit/core/authz"
 import * as Command from "@audit/core/command"
 import { createAccount, normalizeEmail } from "@audit/core/identity/accounts"
 import * as identity from "@audit/core/identity/commands"
+import { resetIdentifier } from "@audit/core/identity/reset-token"
 import { reindexSearch } from "@audit/core/search/reindex"
 import { record } from "@audit/core/trail"
 import type { UserId } from "@audit/domain/ids"
@@ -37,7 +38,7 @@ const issueResetLink = Command.make("member.password_reset_link_created", {
       const expiresAt = new Date(Date.now() + RESET_LINK_HOURS * 3_600_000)
       yield* db
         .insert(verification)
-        .values({ identifier: `reset-password:${token}`, value: userId, expiresAt })
+        .values({ identifier: resetIdentifier(token), value: userId, expiresAt })
       yield* record({
         action: "member.password_reset_link_created",
         entityId: userId as UserId,

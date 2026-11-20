@@ -288,14 +288,6 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
-#: ../../apps/web/src/routes/signup.tsx
-#~ msgid "Account created"
-#~ msgstr ""
-
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Account created. Go to sign in"
-msgstr ""
-
 #: ../../apps/web/src/components/app-shell.tsx
 msgid "Account menu"
 msgstr ""
@@ -474,7 +466,7 @@ msgid "Also viewing"
 msgstr ""
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "An administrator reviews new accounts. You can sign in once your request is approved."
+msgid "An administrator reviews new requests. Once approved, you receive an invite link to choose your password."
 msgstr ""
 
 #: ../../apps/web/src/components/board/filters-bar.tsx
@@ -600,10 +592,6 @@ msgstr ""
 msgid "Assign selected to"
 msgstr ""
 
-#: ../../apps/web/src/components/ai/assistant-parts.tsx
-#~ msgid "Assign task"
-#~ msgstr ""
-
 #: ../../apps/web/src/components/board/bulk-bar.tsx
 msgid "Assign to"
 msgstr ""
@@ -636,7 +624,6 @@ msgstr ""
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/reset-password.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "At least 10 characters."
 msgstr ""
 
@@ -682,10 +669,6 @@ msgstr ""
 #: ../../apps/web/src/routes/forgot-password.tsx
 #: ../../apps/web/src/routes/signup.tsx
 msgid "Back to sign in"
-msgstr ""
-
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Back to sign-up"
 msgstr ""
 
 #: ../../apps/web/src/components/docs/doc-view.tsx
@@ -769,13 +752,7 @@ msgstr ""
 msgid "Break down"
 msgstr ""
 
-#. placeholder {0}: task.title
-#. placeholder {1}: task.id
-#: ../../apps/web/src/components/task-panel/task-panel.tsx
-#~ msgid "Break the task \"{0}\" (id {1}) into subtasks and propose each one as a task."
-#~ msgstr ""
-
-#. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
+#. placeholder {0}: verify.data.firstBrokenPos ?? "?"
 #: ../../apps/web/src/routes/_app.admin.audit.tsx
 msgid "Broken at sequence {0}."
 msgstr ""
@@ -871,7 +848,7 @@ msgstr ""
 msgid "Chain broken"
 msgstr ""
 
-#. placeholder {0}: verify.data.firstBrokenSeq ?? "?"
+#. placeholder {0}: verify.data.firstBrokenPos ?? "?"
 #: ../../apps/web/src/routes/_app.admin.index.tsx
 msgid "Chain broken at sequence {0}"
 msgstr ""
@@ -1141,10 +1118,6 @@ msgstr ""
 msgid "Confirm delete"
 msgstr ""
 
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Confirm your sign-up"
-msgstr ""
-
 #: ../../apps/web/src/routes/_app.admin.ai.tsx
 msgid "Connected"
 msgstr ""
@@ -1190,6 +1163,10 @@ msgstr ""
 
 #: ../../apps/web/src/components/ai/ai-text-dialog.tsx
 msgid "Copy failed. Select the text and copy it manually."
+msgstr ""
+
+#: ../../apps/web/src/routes/_app.admin.members.tsx
+msgid "Copy invite link"
 msgstr ""
 
 #: ../../apps/web/src/components/docs/doc-ai-menu.tsx
@@ -2072,7 +2049,7 @@ msgid "If an account exists for that address, a password-reset link is on its wa
 msgstr ""
 
 #: ../../apps/web/src/routes/signup.tsx
-msgid "If this address can sign up, we sent a link to confirm it. The link is valid for 24 hours."
+msgid "If this address can sign up, we sent it an invite link. Open it to choose your password."
 msgstr ""
 
 #: ../../apps/web/src/components/docs/collab-editor.tsx
@@ -3058,10 +3035,6 @@ msgstr ""
 msgid "Opening conversation…"
 msgstr ""
 
-#: ../../apps/web/src/routes/signup.tsx
-msgid "Opening the link from your email creates your account."
-msgstr ""
-
 #: ../../apps/web/src/routes/_app.admin.workspace.tsx
 msgid "Optional"
 msgstr ""
@@ -3146,7 +3119,6 @@ msgstr ""
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/login.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Password"
 msgstr ""
 
@@ -3428,10 +3400,6 @@ msgstr ""
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuild search index"
 msgstr ""
-
-#: ../../apps/web/src/routes/_app.admin.maintenance.tsx
-#~ msgid "Rebuild the search index and export workspace data."
-#~ msgstr ""
 
 #: ../../apps/web/src/routes/_app.admin.maintenance.tsx
 msgid "Rebuild the search index, rebalance boards, compact docs and export workspace data."
@@ -4863,18 +4831,21 @@ msgstr ""
 msgid "Your account"
 msgstr ""
 
-#: ../../apps/web/src/routes/signup.tsx
-#~ msgid "Your account is ready. Sign in to continue."
-#~ msgstr ""
-
 #: ../../apps/web/src/routes/_app.calendar.tsx
 msgid "Your events, shared calendars and task due dates."
 msgstr ""
 
+#: ../../apps/web/src/components/docs/collab-editor.tsx
+msgid "Your latest changes were not saved."
+msgstr ""
+
 #: ../../apps/web/src/routes/join.$token.tsx
 #: ../../apps/web/src/routes/setup.tsx
-#: ../../apps/web/src/routes/signup.tsx
 msgid "Your name"
+msgstr ""
+
+#: ../../apps/web/src/routes/signup.tsx
+msgid "Your name (optional)"
 msgstr ""
 
 #: ../../apps/web/src/routes/reset-password.tsx

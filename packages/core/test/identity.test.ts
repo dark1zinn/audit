@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import * as identity from "@audit/core/identity/commands"
 import { EventBus } from "@audit/core/event-bus"
+import { chainTrail } from "@audit/core/trail-chain"
 import { verifyTrail } from "@audit/core/trail-queries"
 import { defaultWorkspaceSettings } from "@audit/domain/identity/schema"
 import type { TeamId } from "@audit/domain/ids"
@@ -117,15 +118,16 @@ describe("audit trail", () => {
   })
 
   test("verification detects a tampered entry", async () => {
+    await runAs(database, system)(chainTrail)
     const intact = await runAs(database, system)(verifyTrail())
     expect(intact.ok).toBe(true)
     const [target] =
-      await database.superuser`select seq from trail_events order by seq limit 1 offset 2`
+      await database.superuser`select chain_pos from trail_events order by chain_pos limit 1 offset 2`
     await database.superuser`alter table trail_events disable trigger trail_events_append_only`
-    await database.superuser`update trail_events set action = 'forged' where seq = ${target.seq}`
+    await database.superuser`update trail_events set action = 'forged' where chain_pos = ${target.chain_pos}`
     await database.superuser`alter table trail_events enable trigger trail_events_append_only`
     const broken = await runAs(database, system)(verifyTrail())
-    expect(broken).toMatchObject({ ok: false, firstBrokenSeq: Number(target.seq) })
+    expect(broken).toMatchObject({ ok: false, firstBrokenPos: Number(target.chain_pos) })
   })
 })
 

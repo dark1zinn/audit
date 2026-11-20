@@ -54,7 +54,7 @@ export const toInvite = (row: InviteRow, now: Date): Invite => ({
   maxUses: row.maxUses,
   useCount: row.useCount,
   revokedAt: row.revokedAt,
-  createdBy: row.createdBy as UserId,
+  createdBy: row.createdBy as UserId | null,
   note: row.note,
   createdAt: row.createdAt,
   status: inviteStatus(row, now),

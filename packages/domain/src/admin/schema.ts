@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { Email, Password, SignupPolicy, WorkspaceName } from "../identity/schema.ts"
+import { Email, SignupPolicy, WorkspaceName } from "../identity/schema.ts"
 import { EntityId, FileId, Uuid, UserId } from "../ids.ts"
 import { ResourceRole, WorkspaceRole } from "../roles.ts"
 
@@ -29,11 +29,8 @@ export type RetentionInput = typeof RetentionInput.Type
 
 /** Self sign-up, allowed by the workspace's sign-up policy. */
 export const SignupInput = Schema.Struct({
-  name: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(120)),
+  name: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(120))),
   email: Email,
-  password: Password,
-  locale: Schema.optionalKey(Schema.Literals(["en", "pt-BR", "es"])),
-  timezone: Schema.optionalKey(Schema.String),
 })
 export type SignupInput = typeof SignupInput.Type
 
@@ -44,19 +41,18 @@ export type SignupInput = typeof SignupInput.Type
 export const SignedUp = Schema.Struct({ delivery: Schema.Literals(["email", "approval"]) })
 export type SignedUp = typeof SignedUp.Type
 
-export const VerifySignupInput = Schema.Struct({
-  token: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(128)),
-})
-export type VerifySignupInput = typeof VerifySignupInput.Type
-
 /** A sign-up waiting for an admin's approval (no mail configured). */
 export const PendingSignup = Schema.Struct({
   id: Uuid,
-  name: Schema.String,
+  name: Schema.NullOr(Schema.String),
   email: Schema.String,
   requestedAt: Schema.Date,
 })
 export type PendingSignup = typeof PendingSignup.Type
+
+/** The invite link an admin copies to the applicant after approving a sign-up. */
+export const ApprovedSignup = Schema.Struct({ url: Schema.String })
+export type ApprovedSignup = typeof ApprovedSignup.Type
 
 export const EmailTestInput = Schema.Struct({ to: Email })
 export type EmailTestInput = typeof EmailTestInput.Type

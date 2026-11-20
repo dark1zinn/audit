@@ -39,11 +39,13 @@ import type { WorkspaceCapability } from "@audit/domain/permissions"
 import { AppConfig } from "@audit/platform/config"
 import { generateToken, sha256Hex } from "@audit/platform/crypto"
 import { Db } from "@audit/platform/database"
+import { Jobs } from "@audit/platform/jobs"
 import { and, eq, inArray, sql } from "drizzle-orm"
 import { Effect, Schema } from "effect"
 import { Authz } from "../authz.ts"
 import { notify } from "../notifications/notify.ts"
-import { sendInviteEmail } from "../notifications/account-mail.ts"
+import { inviteMailJob } from "../notifications/account-mail.ts"
+import { Mailer } from "../notifications/mail.ts"
 import * as Command from "../command.ts"
 import { diff, emit, record } from "../trail.ts"
 import { createAccount, normalizeEmail } from "./accounts.ts"
@@ -210,7 +212,10 @@ export const createInvite = Command.make("invite.create", {
         version: null,
       })
       const url = new URL(`/join/${token}`, config.url).toString()
-      if (invite.email !== null) yield* sendInviteEmail({ email: invite.email, url })
+      if (invite.email !== null && (yield* Mailer).enabled) {
+        const jobs = yield* Jobs
+        yield* jobs.enqueue(inviteMailJob, { email: invite.email, url })
+      }
       return { invite, url }
     }),
 })
@@ -268,7 +273,7 @@ export const acceptInvite = Command.make("invite.accept", {
         email: input.email,
         password: input.password,
         role: row.role,
-        invitedBy: row.createdBy as UserId,
+        invitedBy: row.createdBy as UserId | null,
         ...(input.locale === undefined ? {} : { locale: input.locale }),
         ...(input.timezone === undefined ? {} : { timezone: input.timezone }),
       })

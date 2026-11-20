@@ -10,6 +10,7 @@ import { SQL } from "bun"
 import { mkdtemp } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { startMailCapture, type MailCapture } from "./e2e-mail.ts"
 
 const root = join(import.meta.dir, "..")
 const webDir = join(root, "apps/web")
@@ -20,6 +21,8 @@ const setupToken = `e2e-setup-${crypto.randomUUID()}`
 const databaseName = `audit_e2e_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`
 const image = process.env.E2E_IMAGE || undefined
 const containerName = `audit-e2e-${databaseName}`
+const mailDatabaseName = `${databaseName}_mail`
+const mailOwnerEmail = "owner@e2e.test"
 
 const log = (message: string) => console.log(`[e2e] ${message}`)
 
@@ -40,19 +43,19 @@ const freePort = () => {
   return port
 }
 
-const createDatabase = async () => {
+const createDatabase = async (name = databaseName) => {
   const admin = new SQL(devDatabaseUrl)
   try {
-    await admin.unsafe(`CREATE DATABASE ${databaseName}`)
+    await admin.unsafe(`CREATE DATABASE ${name}`)
   } finally {
     await admin.close()
   }
 }
 
-const dropDatabase = async () => {
+const dropDatabase = async (name = databaseName) => {
   const admin = new SQL(devDatabaseUrl)
   try {
-    await admin.unsafe(`DROP DATABASE IF EXISTS ${databaseName} WITH (FORCE)`)
+    await admin.unsafe(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`)
   } finally {
     await admin.close()
   }
@@ -76,6 +79,9 @@ const waitForServer = async (url: string, server: Bun.Subprocess) => {
 let server: Bun.Subprocess | undefined
 let exitCode = 1
 let serverLog = ""
+let mailServer: Bun.Subprocess | undefined
+let mailCapture: MailCapture | undefined
+let mailEnv: Record<string, string> = {}
 
 try {
   if (image === undefined) {
@@ -127,6 +133,61 @@ try {
   await waitForServer(url, server)
   log("server ready")
 
+  // SMTP path: a second server on its own database sends through the capture. Image runs have no
+  // source tree to run the CLI from, so only source runs get it.
+  if (image === undefined) {
+    mailCapture = startMailCapture()
+    const mailPort = freePort()
+    const mailUrl = `http://127.0.0.1:${mailPort}`
+    const mailServerEnv: Record<string, string> = {
+      ...serverEnv,
+      AUDIT_URL: mailUrl,
+      PORT: String(mailPort),
+      DATABASE_URL: `postgres://audit:audit@127.0.0.1:5432/${mailDatabaseName}`,
+      SMTP_URL: mailCapture.smtpUrl,
+      MAIL_FROM: "audit@e2e.test",
+    }
+    await createDatabase(mailDatabaseName)
+    const migrateCode = await runToEnd(["bun", "src/cli.ts", "migrate"], serverDir, mailServerEnv)
+    if (migrateCode !== 0) throw new Error(`mail server migrate failed with code ${migrateCode}`)
+    const owner = Bun.spawn(
+      [
+        "bun",
+        "src/cli.ts",
+        "create-owner",
+        "--email",
+        mailOwnerEmail,
+        "--name",
+        "Olivia Owner",
+        "--workspace",
+        "E2E Mail Workspace",
+      ],
+      {
+        cwd: serverDir,
+        env: { ...process.env, ...mailServerEnv },
+        stdout: "pipe",
+        stderr: "inherit",
+      },
+    )
+    const ownerOut = await new Response(owner.stdout).text()
+    if ((await owner.exited) !== 0) throw new Error("create-owner failed for the mail server")
+    const resetUrl = /https?:\/\/\S+/.exec(ownerOut)?.[0]
+    if (resetUrl === undefined) throw new Error("create-owner printed no set-password link")
+    const mailLog = join(logDir, "mail-server.log")
+    mailServer = Bun.spawn(["bun", "src/cli.ts", "serve"], {
+      cwd: serverDir,
+      env: { ...process.env, ...mailServerEnv, WEB_DIST: "../web/dist" },
+      stdout: Bun.file(mailLog),
+      stderr: Bun.file(mailLog),
+    })
+    await waitForServer(mailUrl, mailServer)
+    mailEnv = {
+      E2E_MAIL_BASE_URL: mailUrl,
+      E2E_MAIL_OWNER_RESET_URL: resetUrl,
+      E2E_MAIL_CAPTURE_URL: mailCapture.messagesUrl,
+    }
+  }
+
   log("running playwright")
   exitCode = await runToEnd(
     ["bunx", "--bun", "playwright", "test", ...process.argv.slice(2)],
@@ -134,6 +195,7 @@ try {
     {
       E2E_BASE_URL: url,
       E2E_SETUP_TOKEN: setupToken,
+      ...mailEnv,
     },
   )
 } catch (error) {
@@ -145,10 +207,21 @@ try {
     else await runToEnd(["docker", "stop", "--time", "30", containerName], root)
     await server.exited
   }
+  if (mailServer !== undefined) {
+    mailServer.kill()
+    await mailServer.exited
+  }
+  mailCapture?.stop()
   try {
     await dropDatabase()
   } catch (error) {
     console.error(`[e2e] could not drop ${databaseName}: ${String(error)}`)
+    exitCode = 1
+  }
+  try {
+    await dropDatabase(mailDatabaseName)
+  } catch (error) {
+    console.error(`[e2e] could not drop ${mailDatabaseName}: ${String(error)}`)
     exitCode = 1
   }
   log(

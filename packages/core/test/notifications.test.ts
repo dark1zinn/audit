@@ -9,6 +9,7 @@ import {
   updateNotificationPref,
   updateQuietHours,
 } from "@audit/core/notifications/commands"
+import { inviteMailJob, sendInviteEmail } from "@audit/core/notifications/account-mail"
 import { deliverNotification } from "@audit/core/notifications/deliver"
 import { deliverJob, notify } from "@audit/core/notifications/notify"
 import { myNotifications } from "@audit/core/notifications/queries"
@@ -353,6 +354,12 @@ describe("invites", () => {
       database,
       owner.actor,
     )(identity.createInvite.execute({ role: "member", email: "convidada@example.test" }))
+    // The command only queues the mail; the worker sends it.
+    expect(database.mail.length).toBe(before)
+    const queued = database.jobs.enqueued.filter((job) => job.name === inviteMailJob.name).at(-1)
+    const data = Schema.decodeUnknownSync(inviteMailJob.schema)(queued?.data)
+    expect(data.email).toBe("convidada@example.test")
+    await runAs(database, system)(sendInviteEmail(data))
     expect(database.mail.length).toBe(before + 1)
     const sent = database.mail.at(-1)!
     expect(sent.to).toBe("convidada@example.test")

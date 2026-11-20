@@ -354,74 +354,95 @@ function PendingSignups() {
     queryFn: () => callApi((api) => api.admin.pendingSignups()),
   })
   const decide = useMutation({
-    mutationFn: ({ id, approve }: { readonly id: string; readonly approve: boolean }) =>
-      callApi((api) =>
-        approve
-          ? api.admin.approveSignup({ params: { id } })
-          : api.admin.rejectSignup({ params: { id } }),
-      ),
+    mutationFn: async ({ id, approve }: { readonly id: string; readonly approve: boolean }) => {
+      if (!approve) {
+        await callApi((api) => api.admin.rejectSignup({ params: { id } }))
+        return null
+      }
+      const { url } = await callApi((api) => api.admin.approveSignup({ params: { id } }))
+      return url
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin", "signups"] })
       await queryClient.invalidateQueries({ queryKey: keys.members })
     },
   })
+  const approvedLink = typeof decide.data === "string" ? decide.data : null
+  const requests = pending.data ?? []
 
   if (pending.isError) return <ErrorMessage error={pending.error} />
-  if (pending.data === undefined || pending.data.length === 0) return null
+  // Approving the last request empties the list; the link must stay on screen until the admin copies it.
+  if (requests.length === 0 && approvedLink === null) return null
   return (
     <div className="mb-4 space-y-2">
-      <h2 className="text-sm font-medium">
-        <Trans>Pending sign-ups</Trans>
-      </h2>
+      {requests.length > 0 && (
+        <h2 className="text-sm font-medium">
+          <Trans>Pending sign-ups</Trans>
+        </h2>
+      )}
       {decide.error !== null && <ErrorMessage error={decide.error} />}
-      <div className="overflow-x-auto rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <Trans>Name</Trans>
-              </TableHead>
-              <TableHead>
-                <Trans>Email</Trans>
-              </TableHead>
-              <TableHead>
-                <Trans>Requested</Trans>
-              </TableHead>
-              <TableHead className="text-right">
-                <span className="sr-only">
-                  <Trans>Actions</Trans>
-                </span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pending.data.map((request) => (
-              <TableRow key={request.id}>
-                <TableCell>{request.name}</TableCell>
-                <TableCell>{request.email}</TableCell>
-                <TableCell>{request.requestedAt.toLocaleString()}</TableCell>
-                <TableCell className="space-x-2 text-right">
-                  <Button
-                    size="sm"
-                    disabled={decide.isPending}
-                    onClick={() => decide.mutate({ id: request.id, approve: true })}
-                  >
-                    <Trans>Approve</Trans>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={decide.isPending}
-                    onClick={() => decide.mutate({ id: request.id, approve: false })}
-                  >
-                    <Trans>Reject</Trans>
-                  </Button>
-                </TableCell>
+      {approvedLink !== null && (
+        <div className="flex items-center gap-2 rounded-md border p-3 text-sm">
+          <span className="min-w-0 flex-1 truncate font-mono">{approvedLink}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void navigator.clipboard.writeText(approvedLink)}
+          >
+            <Trans>Copy invite link</Trans>
+          </Button>
+        </div>
+      )}
+      {requests.length > 0 && (
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <Trans>Name</Trans>
+                </TableHead>
+                <TableHead>
+                  <Trans>Email</Trans>
+                </TableHead>
+                <TableHead>
+                  <Trans>Requested</Trans>
+                </TableHead>
+                <TableHead className="text-right">
+                  <span className="sr-only">
+                    <Trans>Actions</Trans>
+                  </span>
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {requests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell>{request.name}</TableCell>
+                  <TableCell>{request.email}</TableCell>
+                  <TableCell>{request.requestedAt.toLocaleString()}</TableCell>
+                  <TableCell className="space-x-2 text-right">
+                    <Button
+                      size="sm"
+                      disabled={decide.isPending}
+                      onClick={() => decide.mutate({ id: request.id, approve: true })}
+                    >
+                      <Trans>Approve</Trans>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={decide.isPending}
+                      onClick={() => decide.mutate({ id: request.id, approve: false })}
+                    >
+                      <Trans>Reject</Trans>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   )
 }

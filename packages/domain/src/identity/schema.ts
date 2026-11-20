@@ -187,7 +187,7 @@ export const Invite = Schema.Struct({
   maxUses: Schema.Int,
   useCount: Schema.Int,
   revokedAt: Schema.NullOr(Schema.Date),
-  createdBy: UserId,
+  createdBy: Schema.NullOr(UserId),
   note: Schema.NullOr(Schema.String),
   createdAt: Schema.Date,
   status: InviteStatus,
