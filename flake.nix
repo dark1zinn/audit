@@ -31,6 +31,8 @@
             packages = with pkgs; [
               bun
               playwright-driver.browsers
+              # pg_dump/psql for `audit backup`/`restore`, the restore drill and the upgrade test.
+              postgresql_18
               self.formatter.${system}
             ];
 

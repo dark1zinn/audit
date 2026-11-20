@@ -20,17 +20,25 @@
     "dev:web": "bun run --cwd apps/web dev",
     "build:web": "bun run --cwd apps/web build",
     "e2e": "bun scripts/e2e.ts",
+    "drill": "bun scripts/drill.ts",
+    "test:upgrade": "bun scripts/upgrade-test.ts",
     "i18n:extract": "bun run --cwd packages/i18n extract",
     "i18n:compile": "bun run --cwd packages/i18n compile",
     "i18n:check": "bun run --cwd packages/i18n check",
+    "docs:dev": "bunx --bun vitepress dev docs",
+    "docs:openapi": "bun packages/domain/scripts/docs-openapi.ts",
+    "docs:build": "bun run docs:openapi && bunx --bun vitepress build docs",
     "licenses": "bun scripts/check-licenses.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
     "@effect/tsgo": "0.70.0",
     "@types/bun": "1.4.4",
+    "@vue/server-renderer": "3.5.45",
     "oxfmt": "0.79.0",
     "oxlint": "1.94.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitepress": "1.6.4",
+    "vue": "3.5.45"
   }
 }
