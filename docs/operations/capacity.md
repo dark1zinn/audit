@@ -164,8 +164,12 @@ Per endpoint, latency in milliseconds (k6 exit 0 for A and B):
 | all API         |      6,066 |  32.1 |  98.6 | 2,447.0 |      6,058 |  29.4 |  91.4 | 2,056.3 |
 
 Errors: run A 0 failed requests. Run B 1 failed request: a `POST` to a channel message at
-13:24:44 UTC with status 0 (no response). The app logged no error in that window. Not investigated
-further.
+13:24:44 UTC with status 0, k6 error `EOF` after 1.3 ms on a reused connection. That is the
+keep-alive race: the server closed the idle connection (Bun's default idle timeout is 10 s, inside
+the 5 to 15 s think time) just as the client reused it. The server now keeps idle connections for
+120 s (`idleTimeout` in `apps/server/src/server.ts`), longer than common reverse-proxy upstream
+idle timeouts, so the proxy, not the app, closes first. A raw keep-alive connection idle for 12 s
+is closed by the old default and stays usable with the new setting.
 
 Stress run, 0.5 to 1.5 s think time (5 minutes, 200 VUs). The server is saturated at about 78
 requests per second, so latency is queueing. Error rate 0.000%. The k6 run exited 99 because the p95

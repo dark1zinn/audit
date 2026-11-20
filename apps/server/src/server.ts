@@ -280,6 +280,10 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
 
   const server: Bun.Server<SocketData> = Bun.serve<SocketData>({
     port: config.port,
+    // Seconds an idle keep-alive connection stays open. Longer than common reverse-proxy upstream
+    // idle timeouts (Traefik 90 s, nginx 60 s), so the proxy closes first; if the app closed first,
+    // a request racing the close would fail (a POST becomes a 502 at the proxy).
+    idleTimeout: 120,
     async fetch(incoming, bunServer) {
       const requestId = requestIdFrom(incoming.headers.get("x-request-id"))
       const { pathname } = new URL(incoming.url)
