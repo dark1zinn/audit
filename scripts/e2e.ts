@@ -83,6 +83,46 @@ let mailServer: Bun.Subprocess | undefined
 let mailCapture: MailCapture | undefined
 let mailEnv: Record<string, string> = {}
 
+type Io = "inherit" | "pipe" | ReturnType<typeof Bun.file>
+
+/**
+ * Runs `audit <args>` from the source tree, or from the image (host networking, so it reaches the
+ * dev Postgres and the local mail capture) when E2E_IMAGE is set. `name` names the container so
+ * long-running servers can be stopped with `docker stop`.
+ */
+const spawnAudit = (
+  args: ReadonlyArray<string>,
+  env: Record<string, string>,
+  io: { readonly stdout: Io; readonly stderr: Io; readonly name?: string },
+) =>
+  image === undefined
+    ? Bun.spawn(["bun", "src/cli.ts", ...args], {
+        cwd: serverDir,
+        env: { ...process.env, ...env, WEB_DIST: "../web/dist" },
+        stdout: io.stdout,
+        stderr: io.stderr,
+      })
+    : Bun.spawn(
+        [
+          "docker",
+          "run",
+          "--rm",
+          ...(io.name === undefined ? [] : ["--name", io.name]),
+          "--network",
+          "host",
+          ...Object.entries(env).flatMap(([key, value]) => ["-e", `${key}=${value}`]),
+          image,
+          ...args,
+        ],
+        { stdout: io.stdout, stderr: io.stderr },
+      )
+
+const stopAudit = async (proc: Bun.Subprocess, name: string) => {
+  if (image === undefined) proc.kill()
+  else await runToEnd(["docker", "stop", "--time", "30", name], root)
+  await proc.exited
+}
+
 try {
   if (image === undefined) {
     log("building web app")
@@ -108,34 +148,16 @@ try {
   }
 
   log(`starting ${image ?? "server"} at ${url} (log: ${serverLog})`)
-  server =
-    image === undefined
-      ? Bun.spawn(["bun", "src/cli.ts", "serve"], {
-          cwd: serverDir,
-          env: { ...process.env, ...serverEnv, WEB_DIST: "../web/dist" },
-          stdout: Bun.file(serverLog),
-          stderr: Bun.file(serverLog),
-        })
-      : Bun.spawn(
-          [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            containerName,
-            "--network",
-            "host",
-            ...Object.entries(serverEnv).flatMap(([key, value]) => ["-e", `${key}=${value}`]),
-            image,
-          ],
-          { stdout: Bun.file(serverLog), stderr: Bun.file(serverLog) },
-        )
+  server = spawnAudit(["serve"], serverEnv, {
+    stdout: Bun.file(serverLog),
+    stderr: Bun.file(serverLog),
+    name: containerName,
+  })
   await waitForServer(url, server)
   log("server ready")
 
-  // SMTP path: a second server on its own database sends through the capture. Image runs have no
-  // source tree to run the CLI from, so only source runs get it.
-  if (image === undefined) {
+  // SMTP path: a second server on its own database sends through the capture.
+  {
     mailCapture = startMailCapture()
     const mailPort = freePort()
     const mailUrl = `http://127.0.0.1:${mailPort}`
@@ -148,12 +170,13 @@ try {
       MAIL_FROM: "audit@e2e.test",
     }
     await createDatabase(mailDatabaseName)
-    const migrateCode = await runToEnd(["bun", "src/cli.ts", "migrate"], serverDir, mailServerEnv)
+    const migrateCode = await spawnAudit(["migrate"], mailServerEnv, {
+      stdout: "inherit",
+      stderr: "inherit",
+    }).exited
     if (migrateCode !== 0) throw new Error(`mail server migrate failed with code ${migrateCode}`)
-    const owner = Bun.spawn(
+    const owner = spawnAudit(
       [
-        "bun",
-        "src/cli.ts",
         "create-owner",
         "--email",
         mailOwnerEmail,
@@ -162,23 +185,18 @@ try {
         "--workspace",
         "E2E Mail Workspace",
       ],
-      {
-        cwd: serverDir,
-        env: { ...process.env, ...mailServerEnv },
-        stdout: "pipe",
-        stderr: "inherit",
-      },
+      mailServerEnv,
+      { stdout: "pipe", stderr: "inherit" },
     )
-    const ownerOut = await new Response(owner.stdout).text()
+    const ownerOut = await new Response(owner.stdout as ReadableStream).text()
     if ((await owner.exited) !== 0) throw new Error("create-owner failed for the mail server")
     const resetUrl = /https?:\/\/\S+/.exec(ownerOut)?.[0]
     if (resetUrl === undefined) throw new Error("create-owner printed no set-password link")
     const mailLog = join(logDir, "mail-server.log")
-    mailServer = Bun.spawn(["bun", "src/cli.ts", "serve"], {
-      cwd: serverDir,
-      env: { ...process.env, ...mailServerEnv, WEB_DIST: "../web/dist" },
+    mailServer = spawnAudit(["serve"], mailServerEnv, {
       stdout: Bun.file(mailLog),
       stderr: Bun.file(mailLog),
+      name: `${containerName}-mail`,
     })
     await waitForServer(mailUrl, mailServer)
     mailEnv = {
@@ -202,15 +220,8 @@ try {
   console.error(`[e2e] ${error instanceof Error ? error.message : String(error)}`)
   exitCode = 1
 } finally {
-  if (server !== undefined) {
-    if (image === undefined) server.kill()
-    else await runToEnd(["docker", "stop", "--time", "30", containerName], root)
-    await server.exited
-  }
-  if (mailServer !== undefined) {
-    mailServer.kill()
-    await mailServer.exited
-  }
+  if (server !== undefined) await stopAudit(server, containerName)
+  if (mailServer !== undefined) await stopAudit(mailServer, `${containerName}-mail`)
   mailCapture?.stop()
   try {
     await dropDatabase()

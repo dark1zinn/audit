@@ -151,7 +151,10 @@ const mailbox = async (to: string): Promise<CapturedMail[]> => {
 test("sign-up by email: mailed invite joins the workspace; a newer request replaces the older link", async ({
   browser,
 }) => {
-  test.skip(process.env.E2E_MAIL_BASE_URL === undefined, "source runs start the mail server")
+  test.skip(
+    process.env.E2E_MAIL_BASE_URL === undefined,
+    "needs the mail server that `bun run e2e` starts",
+  )
   const mailUrl = process.env.E2E_MAIL_BASE_URL ?? ""
   const applicant = visitorEmail("mail applicant")
 
