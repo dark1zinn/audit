@@ -34,6 +34,8 @@ export interface AppConfigShape {
   readonly trustProxy: boolean
   /** Proxy hops appended after the client when `trustProxy` is set; the client IP is the hop this many from the right. */
   readonly trustProxyHops: number
+  /** Sign-in attempts allowed per client IP per minute; each account also has its own lockout. */
+  readonly signInPerIpPerMinute: number
   /** Lets AI provider base URLs point at private, loopback or link-local addresses (tests, local gateways). */
   readonly aiAllowPrivateBaseUrl: boolean
   readonly logLevel: string
@@ -89,6 +91,9 @@ export const readAppConfig = Effect.gen(function* () {
     dataDir,
     trustProxy: yield* Config.Boolean("TRUST_PROXY").pipe(Config.withDefault(false)),
     trustProxyHops: yield* Config.Int("TRUST_PROXY_HOPS").pipe(Config.withDefault(1)),
+    signInPerIpPerMinute: yield* Config.Int("AUTH_SIGNIN_PER_IP_PER_MINUTE").pipe(
+      Config.withDefault(30),
+    ),
     aiAllowPrivateBaseUrl: yield* Config.Boolean("AI_ALLOW_PRIVATE_BASE_URL").pipe(
       Config.withDefault(false),
     ),

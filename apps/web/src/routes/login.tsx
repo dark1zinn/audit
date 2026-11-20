@@ -32,13 +32,23 @@ function LoginPage() {
     await navigate({ to: "/" })
   }
 
-  const run = async (action: () => Promise<{ error: { message?: string | undefined } | null }>) => {
+  // A 429 is the sign-in rate limit, not wrong details: say so, or people retry and stay locked out.
+  const failureMessage = (error: { readonly status?: number | undefined }) =>
+    error.status === 429
+      ? t`Too many sign-in attempts. Wait a minute and try again.`
+      : t`Sign-in failed. Check your details and try again.`
+
+  const run = async (
+    action: () => Promise<{
+      error: { message?: string | undefined; status?: number | undefined } | null
+    }>,
+  ) => {
     setPending(true)
     setFailed(null)
     try {
       const result = await action()
       if (result.error) {
-        setFailed(t`Sign-in failed. Check your details and try again.`)
+        setFailed(failureMessage(result.error))
         return false
       }
       return true
@@ -60,7 +70,7 @@ function LoginPage() {
     try {
       const result = await authClient.signIn.email({ email: nextEmail, password: nextPassword })
       if (result.error) {
-        setFailed(t`Sign-in failed. Check your details and try again.`)
+        setFailed(failureMessage(result.error))
         return
       }
       if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {

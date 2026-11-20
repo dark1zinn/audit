@@ -161,7 +161,9 @@ export const makeAuth = (options: AuthOptions): AuthHandle => {
       max: 100,
       storage: "database",
       customRules: {
-        "/sign-in/email": { window: 60, max: 5 },
+        // Per client IP. Generous enough for a team behind one office address; brute force against
+        // one account is stopped by the per-email lockout instead.
+        "/sign-in/email": { window: 60, max: options.config.signInPerIpPerMinute },
         "/two-factor/verify-totp": { window: 60, max: 5 },
         "/two-factor/verify-backup-code": { window: 60, max: 5 },
         "/reset-password": { window: 60, max: 5 },

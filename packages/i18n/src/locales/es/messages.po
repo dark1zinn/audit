@@ -4426,6 +4426,10 @@ msgstr "Tokens usados en el mes calendario elegido (UTC)."
 msgid "Too many attempts. Wait a moment and try again."
 msgstr "Demasiados intentos. Espera un momento e inténtalo de nuevo."
 
+#: ../../apps/web/src/routes/login.tsx
+msgid "Too many sign-in attempts. Wait a minute and try again."
+msgstr "Demasiados intentos de inicio de sesión. Espera un minuto y vuelve a intentarlo."
+
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
 msgid "Tool result: {name}"
 msgstr "Resultado de la herramienta: {name}"

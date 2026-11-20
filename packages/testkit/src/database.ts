@@ -43,6 +43,7 @@ export const testConfig = (databaseUrl: string, dataDir: string): AppConfigShape
   dataDir,
   trustProxy: false,
   trustProxyHops: 1,
+  signInPerIpPerMinute: 30,
   aiAllowPrivateBaseUrl: false,
   logLevel: "warn",
   otelEndpoint: Option.none(),

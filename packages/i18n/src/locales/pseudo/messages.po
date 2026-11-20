@@ -4426,6 +4426,10 @@ msgstr ""
 msgid "Too many attempts. Wait a moment and try again."
 msgstr ""
 
+#: ../../apps/web/src/routes/login.tsx
+msgid "Too many sign-in attempts. Wait a minute and try again."
+msgstr ""
+
 #: ../../apps/web/src/components/ai/assistant-parts.tsx
 msgid "Tool result: {name}"
 msgstr ""
