@@ -34,7 +34,8 @@ jobs:
       - name: Tag matches the package version
         run: |
           version="$(jq -r .version apps/server/package.json)"
-          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+          # v<version> releases; v<version>-<pre> (e.g. v1.0.0-rc.1) is a pre-release of it.
+          if ! [[ "${GITHUB_REF_NAME}" =~ ^v${version//./\\.}(-[0-9A-Za-z.-]+)?$ ]]; then
             echo "Tag ${GITHUB_REF_NAME} does not match apps/server version ${version}"
             exit 1
           fi
@@ -113,7 +114,8 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v heading="## ${version}" '$0 == heading {found = 1; next} found && /^## / {exit} found' \
+          # A pre-release carries the notes of the version it previews.
+          awk -v heading="## ${version%%-*}" '$0 == heading {found = 1; next} found && /^## / {exit} found' \
             apps/server/CHANGELOG.md > notes.md
           {
             echo
@@ -130,6 +132,8 @@ jobs:
       - name: GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          gh release create "${GITHUB_REF_NAME}" --verify-tag --title "${GITHUB_REF_NAME}"
-          --notes-file notes.md "audit-${GITHUB_REF_NAME}.spdx.json"
+        run: |
+          prerelease=""
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then prerelease="--prerelease"; fi
+          gh release create "${GITHUB_REF_NAME}" --verify-tag --title "${GITHUB_REF_NAME}" \
+            ${prerelease} --notes-file notes.md "audit-${GITHUB_REF_NAME}.spdx.json"
