@@ -25,16 +25,21 @@ import { RpcAuthentication } from "@audit/domain/http"
 import { type AppConfigShape, AppConfig } from "@audit/platform/config"
 import { BlobStore } from "@audit/platform/blob-store"
 import { Secrets } from "@audit/platform/crypto"
-import { APP_ROLE, databaseLayer, migrateDatabase } from "@audit/platform/database"
+import { APP_ROLE, databaseLayer, migrateDatabase, migrationStatus } from "@audit/platform/database"
 import { pgBossLayer } from "@audit/platform/jobs"
 import { Context, Effect, Layer, ManagedRuntime, Option, Redacted } from "effect"
 import { FetchHttpClient, HttpRouter, HttpServer, HttpServerRequest } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
-import { SqlClient } from "effect/sql"
 import type { ServerWebSocket } from "bun"
 import { type AuthHandle, makeAuth } from "./auth.ts"
 import { type CollabSocketData, createCollab } from "./collab.ts"
 import { withClientIp } from "./client-ip.ts"
+import {
+  consoleContext,
+  observabilityLayer,
+  requestIdFrom,
+  withRequestId,
+} from "./observability.ts"
 import { HttpApiLive } from "./http-api.ts"
 import { FilesHttpLive } from "./files-http.ts"
 import { IcalHttpLive } from "./ical-http.ts"
@@ -74,10 +79,11 @@ const securityHeaders: Record<string, string> = {
     "connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 }
 
-const withHeaders = (response: Response) => {
+const withHeaders = (response: Response, requestId?: string) => {
   for (const [name, value] of Object.entries(securityHeaders)) {
     if (!response.headers.has(name)) response.headers.set(name, value)
   }
+  if (requestId !== undefined) response.headers.set("x-request-id", requestId)
   return response
 }
 
@@ -96,6 +102,7 @@ export const makeCoreLayer = (config: AppConfigShape) => {
   const base = Layer.mergeAll(
     Layer.succeed(AppConfig, config),
     databaseLayer({ url: config.databaseUrl, role: APP_ROLE }),
+    observabilityLayer(config),
   )
   const services = Layer.mergeAll(
     Authz.layer,
@@ -187,6 +194,7 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
     Layer.provide(RpcSerialization.layerJson),
   )
 
+  const loggerContext = consoleContext(config)
   const app = HttpRouter.toWebHandler(
     Layer.mergeAll(HttpApiLive, rpcLayer, FilesHttpLive, IcalHttpLive).pipe(
       Layer.provide(serverLayer),
@@ -198,11 +206,12 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
         Effect.gen(function* () {
           const request = yield* HttpServerRequest.HttpServerRequest
           const server = yield* BunServer
+          const requestId = requestIdFrom(request.headers["x-request-id"] ?? null)
           return yield* Effect.provideService(
             effect,
             HttpServerRequest.HttpServerRequest,
             withBunUpgrade(request, server),
-          )
+          ).pipe(Effect.annotateLogs({ requestId }))
         }),
     },
   )
@@ -227,12 +236,18 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
 
   const server: Bun.Server<SocketData> = Bun.serve<SocketData>({
     port: config.port,
-    async fetch(request, bunServer) {
-      const url = new URL(request.url)
-      const { pathname } = url
-      const context = Context.make(BunServer, bunServer) as Context.Context<unknown>
+    async fetch(incoming, bunServer) {
+      const requestId = requestIdFrom(incoming.headers.get("x-request-id"))
+      const { pathname } = new URL(incoming.url)
+      // Upgrades need the original Request object; plain HTTP paths carry the id forward.
+      const request =
+        pathname === "/collab" || pathname === "/rpc"
+          ? incoming
+          : withRequestId(incoming, requestId)
+      const context = Context.add(loggerContext, BunServer, bunServer) as Context.Context<unknown>
       if (pathname.startsWith("/api/auth/")) {
-        return withHeaders(await auth.handler(withClientIp(request, bunServer, config.trustProxy)))
+        const forwarded = withClientIp(request, bunServer, config.trustProxy)
+        return withHeaders(await auth.handler(forwarded), requestId)
       }
       if (pathname === "/collab") {
         if (collab.handleUpgrade(request, bunServer)) return undefined
@@ -245,25 +260,18 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
       }
       if (pathname.startsWith("/api/")) {
         const forwarded = withClientIp(request, bunServer, config.trustProxy)
-        return withHeaders(await app.handler(forwarded, context))
+        return withHeaders(await app.handler(forwarded, context), requestId)
       }
       if (pathname.startsWith("/files/") || pathname.startsWith("/ical/")) {
         const forwarded = withClientIp(request, bunServer, config.trustProxy)
-        return withHeaders(await app.handler(forwarded, context))
+        return withHeaders(await app.handler(forwarded, context), requestId)
       }
       if (pathname === "/healthz") return Response.json({ ok: true })
       if (pathname === "/readyz") {
-        const ready = await runtime
-          .runPromise(
-            Effect.gen(function* () {
-              const sql = yield* SqlClient.SqlClient
-              yield* sql`select 1`
-            }),
-          )
-          .then(
-            () => true,
-            () => false,
-          )
+        const ready = await runtime.runPromise(migrationStatus).then(
+          (status) => status.ready,
+          () => false,
+        )
         return Response.json({ ok: ready }, { status: ready ? 200 : 503 })
       }
       return withHeaders(await serveStatic(pathname))
@@ -287,9 +295,12 @@ export const startServer = async (config: AppConfigShape): Promise<RunningServer
   return {
     server,
     stop: async () => {
-      await server.stop()
+      // Stop accepting new connections; in-flight requests finish.
+      await server.stop(false)
       // Collab stores must land while the runtime that runs them is still alive.
       await collab.shutdown()
+      // Then drop what remains (open RPC sockets) before the services underneath go away.
+      await server.stop(true)
       await app.dispose()
       await collabRuntime.dispose()
       await runtime.dispose()

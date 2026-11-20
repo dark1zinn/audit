@@ -1,0 +1,46 @@
+# Self-hosted stack: the audit server plus PostgreSQL 18 with pgvector.
+#   cp .env.example deploy/.env   # then set the values marked "required" below
+#   docker compose -f deploy/compose.yml up --build
+name: audit
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: audit:local
+    init: true
+    stop_grace_period: 30s
+    restart: unless-stopped
+    ports:
+      - "${AUDIT_PORT:-3000}:3000"
+    environment:
+      AUDIT_URL: ${AUDIT_URL:?required, public origin e.g. https://audit.example.com}
+      AUDIT_SECRET_KEY: ${AUDIT_SECRET_KEY:?required, 32+ random characters}
+      DATABASE_URL: postgres://audit:${POSTGRES_PASSWORD:?required}@postgres:5432/audit
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Optional, set only when used: SETUP_TOKEN, TRUST_PROXY, OTEL_EXPORTER_OTLP_ENDPOINT.
+    volumes:
+      - files:/data/files
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:pg18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: audit
+      POSTGRES_DB: audit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  files:

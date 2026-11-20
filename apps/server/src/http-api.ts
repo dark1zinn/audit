@@ -49,7 +49,7 @@ import type { Secrets } from "@audit/platform/crypto"
 import type { Jobs } from "@audit/platform/jobs"
 import type { HttpClient } from "effect/http/HttpClient"
 import { Db } from "@audit/platform/database"
-import { readFileSync } from "node:fs"
+import pkg from "../package.json" with { type: "json" }
 import { Effect, Layer, Schema } from "effect"
 import { HttpServerRequest } from "effect/http"
 import { HttpApiBuilder } from "effect/http-api"
@@ -965,9 +965,7 @@ const PeopleLive = HttpApiBuilder.group(AuditApi, "people", (handlers) =>
   }),
 )
 
-const serverVersion = Schema.decodeUnknownSync(Schema.Struct({ version: Schema.String }))(
-  JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")),
-)
+const serverVersion = Schema.decodeUnknownSync(Schema.Struct({ version: Schema.String }))(pkg)
 
 const AdminLive = HttpApiBuilder.group(AuditApi, "admin", (handlers) =>
   Effect.gen(function* () {

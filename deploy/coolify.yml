@@ -1,0 +1,44 @@
+# Coolify "Docker Compose" resource. Coolify generates the SERVICE_* values on first deploy.
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    init: true
+    stop_grace_period: 30s
+    restart: unless-stopped
+    environment:
+      AUDIT_URL: ${SERVICE_URL_APP}
+      AUDIT_SECRET_KEY: ${SERVICE_PASSWORD_64_AUDIT}
+      DATABASE_URL: postgres://audit:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/audit
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - files:/data/files
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/readyz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  postgres:
+    image: pgvector/pgvector:pg18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: audit
+      POSTGRES_DB: audit
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  files:

@@ -1,0 +1,13 @@
+.git
+.github
+**/node_modules
+**/dist
+**/.direnv
+**/data
+**/test-results
+**/playwright-report
+.env
+.env.*
+!.env.example
+*.log
+deploy/compose.dev.yml
