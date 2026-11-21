@@ -95,7 +95,9 @@ function CalendarBoardInner({
   const selected = selectedDateFrom(initialDate)
   // Seven week columns do not fit below lg: open on Day there. Read once so a resize never flips the view.
   const [defaultView] = useState<"day" | "week">(() =>
-    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches ? "week" : "day",
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+      ? "week"
+      : "day",
   )
 
   // Schedule-X keeps the callbacks it was created with: route them through a ref.

@@ -75,29 +75,29 @@ export const VersionsPanel = ({ docId, canWrite }: VersionsPanelProps) => {
       {error !== null && <ErrorMessage error={error} />}
       {canWrite && (
         <>
-        <form
-          className="flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (label.trim() !== "") create.mutate()
-          }}
-        >
-          <Input
-            aria-label={t`Version name`}
-            value={label}
-            maxLength={120}
-            placeholder={t`Name this version`}
-            onChange={(event) => setLabel(event.target.value)}
-          />
-          <Button type="submit" size="sm" disabled={create.isPending || label.trim() === ""}>
-            <Trans>Save version</Trans>
-          </Button>
-        </form>
-        {label.trim() === "" && (
-          <p className="text-xs text-muted-foreground">
-            <Trans>Enter a name to enable Save version.</Trans>
-          </p>
-        )}
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (label.trim() !== "") create.mutate()
+            }}
+          >
+            <Input
+              aria-label={t`Version name`}
+              value={label}
+              maxLength={120}
+              placeholder={t`Name this version`}
+              onChange={(event) => setLabel(event.target.value)}
+            />
+            <Button type="submit" size="sm" disabled={create.isPending || label.trim() === ""}>
+              <Trans>Save version</Trans>
+            </Button>
+          </form>
+          {label.trim() === "" && (
+            <p className="text-xs text-muted-foreground">
+              <Trans>Enter a name to enable Save version.</Trans>
+            </p>
+          )}
         </>
       )}
       {list.length === 0 && (

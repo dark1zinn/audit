@@ -267,10 +267,18 @@ const DocPaneBody = ({
           <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
-          <a href={`/api/docs/${docId}/export/md`} download className="inline-flex min-h-11 items-center text-link underline md:min-h-6">
+          <a
+            href={`/api/docs/${docId}/export/md`}
+            download
+            className="inline-flex min-h-11 items-center text-link underline md:min-h-6"
+          >
             <Trans>Export Markdown</Trans>
           </a>
-          <a href={`/api/docs/${docId}/export/html`} download className="inline-flex min-h-11 items-center text-link underline md:min-h-6">
+          <a
+            href={`/api/docs/${docId}/export/html`}
+            download
+            className="inline-flex min-h-11 items-center text-link underline md:min-h-6"
+          >
             <Trans>Export HTML</Trans>
           </a>
           {presence.length > 0 && (

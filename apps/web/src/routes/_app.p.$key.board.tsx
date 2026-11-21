@@ -127,7 +127,10 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
     const focused = (): TaskCardModel | undefined =>
       board?.columns.flatMap((column) => column.tasks).find((task) => task.id === focusedId)
     const focusTask = (id: string) =>
-      document.getElementById(cardDomId(id))?.querySelector<HTMLElement>("[data-card-title]")?.focus()
+      document
+        .getElementById(cardDomId(id))
+        ?.querySelector<HTMLElement>("[data-card-title]")
+        ?.focus()
     const order = board === undefined ? [] : Object.values(lanesOf(board)).flat()
     const step = (delta: number) => {
       if (order.length === 0) return

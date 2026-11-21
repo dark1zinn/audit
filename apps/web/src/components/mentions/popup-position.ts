@@ -26,10 +26,7 @@ export const placePopup = (
     ? Math.max(MARGIN, anchor.top - GAP - Math.min(popup.height, above))
     : anchor.bottom + GAP
   const maxHeight = Math.max(0, flip ? above : below)
-  const left = Math.max(
-    MARGIN,
-    Math.min(anchor.left, viewport.width - popup.width - MARGIN),
-  )
+  const left = Math.max(MARGIN, Math.min(anchor.left, viewport.width - popup.width - MARGIN))
   return { top, left, maxHeight }
 }
 

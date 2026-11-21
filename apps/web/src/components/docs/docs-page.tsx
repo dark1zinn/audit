@@ -512,25 +512,45 @@ const DocRightPane = ({
   return (
     <Tabs value={tab} onValueChange={onTabChange} className="@container min-w-0">
       <TabsList className="grid w-full grid-cols-4" aria-label={t`Document panel`}>
-        <TabsTrigger value="outline" aria-label={t`Outline`} title={t`Outline`} className="min-w-0 px-2 max-md:h-11">
+        <TabsTrigger
+          value="outline"
+          aria-label={t`Outline`}
+          title={t`Outline`}
+          className="min-w-0 px-2 max-md:h-11"
+        >
           <ListTree aria-hidden="true" className="size-4" />
           <span className="hidden @[28rem]:inline">
             <Trans>Outline</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger value="links" aria-label={t`Links`} title={t`Links`} className="min-w-0 px-2 max-md:h-11">
+        <TabsTrigger
+          value="links"
+          aria-label={t`Links`}
+          title={t`Links`}
+          className="min-w-0 px-2 max-md:h-11"
+        >
           <Link2 aria-hidden="true" className="size-4" />
           <span className="hidden @[28rem]:inline">
             <Trans>Links</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger value="comments" aria-label={t`Comments`} title={t`Comments`} className="min-w-0 px-2 max-md:h-11">
+        <TabsTrigger
+          value="comments"
+          aria-label={t`Comments`}
+          title={t`Comments`}
+          className="min-w-0 px-2 max-md:h-11"
+        >
           <MessageSquare aria-hidden="true" className="size-4" />
           <span className="hidden @[28rem]:inline">
             <Trans>Comments</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger value="versions" aria-label={t`Versions`} title={t`Versions`} className="min-w-0 px-2 max-md:h-11">
+        <TabsTrigger
+          value="versions"
+          aria-label={t`Versions`}
+          title={t`Versions`}
+          className="min-w-0 px-2 max-md:h-11"
+        >
           <History aria-hidden="true" className="size-4" />
           <span className="hidden @[28rem]:inline">
             <Trans>Versions</Trans>

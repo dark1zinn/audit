@@ -57,9 +57,13 @@ function JoinPage() {
   if (preview.isError) {
     return (
       <AuthLayout title={t`Invite unavailable`}>
-        <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm"
+        >
           <Trans>
-            This invite has expired or was already used. Ask the person who invited you for a new one.
+            This invite has expired or was already used. Ask the person who invited you for a new
+            one.
           </Trans>
         </div>
       </AuthLayout>

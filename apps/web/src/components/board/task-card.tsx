@@ -159,11 +159,18 @@ interface SortableTaskCardProps extends TaskCardBodyProps {
 
 export function SortableTaskCard({ columnId, reduced, onFocus, ...body }: SortableTaskCardProps) {
   const { t } = useLingui()
-  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: body.card.id,
-      data: { type: "task", columnId },
-    })
+  const {
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: body.card.id,
+    data: { type: "task", columnId },
+  })
   const dragHandle = (
     <button
       type="button"
@@ -187,11 +194,7 @@ export function SortableTaskCard({ columnId, reduced, onFocus, ...body }: Sortab
           transform: CSS.Transform.toString(transform),
           transition: reduced ? undefined : transition,
         }}
-        className={
-          isDragging
-            ? "opacity-40"
-            : "rounded-lg"
-        }
+        className={isDragging ? "opacity-40" : "rounded-lg"}
       >
         <TaskCardBody {...body} dragHandle={dragHandle} />
       </div>
