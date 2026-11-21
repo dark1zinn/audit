@@ -135,6 +135,20 @@
   font-weight: 600;
 }
 
+/* Schedule-X sets outline: none on its controls, which beats the layered default below. Restore a
+   visible keyboard focus ring inside the calendar regardless of stylesheet order. */
+.sx__calendar-wrapper :is(button, input, select, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Schedule-X hides its "View"/"Date" legends in dark mode only. Show them in both themes so the toolbar
+   keeps its visible labels and looks the same in light and dark. */
+.sx__calendar-wrapper.is-dark .sx__view-selection-label,
+.sx__calendar-wrapper.is-dark .sx__date-input-label {
+  display: block;
+}
+
 /* Default focus indicator for elements without their own focus style. Layered so utilities
    (for example outline-hidden on the palette input) can override it. */
 @layer base {
