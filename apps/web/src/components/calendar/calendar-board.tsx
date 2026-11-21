@@ -171,6 +171,25 @@ function CalendarBoardInner({
     return () => observer.disconnect()
   }, [t])
 
+  // The all-day strip is capped in height; flag it while it hides rows so CSS can draw a fade.
+  useEffect(() => {
+    const root = boardRef.current
+    if (root === null) return
+    const mark = () => {
+      for (const grid of root.querySelectorAll<HTMLElement>(".sx__date-grid")) {
+        grid.toggleAttribute("data-overflowing", grid.scrollHeight > grid.clientHeight + 1)
+      }
+    }
+    mark()
+    const observer = new MutationObserver(mark)
+    observer.observe(root, { childList: true, subtree: true })
+    window.addEventListener("resize", mark)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", mark)
+    }
+  }, [])
+
   return (
     <EventTargetContext.Provider value={eventTargetFor}>
       <div ref={boardRef} className="min-w-0 max-w-full overflow-x-auto">
