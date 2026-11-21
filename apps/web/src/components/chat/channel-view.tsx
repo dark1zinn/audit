@@ -249,7 +249,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label={channelTitle(data.channel)}>
       <header className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-lg font-semibold">{channelTitle(data.channel)}</h1>
           {data.channel.topic === null || data.channel.topic === "" ? null : (
             <p className="truncate text-sm text-muted-foreground">{data.channel.topic}</p>

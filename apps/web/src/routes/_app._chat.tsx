@@ -91,14 +91,23 @@ function ChatLayout() {
     )
   }
 
+  const threadChannelId = /^\/c\/([^/]+)\/t\//.exec(pathname)?.[1]
+
   return (
     <PageBody width="full" className="flex min-h-0 flex-1 flex-col p-0">
       <div className="flex items-center border-b px-2 py-1">
         <Button variant="ghost" size="sm" asChild className="min-h-11">
-          <Link to="/chat">
-            <ArrowLeft className="size-4" aria-hidden />
-            {t`Back to chat`}
-          </Link>
+          {threadChannelId === undefined ? (
+            <Link to="/chat">
+              <ArrowLeft className="size-4" aria-hidden />
+              {t`Back to chat`}
+            </Link>
+          ) : (
+            <Link to="/c/$channelId" params={{ channelId: threadChannelId }}>
+              <ArrowLeft className="size-4" aria-hidden />
+              {t`Back to channel`}
+            </Link>
+          )}
         </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">

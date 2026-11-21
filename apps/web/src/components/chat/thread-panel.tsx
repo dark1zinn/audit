@@ -92,7 +92,7 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
 
   return (
     <aside
-      className="flex h-full w-full min-w-0 flex-col border-l bg-background md:w-96"
+      className="flex h-full w-full min-w-0 flex-col border-l bg-background md:w-80 xl:w-96"
       aria-label={t`Thread`}
     >
       <header className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
