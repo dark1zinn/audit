@@ -1,6 +1,6 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router"
+import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router"
 import type { ProjectId } from "@audit/domain/ids"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { EntityActionsButton } from "../components/actions/entity-menu.tsx"
@@ -52,13 +52,17 @@ function ProjectHeader({ projectId }: { readonly projectId: ProjectId }) {
   const { t } = useLingui()
   const { key } = Route.useParams()
   const detail = useQuery(projectQuery(projectId))
+  // Only the board bounds its height (columns scroll internally); other project pages grow with
+  // their content so <main> scrolls them and its bottom padding clears the mobile tab bar.
+  const matchRoute = useMatchRoute()
+  const bounded = matchRoute({ to: "/p/$key/board", params: { key } }) !== false
 
   if (detail.isPending) return <LoadingRows />
   if (detail.isError) return <ErrorMessage error={detail.error} />
 
   const project = detail.data
   return (
-    <PageBody width="full" className="flex min-h-0 flex-1 flex-col gap-0">
+    <PageBody width="full" className={`flex flex-1 flex-col gap-0${bounded ? " min-h-0" : ""}`}>
       <header className="flex flex-wrap items-start justify-between gap-3 pb-4">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
