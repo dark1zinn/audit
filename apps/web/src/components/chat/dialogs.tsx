@@ -359,7 +359,9 @@ function PinsForm({ open, channelId }: PinsDialogProps) {
       </DialogHeader>
       {pins.isPending ? <LoadingRows /> : null}
       {pins.isError ? <ErrorMessage error={pins.error} /> : null}
-      {pins.data?.length === 0 ? <EmptyState icon={Pin} title={t`Nothing is pinned yet.`} /> : null}
+      {pins.data?.length === 0 ? (
+        <EmptyState icon={Pin} title={t`No pinned messages yet.`} />
+      ) : null}
       <ul className="space-y-3">
         {pins.data?.map((message) => (
           <li key={message.id} className="rounded-md border p-3">

@@ -82,7 +82,7 @@ export const OutlinePane = ({ editor }: { readonly editor: Editor | null }) => {
   }, [editor, headings])
 
   if (headings.length === 0) {
-    return <EmptyState size="sm" icon={ListTree} title={t`No headings yet`} />
+    return <EmptyState size="sm" icon={ListTree} title={t`No headings yet.`} />
   }
 
   return (

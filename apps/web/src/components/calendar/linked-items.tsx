@@ -123,7 +123,7 @@ export function LinkedItems({
       <h3 id="event-links-heading" className="text-sm font-medium">
         <Trans>Linked items</Trans>
       </h3>
-      {links.length === 0 && <EmptyState size="sm" icon={Link2} title={t`Nothing linked yet.`} />}
+      {links.length === 0 && <EmptyState size="sm" icon={Link2} title={t`No linked items yet.`} />}
       {links.length > 0 && (
         <ul className="divide-y rounded-md border">
           {links.map((item) => {

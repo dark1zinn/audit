@@ -45,7 +45,11 @@ export const LinksPane = ({
         ) : backlinks.isError ? (
           <ErrorMessage error={backlinks.error} />
         ) : linked.length === 0 ? (
-          <EmptyState icon={Link2} title={t`Nothing links here yet`} description={t`Docs and tasks that mention this doc appear here.`} />
+          <EmptyState
+            icon={Link2}
+            title={t`No backlinks yet.`}
+            description={t`Docs and tasks that mention this doc appear here.`}
+          />
         ) : (
           <ul className="flex flex-col items-start gap-2">
             {linked.map((item) => (
@@ -62,7 +66,11 @@ export const LinksPane = ({
           <Trans>Outgoing links</Trans>
         </SectionTitle>
         {outgoing.length === 0 ? (
-          <EmptyState icon={ArrowUpRight} title={t`No outgoing links`} description={t`Mentions and [[links]] in this doc appear here.`} />
+          <EmptyState
+            icon={ArrowUpRight}
+            title={t`No outgoing links yet.`}
+            description={t`Mentions and [[links]] in this doc appear here.`}
+          />
         ) : (
           <ul className="flex flex-col items-start gap-2">
             {outgoing.map((mention, index) => (
