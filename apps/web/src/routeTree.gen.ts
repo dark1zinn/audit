@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppSplatRouteImport } from './routes/_app.$'
 import { Route as AppChatRouteImport } from './routes/_app._chat'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
@@ -94,6 +95,11 @@ const SignupRoute = SignupRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSplatRoute = AppSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => AppRoute,
 } as any)
 const AppChatRoute = AppChatRouteImport.update({
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
+  '/$': typeof AppSplatRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
@@ -382,6 +389,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
+  '/$': typeof AppSplatRoute
   '/': typeof AppIndexRoute
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
@@ -435,6 +443,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
+  '/_app/$': typeof AppSplatRoute
   '/_app/_chat': typeof AppChatRouteWithChildren
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/calendar': typeof AppCalendarRoute
@@ -491,6 +500,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/signup'
+    | '/$'
     | '/admin'
     | '/calendar'
     | '/inbox'
@@ -542,6 +552,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/signup'
+    | '/$'
     | '/'
     | '/calendar'
     | '/inbox'
@@ -594,6 +605,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/signup'
+    | '/_app/$'
     | '/_app/_chat'
     | '/_app/admin'
     | '/_app/calendar'
@@ -701,6 +713,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/$': {
+      id: '/_app/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof AppSplatRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_chat': {
@@ -1135,6 +1154,7 @@ const AppPKeyRouteWithChildren =
   AppPKeyRoute._addFileChildren(AppPKeyRouteChildren)
 
 interface AppRouteChildren {
+  AppSplatRoute: typeof AppSplatRoute
   AppChatRoute: typeof AppChatRouteWithChildren
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppCalendarRoute: typeof AppCalendarRoute
@@ -1150,6 +1170,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSplatRoute: AppSplatRoute,
   AppChatRoute: AppChatRouteWithChildren,
   AppAdminRoute: AppAdminRouteWithChildren,
   AppCalendarRoute: AppCalendarRoute,
