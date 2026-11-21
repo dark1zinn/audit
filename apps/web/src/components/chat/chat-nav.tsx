@@ -16,7 +16,7 @@ import { channelTitle } from "./channel-title.ts"
 import { chatUnreadTotal, filterChannels, isRoom } from "./chat-model.ts"
 
 const rowClass =
-  "flex min-h-9 items-center justify-between gap-2 rounded-md px-2 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11"
+  "flex min-h-11 items-center justify-between gap-2 rounded-md px-2 text-sm text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"
 
 const groupLabelClass = "text-xs font-medium uppercase text-muted-foreground"
 
@@ -29,6 +29,7 @@ export function useChatUnreadTotal(): number {
 }
 
 function ChannelRow({ channel }: { readonly channel: ChannelSummary }) {
+  const { t } = useLingui()
   const title = channelTitle(channel)
   const unread = channel.unread > 0 || channel.mentions > 0
   return (
@@ -43,9 +44,17 @@ function ChannelRow({ channel }: { readonly channel: ChannelSummary }) {
           {title}
         </span>
         <span className="flex shrink-0 items-center gap-1">
-          {channel.mentions > 0 ? <Badge variant="destructive">@{channel.mentions}</Badge> : null}
+          {channel.mentions > 0 ? (
+            <Badge variant="destructive">
+              @{channel.mentions}
+              <span className="sr-only">{t`${channel.mentions} mentions`}</span>
+            </Badge>
+          ) : null}
           {channel.unread > 0 && channel.mentions === 0 ? (
-            <Badge variant="secondary">{channel.unread}</Badge>
+            <Badge variant="secondary">
+              {channel.unread > 99 ? "99+" : channel.unread}
+              <span className="sr-only">{t`${channel.unread} unread messages`}</span>
+            </Badge>
           ) : null}
         </span>
       </Link>
@@ -76,7 +85,7 @@ export function ChatNav({ meId }: { readonly meId: string }) {
         onChange={(event) => setFilter(event.target.value)}
         placeholder={t`Filter conversations`}
         aria-label={t`Filter conversations`}
-        className="h-8"
+        className="h-11 md:h-8"
       />
 
       <div className="flex flex-col gap-1">
