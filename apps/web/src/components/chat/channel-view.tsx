@@ -9,6 +9,7 @@ import type { ChannelId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@audit/ui/components/ui/tooltip.tsx"
 import { callApi } from "../../lib/api.ts"
 import { channelQuery, chatKeys, messageChangeKeys, messagesQuery } from "../../lib/chat.ts"
 import { sendTyping, usePresence, useRealtimeScopes } from "../../lib/realtime.ts"
@@ -262,19 +263,36 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
               setDraft((previous) => ({ key: (previous?.key ?? 0) + 1, body: paragraphDoc(text) }))
             }
           />
-          <Button variant="ghost" size="sm" onClick={() => setDialog("pins")}>
-            <Pin className="size-4" />
-            <Trans>Pinned</Trans>
-            {data.pinCount > 0 ? <Badge variant="secondary">{data.pinCount}</Badge> : null}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t`Channel settings`}
-            onClick={() => setDialog("settings")}
-          >
-            <Settings className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="max-xl:px-2"
+                onClick={() => setDialog("pins")}
+              >
+                <Pin className="size-4" aria-hidden />
+                <span className="max-xl:sr-only">
+                  <Trans>Pinned</Trans>
+                </span>
+                {data.pinCount > 0 ? <Badge variant="secondary">{data.pinCount}</Badge> : null}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t`Pinned messages`}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t`Channel settings`}
+                onClick={() => setDialog("settings")}
+              >
+                <Settings className="size-4" aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t`Channel settings`}</TooltipContent>
+          </Tooltip>
         </div>
       </header>
 

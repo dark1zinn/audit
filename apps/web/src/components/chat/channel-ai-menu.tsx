@@ -3,6 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { Sparkles } from "lucide-react"
 import type { ChannelId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@audit/ui/components/ui/tooltip.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +28,19 @@ export function ChannelAiMenu({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" disabled={action.isPending}>
-            <Sparkles aria-hidden="true" className="size-4" />
-            <Trans>AI</Trans>
-          </Button>
-        </DropdownMenuTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="max-xl:px-2" disabled={action.isPending}>
+                <Sparkles aria-hidden="true" className="size-4" />
+                <span className="max-xl:sr-only">
+                  <Trans>AI</Trans>
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>{t`AI actions`}</TooltipContent>
+        </Tooltip>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onSelect={() =>

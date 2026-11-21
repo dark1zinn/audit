@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type ComponentProps } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
@@ -8,11 +9,15 @@ import {
   ResizablePanelGroup,
 } from "@audit/ui/components/ui/resizable.tsx"
 import { ChatNav } from "../components/chat/chat-nav.tsx"
-import { useWideScreen } from "../components/chat/use-wide-screen.ts"
+import { ChatListRail } from "../components/chat/chat-list-rail.tsx"
+import { useMediaQuery, useWideScreen } from "../components/chat/use-wide-screen.ts"
 import { PageBody, PageHeader } from "../components/feedback.tsx"
 
 const PANEL_KEY = "audit.chatPanel"
 const PANEL_ID = "chat-panel"
+
+type PanelRef = Extract<ComponentProps<typeof ResizablePanel>["panelRef"], { current: unknown }>
+type PanelHandle = PanelRef["current"]
 
 type PanelLayout = Record<string, number>
 
@@ -49,6 +54,15 @@ function ChatLayout() {
   const wide = useWideScreen()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const onList = pathname.replace(/\/$/, "") === "/chat"
+  const xl = useMediaQuery("(min-width: 1280px)")
+  const threadOpen = /^\/c\/[^/]+\/t\//.test(pathname)
+  const collapseList = wide && threadOpen && !xl
+  const listRef = useRef<PanelHandle>(null)
+  const [listCollapsed, setListCollapsed] = useState(false)
+  useEffect(() => {
+    if (collapseList) listRef.current?.collapse()
+    else listRef.current?.expand()
+  }, [collapseList])
 
   if (wide) {
     return (
@@ -58,18 +72,29 @@ function ChatLayout() {
           orientation="horizontal"
           className="min-h-0 flex-1"
           defaultLayout={readPanelLayout()}
-          onLayoutChanged={writePanelLayout}
+          onLayoutChanged={(layout) => {
+            // The thread collapse is not a user choice, so it is not persisted.
+            if (!listCollapsed) writePanelLayout(layout)
+          }}
         >
           <ResizablePanel
             id="chat-list"
+            panelRef={listRef}
             defaultSize="22%"
             minSize="16%"
             maxSize="35%"
+            collapsible
+            collapsedSize="48px"
+            onResize={() => setListCollapsed(listRef.current?.isCollapsed() ?? false)}
             className="min-w-0"
           >
-            <div className="h-full border-e">
-              <ChatNav meId={me.userId} />
-            </div>
+            {listCollapsed ? (
+              <ChatListRail meId={me.userId} />
+            ) : (
+              <div className="h-full border-e">
+                <ChatNav meId={me.userId} />
+              </div>
+            )}
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel id="chat-content" minSize="40%" className="flex min-w-0 flex-col">

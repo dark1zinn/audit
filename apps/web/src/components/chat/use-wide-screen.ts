@@ -1,18 +1,22 @@
 import { useSyncExternalStore } from "react"
 
-const WIDE_QUERY = "(min-width: 768px)"
-
-const subscribe = (onChange: () => void) => {
-  const media = window.matchMedia(WIDE_QUERY)
+const subscribeTo = (query: string) => (onChange: () => void) => {
+  const media = window.matchMedia(query)
   media.addEventListener("change", onChange)
   return () => media.removeEventListener("change", onChange)
 }
-const getSnapshot = () => window.matchMedia(WIDE_QUERY).matches
 const getServerSnapshot = () => false
 
 /**
- * True from `md` up. Read synchronously on the client so the chat layout never flashes the
- * mobile list before switching to the two-column view.
+ * Tracks a CSS media query. Read synchronously on the client so layouts never flash the
+ * wrong variant on first paint.
  */
-export const useWideScreen = (): boolean =>
-  useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+export const useMediaQuery = (query: string): boolean =>
+  useSyncExternalStore(
+    subscribeTo(query),
+    () => window.matchMedia(query).matches,
+    getServerSnapshot,
+  )
+
+/** True from `md` up. */
+export const useWideScreen = (): boolean => useMediaQuery("(min-width: 768px)")
