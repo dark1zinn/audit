@@ -55,3 +55,20 @@ export const paragraph = (text: string) => ({
   type: "doc",
   content: [{ type: "paragraph", content: [{ type: "text", text }] }],
 })
+
+/** The `KEY-n` key of a task card, reduced to its number. */
+export const taskNumber = (key: string) => Number(key.slice(key.lastIndexOf("-") + 1))
+
+/** A ProseMirror document: one paragraph with a text lead-in and a single mention node. */
+export const mentionDoc = (mention: { id: string; type: string; label: string }) => ({
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        { type: "text", text: "See " },
+        { type: "mention", attrs: { id: mention.id, type: mention.type, label: mention.label } },
+      ],
+    },
+  ],
+})
