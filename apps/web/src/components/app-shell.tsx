@@ -30,6 +30,7 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
           <AppHeader />
           <main
             id="main"
+            data-scroll-restoration-id="main"
             tabIndex={-1}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] outline-none md:px-6 md:pt-6 md:pb-6"
           >
