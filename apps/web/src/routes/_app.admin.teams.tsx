@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { Users } from "lucide-react"
 import { formValue, TextField } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys, membersQuery, teamMembersQuery, teamsQuery } from "../lib/queries.ts"
@@ -108,21 +109,28 @@ function TeamsPage() {
           />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <Trans>Members</Trans>
-            </CardTitle>
-            <CardDescription>
-              {selected === null ? (
-                <Trans>Select a team.</Trans>
-              ) : (
+        {selected === null ? (
+          <EmptyState
+            icon={Users}
+            title={t`No team selected`}
+            description={t`Choose a team to see and manage its members.`}
+            size="sm"
+          />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Trans>Members</Trans>
+              </CardTitle>
+              <CardDescription>
                 <Trans>Manage who belongs to this team.</Trans>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>{selected !== null && <TeamMembers teamId={selected} />}</CardContent>
-        </Card>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TeamMembers teamId={selected} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </>
   )
