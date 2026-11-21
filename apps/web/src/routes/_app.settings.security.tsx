@@ -170,9 +170,10 @@ function TwoFactorCard({ enabled }: { readonly enabled: boolean }) {
 
         {!enabled && setup === null && (
           <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => void start(event)}>
-            <div className="min-w-64 flex-1">
+            <div>
               <TextField
                 name="password"
+                width="md"
                 type="password"
                 label={t`Current password`}
                 autoComplete="current-password"
@@ -208,9 +209,10 @@ function TwoFactorCard({ enabled }: { readonly enabled: boolean }) {
                 className="flex flex-wrap items-end gap-3"
                 onSubmit={(event) => void confirm(event)}
               >
-                <div className="min-w-40">
+                <div>
                   <TextField
                     name="code"
+                    width="xs"
                     label={t`6-digit code`}
                     inputMode="numeric"
                     autoComplete="one-time-code"
@@ -233,6 +235,7 @@ function TwoFactorCard({ enabled }: { readonly enabled: boolean }) {
             <form className="space-y-3" onSubmit={(event) => void disable(event)}>
               <TextField
                 name="password"
+                width="md"
                 type="password"
                 label={t`Current password`}
                 autoComplete="current-password"
@@ -246,6 +249,7 @@ function TwoFactorCard({ enabled }: { readonly enabled: boolean }) {
             <form className="space-y-3" onSubmit={(event) => void regenerate(event)}>
               <TextField
                 name="password"
+                width="md"
                 type="password"
                 label={t`Current password`}
                 autoComplete="current-password"
@@ -325,9 +329,10 @@ function PasskeysCard() {
             void add()
           }}
         >
-          <div className="min-w-48 flex-1">
+          <div>
             <TextField
               name="passkeyName"
+              width="md"
               label={t`Name (optional)`}
               value={name}
               onChange={(event) => setName(event.currentTarget.value)}

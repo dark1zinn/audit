@@ -202,12 +202,14 @@ function QuietHoursCard({ settings }: { readonly settings: NotificationSettings 
         <form className="grid gap-4 sm:grid-cols-3" onSubmit={onSubmit}>
           <TextField
             name="quietStart"
+            width="xs"
             type="time"
             label={t`Start`}
             defaultValue={settings.quietStart ?? ""}
           />
           <TextField
             name="quietEnd"
+            width="xs"
             type="time"
             label={t`End`}
             defaultValue={settings.quietEnd ?? ""}

@@ -22,7 +22,7 @@ import {
 } from "@audit/ui/components/ui/select.tsx"
 import { useState, type FormEvent } from "react"
 import { ErrorMessage } from "./feedback.tsx"
-import { formValue, TextField } from "./form.tsx"
+import { fieldWidth, formValue, TextField } from "./form.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys } from "../lib/queries.ts"
 
@@ -98,6 +98,7 @@ export function ProjectCreateDialog({
         <form id="create-project" className="grid gap-3" onSubmit={onSubmit}>
           <TextField
             name="key"
+            width="2xs"
             label={t`Key`}
             required
             minLength={2}
@@ -106,7 +107,7 @@ export function ProjectCreateDialog({
             autoCapitalize="characters"
             hint={<Trans>2 to 6 letters. Stored in uppercase.</Trans>}
           />
-          <TextField name="name" label={t`Name`} required maxLength={120} />
+          <TextField name="name" width="md" label={t`Name`} required maxLength={120} />
           <div className="space-y-2">
             <Label htmlFor="visibility">
               <Trans>Visibility</Trans>
@@ -115,7 +116,7 @@ export function ProjectCreateDialog({
               value={visibility}
               onValueChange={(value) => setVisibility(value as ProjectVisibility)}
             >
-              <SelectTrigger id="visibility" className="w-full">
+              <SelectTrigger id="visibility" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +136,7 @@ export function ProjectCreateDialog({
               value={memberRole}
               onValueChange={(value) => setMemberRole(value as ResourceRole)}
             >
-              <SelectTrigger id="memberRole" className="w-full">
+              <SelectTrigger id="memberRole" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
