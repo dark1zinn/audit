@@ -26,12 +26,12 @@ export function AppShell({ me, children }: { readonly me: Me; readonly children:
           <Trans>Skip to content</Trans>
         </a>
         <AppSidebar me={me} />
-        <SidebarInset className="min-w-0">
+        <SidebarInset className="min-w-0 h-svh max-h-svh min-h-0 overflow-hidden md:h-[calc(100svh-1rem)] md:max-h-[calc(100svh-1rem)]">
           <AppHeader />
           <main
             id="main"
             tabIndex={-1}
-            className="flex min-w-0 flex-1 flex-col px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] outline-none md:px-6 md:pt-6 md:pb-6"
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] outline-none md:px-6 md:pt-6 md:pb-6"
           >
             {children}
           </main>
