@@ -80,8 +80,8 @@ export function MobileTabBar({ me }: { readonly me: Me }) {
             <span className="relative">
               <tab.icon aria-hidden="true" className="size-5" />
               {tab.badge > 0 && (
-                <span className="absolute -end-2 -top-1 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] leading-4 text-primary-foreground">
-                  {tab.badge > 99 ? "99+" : tab.badge}
+                <span className="absolute -end-4 -top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] leading-4 text-primary-foreground">
+                  {tab.badge > 9 ? "9+" : tab.badge}
                 </span>
               )}
             </span>
@@ -175,13 +175,13 @@ function MoreList({
       </fieldset>
       <fieldset
         aria-label={t`Language`}
-        className="m-0 flex min-w-0 flex-wrap gap-1 border-0 p-0 px-1 pt-2"
+        className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0 px-1 pt-2"
       >
         {LOCALES.map((locale) => (
           <button
             key={locale}
             type="button"
-            className="min-h-11 flex-1 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-11 w-full rounded-md border px-3 text-start text-sm focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => changeLocale.mutate(locale)}
           >
             {LOCALE_NAMES[locale]}
