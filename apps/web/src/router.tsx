@@ -8,6 +8,7 @@ export const createAppRouter = (queryClient: QueryClient) =>
     context: { queryClient },
     defaultPreload: "intent",
     scrollRestoration: true,
+    scrollToTopSelectors: ["#main"],
   })
 
 declare module "@tanstack/react-router" {
