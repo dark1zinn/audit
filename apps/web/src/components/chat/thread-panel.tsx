@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { X } from "lucide-react"
+import { Bell, BellOff, FilePlus, X } from "lucide-react"
 import type { ChannelId, MessageId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -95,7 +95,7 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
       className="flex h-full w-full min-w-0 flex-col border-l bg-background md:w-96"
       aria-label={t`Thread`}
     >
-      <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
         <h2 className="font-semibold">
           <Trans>Thread</Trans>
         </h2>
@@ -106,6 +106,11 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
             disabled={!thread.isSuccess || follow.isPending}
             onClick={() => follow.mutate()}
           >
+            {thread.data?.following ? (
+              <BellOff className="size-4" aria-hidden />
+            ) : (
+              <Bell className="size-4" aria-hidden />
+            )}
             {thread.data?.following ? <Trans>Following</Trans> : <Trans>Follow</Trans>}
           </Button>
           <Button
@@ -114,6 +119,7 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
             disabled={!thread.isSuccess || createDoc.isPending}
             onClick={() => createDoc.mutate()}
           >
+            <FilePlus className="size-4" aria-hidden />
             <Trans>Create doc</Trans>
           </Button>
           <Button
@@ -149,11 +155,11 @@ export function ThreadPanel({ channelId, rootId, meId }: ThreadPanelProps) {
           </>
         )}
       </div>
-      <div className="border-t p-3">
+      <div className="shrink-0 border-t p-3">
         <Composer
           channelId={channelId}
           placeholder={t`Reply in thread`}
-          submitLabel={t`Reply`}
+          submitLabel={t`Send`}
           onSubmit={async (body: RichDoc) => {
             await callApi((api) =>
               api.chat.postMessage({

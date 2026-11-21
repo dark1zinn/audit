@@ -52,7 +52,7 @@ function ChatLayout() {
 
   if (wide) {
     return (
-      <PageBody width="full" className="flex h-[calc(100svh-4rem)] min-h-0 flex-col p-0">
+      <PageBody width="full" className="flex min-h-0 flex-1 flex-col p-0">
         <ResizablePanelGroup
           id={PANEL_ID}
           orientation="horizontal"
@@ -82,15 +82,17 @@ function ChatLayout() {
 
   if (onList) {
     return (
-      <PageBody width="full" className="flex flex-col gap-3 p-4">
+      <PageBody width="full" className="flex min-h-0 flex-1 flex-col gap-3 p-4">
         <PageHeader title={t`Chat`} />
-        <ChatNav meId={me.userId} />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <ChatNav meId={me.userId} />
+        </div>
       </PageBody>
     )
   }
 
   return (
-    <PageBody width="full" className="flex min-h-0 flex-col p-0">
+    <PageBody width="full" className="flex min-h-0 flex-1 flex-col p-0">
       <div className="flex items-center border-b px-2 py-1">
         <Button variant="ghost" size="sm" asChild className="min-h-11">
           <Link to="/chat">
