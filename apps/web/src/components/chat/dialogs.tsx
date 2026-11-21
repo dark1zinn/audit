@@ -8,8 +8,16 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { Label } from "@audit/ui/components/ui/label.tsx"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@audit/ui/components/ui/select.tsx"
+import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -21,6 +29,7 @@ import { browseQuery, channelQuery, chatKeys, pinsQuery } from "../../lib/chat.t
 import { membersQuery, projectsQuery, boardsQuery } from "../../lib/queries.ts"
 import { Pin } from "lucide-react"
 import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { MessageBody } from "./message-body.tsx"
 
 const MAX_GROUP_PEOPLE = 8
@@ -106,6 +115,7 @@ export function ChannelSettingsDialog({
           <div className="space-y-5">
             {isDm ? null : (
               <form
+                id="chat-channel-form"
                 className="space-y-3"
                 onSubmit={(event) => {
                   event.preventDefault()
@@ -129,6 +139,7 @@ export function ChannelSettingsDialog({
                   </Label>
                   <Input
                     id="chat-channel-name"
+                    className={fieldWidth.md}
                     value={name ?? channel.name}
                     disabled={!manager}
                     maxLength={80}
@@ -141,17 +152,13 @@ export function ChannelSettingsDialog({
                   </Label>
                   <Input
                     id="chat-channel-topic"
+                    className={fieldWidth.lg}
                     value={topic ?? channel.topic ?? ""}
                     disabled={!manager}
                     maxLength={250}
                     onChange={(event) => setTopic(event.target.value)}
                   />
                 </div>
-                {manager ? (
-                  <Button type="submit" size="sm" disabled={act.isPending}>
-                    <Trans>Save</Trans>
-                  </Button>
-                ) : null}
               </form>
             )}
 
@@ -159,16 +166,19 @@ export function ChannelSettingsDialog({
               <Label htmlFor="chat-notify">
                 <Trans>Notifications</Trans>
               </Label>
-              <select
-                id="chat-notify"
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+              <Select
                 value={channel.notifyLevel ?? "all"}
-                onChange={(event) => requestAction(`notify-${event.target.value}`)}
+                onValueChange={(value) => requestAction(`notify-${value}`)}
               >
-                <option value="all">{t`All messages`}</option>
-                <option value="mentions">{t`Mentions only`}</option>
-                <option value="none">{t`Nothing`}</option>
-              </select>
+                <SelectTrigger id="chat-notify" className={fieldWidth.sm}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t`All messages`}</SelectItem>
+                  <SelectItem value="mentions">{t`Mentions only`}</SelectItem>
+                  <SelectItem value="none">{t`Nothing`}</SelectItem>
+                </SelectContent>
+              </Select>
             </section>
 
             <section className="space-y-2">
@@ -212,7 +222,7 @@ export function ChannelSettingsDialog({
                 <div className="flex gap-2">
                   <select
                     aria-label={t`Add member`}
-                    className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm"
+                    className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm sm:max-w-sm"
                     value={addId}
                     onChange={(event) => setAddId(event.target.value)}
                   >
@@ -273,6 +283,13 @@ export function ChannelSettingsDialog({
             </section>
           </div>
         )}
+        {manager && !isDm && channel !== undefined ? (
+          <DialogFooter>
+            <Button type="submit" form="chat-channel-form" size="sm" disabled={act.isPending}>
+              <Trans>Save</Trans>
+            </Button>
+          </DialogFooter>
+        ) : null}
         {error === null ? null : <ErrorMessage error={error} />}
         {confirming?.confirm === undefined ? null : (
           <ConfirmDialog
@@ -546,6 +563,7 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
             </Label>
             <Input
               id="new-channel-name"
+              className={fieldWidth.md}
               required
               maxLength={80}
               value={name}
@@ -559,6 +577,7 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
             </Label>
             <Input
               id="new-channel-topic"
+              className={fieldWidth.lg}
               maxLength={250}
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
@@ -568,15 +587,15 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
             <Label htmlFor="new-channel-kind">
               <Trans>Visibility</Trans>
             </Label>
-            <select
-              id="new-channel-kind"
-              className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-              value={kind}
-              onChange={(event) => setKind(event.target.value as "public" | "private")}
-            >
-              <option value="public">{t`Public`}</option>
-              <option value="private">{t`Private`}</option>
-            </select>
+            <Select value={kind} onValueChange={(value) => setKind(value as "public" | "private")}>
+              <SelectTrigger id="new-channel-kind" className={fieldWidth.sm}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">{t`Public`}</SelectItem>
+                <SelectItem value="private">{t`Private`}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button type="submit" disabled={name.trim() === "" || create.isPending}>
             <Trans>Create channel</Trans>
