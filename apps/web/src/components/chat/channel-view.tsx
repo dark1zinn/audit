@@ -162,6 +162,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
     initialScrolled.current = true
     const dividerIndex = rows.findIndex((row) => row.kind === "divider")
     if (dividerIndex >= 0 && dividerIndex < rows.length - 1) {
+      // Stay at the divider: the follow-to-bottom effect must not override it.
+      atBottom.current = false
       virtualizer.scrollToIndex(dividerIndex, { align: "start" })
     } else {
       virtualizer.scrollToIndex(rows.length - 1, { align: "end" })
@@ -171,7 +173,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   // Keep the viewport still when older pages are prepended; follow new messages at the bottom.
   useLayoutEffect(() => {
     const el = scrollRef.current
-    if (el === null) return
+    // Wait for the initial position (it needs the read anchor) before following anything.
+    if (el === null || !initialScrolled.current) return
     if (preservePrepend.current !== null) {
       el.scrollTop += el.scrollHeight - preservePrepend.current
       preservePrepend.current = null
@@ -183,7 +186,9 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   const markRead = () => {
     const el = scrollRef.current
     const newest = allMessages[allMessages.length - 1]
+    // Before the initial position is set the list is unmeasured and reads as "at bottom".
     if (el === null || newest === undefined || anchor?.channelId !== channelId) return
+    if (!initialScrolled.current) return
     if (lastSent.current === newest.id) return
     if (document.visibilityState !== "visible") return
     if (el.scrollHeight - el.scrollTop - el.clientHeight > 80) return
