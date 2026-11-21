@@ -184,34 +184,41 @@ function TaskRow({
           tabIndex={tabIndex}
           onFocus={onFocus}
           onKeyDown={onKeyDown}
-          className="flex h-full min-w-0 flex-1 items-center gap-3 border-b px-3 text-sm hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
+          className="flex h-full min-w-0 flex-1 items-center gap-3 overflow-hidden border-b px-3 text-sm hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset max-sm:flex-col max-sm:items-stretch max-sm:justify-center max-sm:gap-1"
         >
-          <span className="min-w-20 shrink-0 font-mono text-xs text-muted-foreground">
-            {task.key}
+          {/* Phones stack the row: key and title first, metadata on a second line. */}
+          <span className="flex min-w-0 flex-1 items-center gap-3 max-sm:flex-none">
+            <span className="min-w-20 shrink-0 font-mono text-xs text-muted-foreground max-sm:min-w-0">
+              {task.key}
+            </span>
+            <span className="min-w-0 flex-1 truncate font-medium">{task.title}</span>
           </span>
-          <span className="min-w-0 flex-1 truncate font-medium">{task.title}</span>
-          {task.priority !== "none" && <Badge variant="outline">{priorities[task.priority]}</Badge>}
-          <Badge variant="secondary">{categories[task.columnCategory]}</Badge>
-          {task.subtaskCount > 0 && (
-            <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
-              <Trans>
-                {task.subtasksDone}/{task.subtaskCount} subtasks
-              </Trans>
-            </span>
-          )}
-          {task.assignees.length > 0 && (
-            <span className="hidden text-xs text-muted-foreground md:inline">
-              <Plural value={task.assignees.length} one="# assignee" other="# assignees" />
-            </span>
-          )}
-          {task.dueAt !== null && (
-            <time
-              dateTime={task.dueAt.toISOString()}
-              className={`shrink-0 text-xs tabular-nums${overdue ? " font-medium text-destructive" : ""}`}
-            >
-              {dateFormat.format(task.dueAt)}
-            </time>
-          )}
+          <span className="flex shrink-0 items-center gap-3">
+            {task.priority !== "none" && (
+              <Badge variant="outline">{priorities[task.priority]}</Badge>
+            )}
+            <Badge variant="secondary">{categories[task.columnCategory]}</Badge>
+            {task.subtaskCount > 0 && (
+              <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
+                <Trans>
+                  {task.subtasksDone}/{task.subtaskCount} subtasks
+                </Trans>
+              </span>
+            )}
+            {task.assignees.length > 0 && (
+              <span className="hidden text-xs text-muted-foreground md:inline">
+                <Plural value={task.assignees.length} one="# assignee" other="# assignees" />
+              </span>
+            )}
+            {task.dueAt !== null && (
+              <time
+                dateTime={task.dueAt.toISOString()}
+                className={`shrink-0 text-xs tabular-nums${overdue ? " font-medium text-destructive" : ""}`}
+              >
+                {dateFormat.format(task.dueAt)}
+              </time>
+            )}
+          </span>
         </Link>
         <span className="border-b px-2">
           <EntityActionsButton target={{ kind: "task", task }} label={t`Actions for ${task.key}`} />
