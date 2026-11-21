@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { MessageSquare } from "lucide-react"
 import type { UserId } from "@audit/domain/ids"
 import type { Comment, RichDoc, TaskDetail } from "@audit/domain/tasks/schema"
 import { roleAtLeast } from "@audit/domain/roles"
@@ -8,7 +9,7 @@ import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { callApi } from "../../lib/api.ts"
 import { membersQuery } from "../../lib/queries.ts"
-import { ErrorMessage } from "../feedback.tsx"
+import { EmptyState, ErrorMessage } from "../feedback.tsx"
 import { RichEditor } from "./rich-editor.tsx"
 import { invalidateTask } from "./queries.ts"
 import { emptyDoc, richText } from "./rich-text.ts"
@@ -49,7 +50,9 @@ export function CommentsSection({ task, currentUserId, canComment }: CommentsSec
       <h2 id="task-comments-heading" className="text-base font-semibold">
         {t`Comments`}
       </h2>
-      {roots.length === 0 && <p className="text-sm text-muted-foreground">{t`No comments yet.`}</p>}
+      {roots.length === 0 && (
+        <EmptyState size="sm" icon={MessageSquare} title={t`No comments yet.`} />
+      )}
       <ul className="space-y-4">
         {roots.map((comment) => (
           <CommentThread

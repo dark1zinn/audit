@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import type { ChannelId, MessageId } from "@audit/domain/ids"
 import { ThreadPanel } from "../components/chat/thread-panel.tsx"
 
-export const Route = createFileRoute("/_app/c/$channelId/t/$threadId")({
+export const Route = createFileRoute("/_app/_chat/c/$channelId/t/$threadId")({
   component: ThreadRoute,
 })
 

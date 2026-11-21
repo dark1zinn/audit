@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -13,13 +14,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@audit/ui/components/ui/card.tsx"
-import { ErrorMessage, PageHeader } from "../components/feedback.tsx"
+import { KeyRound } from "lucide-react"
+import { EmptyState, ErrorMessage, PageHeader } from "../components/feedback.tsx"
 import { formValue, TextField } from "../components/form.tsx"
 import { useMe } from "../components/use-me.ts"
 import { authClient } from "../lib/auth.ts"
 import { keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/settings/security")({
+  staticData: { crumb: () => ({ label: tMacro`Security` }) },
   component: SecurityPage,
 })
 
@@ -302,9 +305,7 @@ function PasskeysCard() {
           </p>
         )}
         {list.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>No passkeys yet.</Trans>
-          </p>
+          <EmptyState icon={KeyRound} title={t`No passkeys yet.`} />
         ) : (
           <ul className="divide-y">
             {list.map((passkey) => (

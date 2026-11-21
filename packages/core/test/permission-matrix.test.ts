@@ -67,6 +67,8 @@ const ownGrants = (c: Case, node: Node, principal: Principal): ResourceRole | nu
 
 /** The plan's rule: highest grant on the node or its ancestors, up to a restricted boundary. */
 const expectedRole = (c: Case, node: Node, principal: Principal): ResourceRole | null => {
+  // owners/admins manage all project content
+  if (principal === "owner" || principal === "admin") return "manager"
   const own = ownGrants(c, node, principal)
   switch (node) {
     case "project":

@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { History } from "lucide-react"
 import type { DocVersion } from "@audit/domain/docs/schema"
 import type { DocId, DocVersionId } from "@audit/domain/ids"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { callApi } from "../../lib/api.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { diffLines, contentLines } from "./diff.ts"
 import { invalidateDoc, versionQuery, versionsQuery } from "./queries.ts"
 
@@ -92,11 +93,7 @@ export const VersionsPanel = ({ docId, canWrite }: VersionsPanelProps) => {
           </Button>
         </form>
       )}
-      {list.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          <Trans>No versions yet.</Trans>
-        </p>
-      )}
+      {list.length === 0 && <EmptyState size="sm" icon={History} title={t`No versions yet.`} />}
       <ul className="space-y-2">
         {list.map((version) => (
           <li key={version.id}>

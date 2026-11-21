@@ -4,10 +4,20 @@ import { createDocComment } from "@audit/core/docs/comments"
 import { getDoc, spaceTree } from "@audit/core/docs/queries"
 import { backlinks, resolveEntities, syncReferences } from "@audit/core/references"
 import { WORKSPACE_SPACE_ID } from "@audit/domain/docs/schema"
-import type { DocId, EntityId } from "@audit/domain/ids"
+import type { DocId, EntityId, ProjectId } from "@audit/domain/ids"
 import { makeTestDatabase, type TestDatabase } from "@audit/testkit/database"
 import { addPerson, exitAs, type Person, runAs, setupWorkspace } from "@audit/testkit/fixtures"
 import { Cause, Exit, Option } from "effect"
+import { createChannel, postMessage } from "@audit/core/chat/commands"
+import { createProject } from "@audit/core/projects/commands"
+import { defaultBoardId } from "@audit/core/projects/read"
+import { createTask } from "@audit/core/tasks/commands"
+import { createCalendar, createEvent } from "@audit/core/calendar/commands"
+
+const messageBody = (text: string) => ({
+  type: "doc" as const,
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+})
 
 let database: TestDatabase
 let owner: Person
@@ -64,7 +74,8 @@ describe("space docs", () => {
     const memberTree = await runAs(database, member.actor)(spaceTree())
     expect(memberTree.some((node) => node.id === docId)).toBe(false)
     const ownerTree = await runAs(database, owner.actor)(spaceTree())
-    expect(ownerTree.some((node) => node.id === docId)).toBe(false)
+    // owners/admins manage all project content
+    expect(ownerTree.some((node) => node.id === docId)).toBe(true)
   })
 
   test("reading a restricted doc fails for members", async () => {
@@ -147,5 +158,93 @@ describe("doc comments", () => {
     expect(failureTag(guestExit)).not.toBe("success")
     const comment = await runAs(database, member.actor)(createDocComment.execute({ docId, body }))
     expect(comment.docId).toBe(docId)
+  })
+})
+
+describe("entity route data", () => {
+  test("visible tasks, project docs and messages carry the route fields for chips", async () => {
+    const project = await runAs(
+      database,
+      owner.actor,
+    )(createProject.execute({ key: "ROUTE", name: "Routes", visibility: "workspace" }))
+    const projectId = project.id as ProjectId
+    const boardId = (await runAs(database, owner.actor)(defaultBoardId(projectId)))!
+    const task = await runAs(
+      database,
+      owner.actor,
+    )(createTask.execute({ boardId, title: "Linked task" }))
+    const projectDoc = await runAs(
+      database,
+      owner.actor,
+    )(createDoc.execute({ parentId: projectId, title: "Project note" }))
+    const channel = await runAs(
+      database,
+      owner.actor,
+    )(createChannel.execute({ name: "route-room", kind: "public" }))
+    const message = await runAs(
+      database,
+      owner.actor,
+    )(postMessage.execute({ channelId: channel.id, body: messageBody("hello") }))
+
+    const refs = await runAs(
+      database,
+      owner.actor,
+    )(resolveEntities([task.id, projectDoc.id, message.id] as EntityId[]))
+    expect(refs[task.id]).toMatchObject({
+      projectKey: "ROUTE",
+      number: 1,
+      key: "ROUTE-1",
+    })
+    expect(refs[projectDoc.id]?.projectKey).toBe("ROUTE")
+    expect(refs[projectDoc.id]?.number).toBeUndefined()
+    expect(refs[message.id]?.channelId).toBe(channel.id)
+  })
+
+  test("a restricted task returns no route data", async () => {
+    const project = await runAs(
+      database,
+      owner.actor,
+    )(createProject.execute({ key: "SECRET", name: "Secret", visibility: "workspace" }))
+    const boardId = (await runAs(database, owner.actor)(defaultBoardId(project.id as ProjectId)))!
+    const task = await runAs(
+      database,
+      owner.actor,
+    )(createTask.execute({ boardId, title: "Hidden task" }))
+    await database.superuser`update entities set restricted = true where id = ${task.id}`
+
+    const refs = await runAs(database, member.actor)(resolveEntities([task.id] as EntityId[]))
+    expect(refs[task.id]).toEqual({ id: task.id, restricted: true, deleted: false })
+  })
+
+  test("visible events carry startsAt; a restricted event carries none", async () => {
+    const calendar = await runAs(
+      database,
+      owner.actor,
+    )(createCalendar.execute({ name: "Deadlines", color: "#336699", teamId: null }))
+    const event = await runAs(
+      database,
+      owner.actor,
+    )(
+      createEvent.execute({
+        calendarId: calendar.id,
+        title: "Launch",
+        startsAt: new Date("2026-06-10T15:00:00Z"),
+        endsAt: new Date("2026-06-10T16:00:00Z"),
+        allDay: false,
+        timezone: "UTC",
+        rrule: null,
+        location: "",
+        description: null,
+        attendees: [],
+        reminders: [],
+      }),
+    )
+    const eventId = event.eventId as EntityId
+    const visible = await runAs(database, owner.actor)(resolveEntities([eventId]))
+    expect(visible[eventId]?.startsAt).toBe("2026-06-10T15:00:00.000Z")
+
+    await database.superuser`update entities set restricted = true where id = ${eventId}`
+    const hidden = await runAs(database, member.actor)(resolveEntities([eventId]))
+    expect(hidden[eventId]).toEqual({ id: eventId, restricted: true, deleted: false })
   })
 })

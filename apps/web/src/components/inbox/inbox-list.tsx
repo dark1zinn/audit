@@ -8,7 +8,9 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { groupByItem, relativeTime, snippetOf, targetOf, type InboxGroup } from "../../lib/inbox.ts"
 import { membersQuery } from "../../lib/queries.ts"
 import { useInboxActions } from "./actions.ts"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
 import { KindIcon, useKindText } from "./kind.tsx"
+import { channelHref, docHref, messageHref, taskHref } from "../../lib/entity-links.ts"
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -43,22 +45,16 @@ export function InboxList({
     if (target === null) return
     switch (target.to) {
       case "task":
-        void navigate({
-          to: "/p/$key/t/$number",
-          params: { key: target.projectKey, number: target.number },
-        })
+        void navigate({ to: taskHref(target.projectKey, target.number) })
         return
       case "doc":
-        void navigate({ to: "/docs/$docId", params: { docId: target.docId } })
+        void navigate({ to: docHref(target.docId, null) })
         return
       case "channel":
-        void navigate({ to: "/c/$channelId", params: { channelId: target.channelId } })
+        void navigate({ to: channelHref(target.channelId) })
         return
       case "thread":
-        void navigate({
-          to: "/c/$channelId/t/$threadId",
-          params: { channelId: target.channelId, threadId: target.threadId },
-        })
+        void navigate({ to: messageHref(target.channelId, target.threadId) })
         return
       case "calendar":
         void navigate({ to: "/calendar" })
@@ -122,69 +118,80 @@ export function InboxList({
           const title =
             typeof latest.payload.title === "string" ? latest.payload.title : kindText(latest.kind)
           const active = position === index
+          const notificationTarget = {
+            kind: "notification" as const,
+            notification: latest,
+            items: group.items,
+            onOpen: () => open(group),
+          }
           return (
-            <li
-              key={group.key}
-              aria-current={active ? "true" : undefined}
-              className={`flex flex-wrap items-start gap-3 p-3 ${active ? "bg-accent" : ""}`}
-            >
-              <span className="block size-2 shrink-0 translate-y-2" aria-hidden="true">
-                {group.unread > 0 && <span className="block size-2 rounded-full bg-primary" />}
-              </span>
-              <KindIcon kind={latest.kind} />
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{kindText(latest.kind)}</span>
-                  {group.items.length > 1 && (
-                    <Badge variant="secondary">
-                      <Plural
-                        value={group.items.length}
-                        one="# notification"
-                        other="# notifications"
-                      />
-                    </Badge>
+            <EntityContextMenu key={group.key} target={notificationTarget}>
+              <li
+                aria-current={active ? "true" : undefined}
+                className={`flex flex-wrap items-start gap-3 p-3 ${active ? "bg-accent" : ""}`}
+              >
+                <span className="block size-2 shrink-0 translate-y-2" aria-hidden="true">
+                  {group.unread > 0 && <span className="block size-2 rounded-full bg-primary" />}
+                </span>
+                <KindIcon kind={latest.kind} />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{kindText(latest.kind)}</span>
+                    {group.items.length > 1 && (
+                      <Badge variant="secondary">
+                        <Plural
+                          value={group.items.length}
+                          one="# notification"
+                          other="# notifications"
+                        />
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="truncate font-medium">{title}</p>
+                  {snippet !== "" && (
+                    <p className="truncate text-sm text-muted-foreground">{snippet}</p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    {actor !== undefined && <span>{actor} · </span>}
+                    <time dateTime={latest.createdAt.toISOString()}>
+                      {relativeTime(latest.createdAt)}
+                    </time>
+                  </p>
                 </div>
-                <p className="truncate font-medium">{title}</p>
-                {snippet !== "" && (
-                  <p className="truncate text-sm text-muted-foreground">{snippet}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {actor !== undefined && <span>{actor} · </span>}
-                  <time dateTime={latest.createdAt.toISOString()}>
-                    {relativeTime(latest.createdAt)}
-                  </time>
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-                <Button
-                  id={`inbox-open-${group.key}`}
-                  size="sm"
-                  variant="outline"
-                  disabled={target === null}
-                  onClick={() => open(group)}
-                  aria-label={t`Open ${title}`}
-                >
-                  <Trans>Open</Trans>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => toggleRead(group)}
-                  aria-label={group.unread === 0 ? t`Mark as unread` : t`Mark as read`}
-                >
-                  {group.unread === 0 ? <Trans>Mark unread</Trans> : <Trans>Mark read</Trans>}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => toggleArchive(group)}
-                  aria-label={archived ? t`Unarchive` : t`Archive`}
-                >
-                  {archived ? <Trans>Unarchive</Trans> : <Trans>Archive</Trans>}
-                </Button>
-              </div>
-            </li>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Button
+                    id={`inbox-open-${group.key}`}
+                    size="sm"
+                    variant="outline"
+                    disabled={target === null}
+                    onClick={() => open(group)}
+                    aria-label={t`Open ${title}`}
+                  >
+                    <Trans>Open</Trans>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => toggleRead(group)}
+                    aria-label={group.unread === 0 ? t`Mark as unread` : t`Mark as read`}
+                  >
+                    {group.unread === 0 ? <Trans>Mark unread</Trans> : <Trans>Mark read</Trans>}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => toggleArchive(group)}
+                    aria-label={archived ? t`Unarchive` : t`Archive`}
+                  >
+                    {archived ? <Trans>Unarchive</Trans> : <Trans>Archive</Trans>}
+                  </Button>
+                  <EntityActionsButton
+                    target={notificationTarget}
+                    label={t`Actions for ${title}`}
+                  />
+                </div>
+              </li>
+            </EntityContextMenu>
           )
         })}
       </ul>

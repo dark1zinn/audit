@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
@@ -19,6 +20,7 @@ import { callApi } from "../lib/api.ts"
 import { keys, workspaceQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/security")({
+  staticData: { crumb: () => ({ label: tMacro`Security` }) },
   component: SecurityPage,
 })
 
@@ -66,7 +68,7 @@ function SecurityPage() {
             <p>
               <Trans>Minimum password length: {MIN_PASSWORD_LENGTH}</Trans>
             </p>
-            <Link to="/admin/workspace" className="text-primary underline">
+            <Link to="/admin/workspace" className="text-link underline">
               <Trans>Open workspace settings</Trans>
             </Link>
           </CardContent>

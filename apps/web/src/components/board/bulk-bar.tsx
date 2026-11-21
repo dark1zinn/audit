@@ -41,7 +41,7 @@ export function BulkBar({ boardId, taskIds, columns, labels, members, onDone }: 
   return (
     <section
       aria-label={t`Bulk actions`}
-      className="bg-card flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm"
+      className="bg-card fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 mx-auto flex w-fit max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-lg border p-2 text-sm shadow-lg md:bottom-4"
     >
       <span className="font-medium">
         <Plural value={taskIds.length} one="# task selected" other="# tasks selected" />
@@ -50,7 +50,7 @@ export function BulkBar({ boardId, taskIds, columns, labels, members, onDone }: 
         value=""
         onValueChange={(columnId) => run({ _tag: "move", taskIds, columnId: columnId as ColumnId })}
       >
-        <SelectTrigger aria-label={t`Move selected to column`} className="w-44">
+        <SelectTrigger aria-label={t`Move selected to column`} className="min-w-36 max-w-full">
           <SelectValue placeholder={t`Move to column`} />
         </SelectTrigger>
         <SelectContent>
@@ -65,7 +65,7 @@ export function BulkBar({ boardId, taskIds, columns, labels, members, onDone }: 
         value=""
         onValueChange={(userId) => run({ _tag: "assign", taskIds, add: [userId as UserId] })}
       >
-        <SelectTrigger aria-label={t`Assign selected to`} className="w-44">
+        <SelectTrigger aria-label={t`Assign selected to`} className="min-w-36 max-w-full">
           <SelectValue placeholder={t`Assign to`} />
         </SelectTrigger>
         <SelectContent>
@@ -80,7 +80,7 @@ export function BulkBar({ boardId, taskIds, columns, labels, members, onDone }: 
         value=""
         onValueChange={(labelId) => run({ _tag: "label", taskIds, add: [labelId as LabelId] })}
       >
-        <SelectTrigger aria-label={t`Add label to selected`} className="w-44">
+        <SelectTrigger aria-label={t`Add label to selected`} className="min-w-36 max-w-full">
           <SelectValue placeholder={t`Add label`} />
         </SelectTrigger>
         <SelectContent>
@@ -94,7 +94,7 @@ export function BulkBar({ boardId, taskIds, columns, labels, members, onDone }: 
       <Button variant="destructive" size="sm" onClick={() => setConfirmOpen(true)}>
         {t`Delete`}
       </Button>
-      <Button variant="ghost" size="sm" onClick={onDone} className="ml-auto">
+      <Button variant="ghost" size="sm" onClick={onDone} className="ms-auto">
         {t`Clear selection`}
       </Button>
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>

@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -26,6 +27,7 @@ import { keys, workspaceQuery } from "../lib/queries.ts"
 import { uploadBrandingLogo } from "../lib/upload.ts"
 
 export const Route = createFileRoute("/_app/admin/branding")({
+  staticData: { crumb: () => ({ label: tMacro`Branding` }) },
   component: BrandingPage,
 })
 

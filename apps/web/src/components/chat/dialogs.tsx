@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import type { Message, NotifyLevel } from "@audit/domain/chat/schema"
+import type { Message } from "@audit/domain/chat/schema"
 import type { BoardId, ChannelId, ProjectId, UserId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
@@ -14,10 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@audit/ui/components/ui/dialog.tsx"
+import { useChannelActions } from "../actions/channel-actions.ts"
+import { ConfirmDialog } from "../actions/confirm-dialog.tsx"
 import { callApi } from "../../lib/api.ts"
 import { browseQuery, channelQuery, chatKeys, pinsQuery } from "../../lib/chat.ts"
 import { membersQuery, projectsQuery, boardsQuery } from "../../lib/queries.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { Pin } from "lucide-react"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { MessageBody } from "./message-body.tsx"
 
 const MAX_GROUP_PEOPLE = 8
@@ -53,6 +56,21 @@ export function ChannelSettingsDialog({
   const [name, setName] = useState<string | null>(null)
   const [topic, setTopic] = useState<string | null>(null)
   const [addId, setAddId] = useState("")
+  const [pendingAction, setPendingAction] = useState<string | null>(null)
+  const channelActions = useChannelActions(
+    header.data === undefined ? null : { kind: "channel", channel: header.data.channel },
+  )
+  const channelAction = (id: string) =>
+    channelActions
+      .flatMap((group) => group.flatMap((action) => [action, ...(action.children ?? [])]))
+      .find((action) => action.id === id)
+
+  const requestAction = (id: string) => {
+    const action = channelAction(id)
+    if (action?.confirm === undefined) action?.run?.()
+    else setPendingAction(id)
+  }
+  const confirming = pendingAction === null ? undefined : channelAction(pendingAction)
 
   const act = useMutation({
     mutationFn: (action: () => Promise<unknown>) => action(),
@@ -145,19 +163,7 @@ export function ChannelSettingsDialog({
                 id="chat-notify"
                 className="h-9 w-full rounded-md border bg-background px-2 text-sm"
                 value={channel.notifyLevel ?? "all"}
-                onChange={(event) =>
-                  act.mutate(() =>
-                    callApi((api) =>
-                      api.chat.setNotify({
-                        params: { channelId },
-                        payload: {
-                          level: event.target.value as NotifyLevel,
-                          mutedUntil: null,
-                        },
-                      }),
-                    ),
-                  )
-                }
+                onChange={(event) => requestAction(`notify-${event.target.value}`)}
               >
                 <option value="all">{t`All messages`}</option>
                 <option value="mentions">{t`Mentions only`}</option>
@@ -245,13 +251,7 @@ export function ChannelSettingsDialog({
                   size="sm"
                   variant="outline"
                   disabled={act.isPending}
-                  onClick={() =>
-                    act.mutate(() =>
-                      channel.archivedAt === null
-                        ? callApi((api) => api.chat.archiveChannel({ params: { channelId } }))
-                        : callApi((api) => api.chat.unarchiveChannel({ params: { channelId } })),
-                    )
-                  }
+                  onClick={() => requestAction("archive")}
                 >
                   {channel.archivedAt === null ? (
                     <Trans>Archive channel</Trans>
@@ -265,11 +265,7 @@ export function ChannelSettingsDialog({
                   size="sm"
                   variant="destructive"
                   disabled={act.isPending}
-                  onClick={() =>
-                    act.mutate(() =>
-                      callApi((api) => api.chat.leaveChannel({ params: { channelId } })),
-                    )
-                  }
+                  onClick={() => requestAction("leave")}
                 >
                   <Trans>Leave channel</Trans>
                 </Button>
@@ -278,6 +274,21 @@ export function ChannelSettingsDialog({
           </div>
         )}
         {error === null ? null : <ErrorMessage error={error} />}
+        {confirming?.confirm === undefined ? null : (
+          <ConfirmDialog
+            open
+            title={confirming.confirm.title}
+            description={confirming.confirm.description}
+            confirmLabel={confirming.confirm.confirmLabel}
+            onOpenChange={(next) => {
+              if (!next) setPendingAction(null)
+            }}
+            onConfirm={() => {
+              confirming.run?.()
+              setPendingAction(null)
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )
@@ -292,6 +303,7 @@ interface PinsDialogProps {
 
 /** Pinned messages in a channel, newest pin first. */
 export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const pins = useQuery({ ...pinsQuery(channelId), enabled: open })
   const [error, setError] = useState<unknown>(null)
@@ -319,9 +331,7 @@ export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
         {pins.isPending ? <LoadingRows /> : null}
         {pins.isError ? <ErrorMessage error={pins.error} /> : null}
         {pins.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Nothing is pinned yet.</Trans>
-          </p>
+          <EmptyState icon={Pin} title={t`Nothing is pinned yet.`} />
         ) : null}
         <ul className="space-y-3">
           {pins.data?.map((message) => (

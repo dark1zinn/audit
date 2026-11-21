@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -13,6 +14,7 @@ import { ErrorMessage, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
 
 export const Route = createFileRoute("/_app/settings/privacy")({
+  staticData: { crumb: () => ({ label: tMacro`Privacy` }) },
   component: PrivacyPage,
 })
 

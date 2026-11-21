@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -16,6 +17,7 @@ import { formatBytes } from "../lib/format.ts"
 import { adminStorageQuery, keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/storage")({
+  staticData: { crumb: () => ({ label: tMacro`Storage` }) },
   component: StoragePage,
 })
 

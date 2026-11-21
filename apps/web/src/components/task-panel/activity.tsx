@@ -1,4 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
+import { Activity } from "lucide-react"
+import { EmptyState } from "../feedback.tsx"
 import type { ActivityEntry } from "@audit/domain/tasks/schema"
 
 interface ActivitySectionProps {
@@ -42,7 +44,7 @@ export function ActivitySection({ entries }: ActivitySectionProps) {
         {t`Activity`}
       </h2>
       {newestFirst.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t`No activity yet.`}</p>
+        <EmptyState size="sm" icon={Activity} title={t`No activity yet.`} />
       )}
       <ol className="space-y-2 text-sm">
         {newestFirst.map((entry) => (

@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -142,6 +143,7 @@ const present = <K extends string, V>(key: K, value: V | undefined): Partial<Rec
   value === undefined ? {} : ({ [key]: value } as Record<K, V>)
 
 export const Route = createFileRoute("/_app/admin/ai")({
+  staticData: { crumb: () => ({ label: tMacro`AI` }) },
   component: AiAdminPage,
 })
 

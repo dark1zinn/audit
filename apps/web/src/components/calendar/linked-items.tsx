@@ -1,6 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { Link2, SearchX } from "lucide-react"
 import type { EventOccurrence } from "@audit/domain/calendar/schema"
 import type { ProjectId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -10,7 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from "@audit/ui/components/ui/toggle-gro
 import { callApi } from "../../lib/api.ts"
 import { projectsQuery, taskListQuery } from "../../lib/queries.ts"
 import { docTreeQuery } from "../docs/queries.ts"
-import { ErrorMessage } from "../feedback.tsx"
+import { EmptyState, ErrorMessage } from "../feedback.tsx"
 
 type EventLink = EventOccurrence["links"][number]
 type PickKind = "task" | "doc"
@@ -122,11 +123,7 @@ export function LinkedItems({
       <h3 id="event-links-heading" className="text-sm font-medium">
         <Trans>Linked items</Trans>
       </h3>
-      {links.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          <Trans>Nothing linked yet.</Trans>
-        </p>
-      )}
+      {links.length === 0 && <EmptyState size="sm" icon={Link2} title={t`Nothing linked yet.`} />}
       {links.length > 0 && (
         <ul className="divide-y rounded-md border">
           {links.map((item) => {
@@ -200,9 +197,7 @@ export function LinkedItems({
 
         {searchError !== null && <ErrorMessage error={searchError} />}
         {searching && !searchError && candidates.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            <Trans>No matching items.</Trans>
-          </p>
+          <EmptyState size="sm" icon={SearchX} title={t`No matching items.`} />
         )}
         {candidates.length > 0 && (
           <ul className="divide-y rounded-md border">

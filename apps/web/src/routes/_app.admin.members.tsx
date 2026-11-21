@@ -1,8 +1,8 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
-import type { UserId } from "@audit/domain/ids"
 import type { Member } from "@audit/domain/identity/schema"
 import type { WorkspaceRole } from "@audit/domain/roles"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
@@ -12,16 +12,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@audit/ui/components/ui/dialog.tsx"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@audit/ui/components/ui/dropdown-menu.tsx"
 import {
   Select,
   SelectContent,
@@ -37,41 +30,26 @@ import {
   TableHeader,
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { EntityActionsButton, EntityContextMenu } from "../components/actions/entity-menu.tsx"
+import { useChangeMemberRole } from "../components/actions/member-actions.ts"
+import { Hash } from "lucide-react"
+import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
-import { useMe } from "../components/use-me.ts"
 import { membersQuery, keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/members")({
+  staticData: { crumb: () => ({ label: tMacro`Members` }) },
   component: MembersPage,
 })
 
-type AssignableRole = "admin" | "member" | "guest"
+const assignableRoles = ["admin", "member", "guest"] as const
 
 function MembersPage() {
   const { t } = useLingui()
-  const queryClient = useQueryClient()
   const members = useQuery(membersQuery)
   const [resetLink, setResetLink] = useState<string | null>(null)
-  const me = useMe()
-  const [confirm, setConfirm] = useState<Confirm | null>(null)
+  const changeRole = useChangeMemberRole()
   const [channelPickerFor, setChannelPickerFor] = useState<Member | null>(null)
-
-  const act = useMutation({
-    mutationFn: (run: () => Promise<unknown>) => run(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: keys.members })
-    },
-  })
-
-  const changeRole = (userId: UserId, role: AssignableRole) =>
-    act.mutate(() => callApi((api) => api.members.changeRole({ payload: { userId, role } })))
-
-  const resetPassword = (userId: UserId) =>
-    act.mutate(async () => {
-      const link = await callApi((api) => api.members.passwordResetLink({ params: { userId } }))
-      setResetLink(link.url)
-    })
 
   const roleLabel = (role: WorkspaceRole) => {
     switch (role) {
@@ -89,11 +67,6 @@ function MembersPage() {
   return (
     <>
       <PageHeader title={t`Members`} description={t`People in this workspace and their access.`} />
-      {act.error !== null && (
-        <div className="pb-4">
-          <ErrorMessage error={act.error} />
-        </div>
-      )}
       {resetLink !== null && (
         <Card className="mb-4">
           <CardContent className="space-y-2 pt-6">
@@ -121,13 +94,13 @@ function MembersPage() {
                 <TableHead>
                   <Trans>Role</Trans>
                 </TableHead>
-                <TableHead>
+                <TableHead className="hidden sm:table-cell">
                   <Trans>Two-factor</Trans>
                 </TableHead>
-                <TableHead>
+                <TableHead className="hidden sm:table-cell">
                   <Trans>Status</Trans>
                 </TableHead>
-                <TableHead className="text-right">
+                <TableHead className="sticky end-0 bg-background text-right">
                   <span className="sr-only">
                     <Trans>Actions</Trans>
                   </span>
@@ -138,204 +111,80 @@ function MembersPage() {
               {members.data.map((member: Member) => {
                 const owner = member.role === "owner"
                 return (
-                  <TableRow key={member.userId}>
-                    <TableCell>
-                      <div className="font-medium">{member.displayName}</div>
-                      <div className="text-xs text-muted-foreground">{member.email}</div>
-                    </TableCell>
-                    <TableCell>
-                      {owner ? (
-                        roleLabel(member.role)
-                      ) : (
-                        <Select
-                          value={member.role}
-                          onValueChange={(value) =>
-                            changeRole(member.userId, value as AssignableRole)
-                          }
-                        >
-                          <SelectTrigger
-                            aria-label={t`Role for ${member.displayName}`}
-                            className="w-36"
+                  <EntityContextMenu
+                    key={member.userId}
+                    target={{
+                      kind: "member",
+                      member,
+                      onOpenChannel: () => setChannelPickerFor(member),
+                      onResetLink: setResetLink,
+                    }}
+                  >
+                    <TableRow>
+                      <TableCell>
+                        <div className="font-medium">{member.displayName}</div>
+                        <div className="text-xs text-muted-foreground">{member.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        {owner ? (
+                          roleLabel(member.role)
+                        ) : (
+                          <Select
+                            value={member.role}
+                            onValueChange={(value) => {
+                              const role = assignableRoles.find((candidate) => candidate === value)
+                              if (role !== undefined) changeRole(member.userId, role)
+                            }}
                           >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
-                            <SelectItem value="member">{roleLabel("member")}</SelectItem>
-                            <SelectItem value="guest">{roleLabel("guest")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
-                        {member.twoFactorEnabled ? t`On` : t`Off`}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {member.deactivatedAt === null ? (
-                        <Trans>Active</Trans>
-                      ) : (
-                        <Badge variant="secondary">
-                          <Trans>Deactivated</Trans>
+                            <SelectTrigger
+                              aria-label={t`Role for ${member.displayName}`}
+                              className="w-36"
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
+                              <SelectItem value="member">{roleLabel("member")}</SelectItem>
+                              <SelectItem value="guest">{roleLabel("guest")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
+                          {member.twoFactorEnabled ? t`On` : t`Off`}
                         </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {!owner && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label={t`Actions for ${member.displayName}`}
-                            >
-                              <Trans>Actions</Trans>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {member.deactivatedAt === null ? (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  act.mutate(() =>
-                                    callApi((api) =>
-                                      api.members.deactivate({ params: { userId: member.userId } }),
-                                    ),
-                                  )
-                                }
-                              >
-                                <Trans>Deactivate</Trans>
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  act.mutate(() =>
-                                    callApi((api) =>
-                                      api.members.reactivate({ params: { userId: member.userId } }),
-                                    ),
-                                  )
-                                }
-                              >
-                                <Trans>Reactivate</Trans>
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() =>
-                                act.mutate(() =>
-                                  callApi((api) =>
-                                    api.members.revokeSessions({
-                                      params: { userId: member.userId },
-                                    }),
-                                  ),
-                                )
-                              }
-                            >
-                              <Trans>Sign out everywhere</Trans>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                act.mutate(() =>
-                                  callApi((api) =>
-                                    api.members.resetTwoFactor({
-                                      params: { userId: member.userId },
-                                    }),
-                                  ),
-                                )
-                              }
-                            >
-                              <Trans>Reset two-factor</Trans>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => resetPassword(member.userId)}>
-                              <Trans>Create password reset link</Trans>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setChannelPickerFor(member)}>
-                              <Trans>Open private channel or DM</Trans>
-                            </DropdownMenuItem>
-                            {me.role === "owner" && (
-                              <>
-                                <DropdownMenuItem
-                                  onClick={() => setConfirm({ kind: "transfer", member })}
-                                >
-                                  <Trans>Transfer ownership</Trans>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() => setConfirm({ kind: "delete", member })}
-                                >
-                                  <Trans>Delete member</Trans>
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {member.deactivatedAt === null ? (
+                          <Trans>Active</Trans>
+                        ) : (
+                          <Badge variant="secondary">
+                            <Trans>Deactivated</Trans>
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="sticky end-0 bg-background text-right">
+                        {!owner && (
+                          <EntityActionsButton
+                            target={{
+                              kind: "member",
+                              member,
+                              onOpenChannel: () => setChannelPickerFor(member),
+                              onResetLink: setResetLink,
+                            }}
+                            label={t`Actions for ${member.displayName}`}
+                          />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  </EntityContextMenu>
                 )
               })}
             </TableBody>
           </Table>
         </div>
       )}
-      <Dialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {confirm?.kind === "delete" ? (
-                <Trans>Delete member</Trans>
-              ) : (
-                <Trans>Transfer ownership</Trans>
-              )}
-            </DialogTitle>
-            <DialogDescription>
-              {confirm?.kind === "delete" ? (
-                <Trans>This removes the member's access to the workspace.</Trans>
-              ) : (
-                <Trans>Ownership moves to this member. Only the current owner can do this.</Trans>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          {act.error !== null && <ErrorMessage error={act.error} />}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirm(null)}>
-              <Trans>Cancel</Trans>
-            </Button>
-            <Button
-              variant={confirm?.kind === "delete" ? "destructive" : "default"}
-              disabled={act.isPending}
-              onClick={() =>
-                confirm !== null &&
-                act.mutate(
-                  () =>
-                    confirm.kind === "delete"
-                      ? callApi((api) =>
-                          api.people.deleteMember({ params: { userId: confirm.member.userId } }),
-                        )
-                      : callApi((api) =>
-                          api.people.transferOwnership({
-                            params: { userId: confirm.member.userId },
-                          }),
-                        ),
-                  {
-                    onSuccess: async () => {
-                      setConfirm(null)
-                      if (confirm.kind === "transfer") {
-                        await queryClient.invalidateQueries({ queryKey: keys.session })
-                      }
-                    },
-                  },
-                )
-              }
-            >
-              {confirm?.kind === "delete" ? (
-                <Trans>Delete member</Trans>
-              ) : (
-                <Trans>Transfer ownership</Trans>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {channelPickerFor !== null && (
         <ChannelPicker member={channelPickerFor} onClose={() => setChannelPickerFor(null)} />
       )}
@@ -447,8 +296,6 @@ function PendingSignups() {
   )
 }
 
-type Confirm = { readonly kind: "transfer" | "delete"; readonly member: Member }
-
 /** Lists the member's own channel and DM grants; opening one shows it in admin read-only mode. */
 function ChannelPicker({
   member,
@@ -488,9 +335,7 @@ function ChannelPicker({
         {access.isPending && <LoadingRows rows={2} />}
         {access.isError && <ErrorMessage error={access.error} />}
         {access.data !== undefined && channels.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            <Trans>No private channels or direct messages.</Trans>
-          </p>
+          <EmptyState icon={Hash} title={t`No private channels or direct messages.`} />
         )}
         {channels.length > 0 && (
           <ul className="grid gap-1">
