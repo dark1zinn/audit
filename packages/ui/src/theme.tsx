@@ -54,12 +54,12 @@ export const isLightColor = (hex: string): boolean => {
 export const applyAccent = (hex: string | undefined) => {
   const root = document.documentElement
   if (hex === undefined || !/^#[0-9a-f]{6}$/i.test(hex)) {
-    root.style.removeProperty("--brand")
-    root.style.removeProperty("--brand-foreground")
+    root.style.removeProperty("--workspace-accent")
+    root.style.removeProperty("--workspace-accent-foreground")
     return
   }
-  root.style.setProperty("--brand", hex)
-  root.style.setProperty("--brand-foreground", isLightColor(hex) ? "#111111" : "#ffffff")
+  root.style.setProperty("--workspace-accent", hex)
+  root.style.setProperty("--workspace-accent-foreground", isLightColor(hex) ? "#111111" : "#ffffff")
 }
 
 export interface ThemeProviderProps {

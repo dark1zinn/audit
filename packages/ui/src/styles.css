@@ -18,8 +18,8 @@
   --card-foreground: oklch(0.205 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.205 0 0);
-  --brand: oklch(0.49 0.19 264);
-  --brand-foreground: oklch(0.985 0 0);
+  --brand: var(--workspace-accent, oklch(0.49 0.19 264));
+  --brand-foreground: var(--workspace-accent-foreground, oklch(0.985 0 0));
   --primary: var(--brand);
   --primary-foreground: var(--brand-foreground);
   --link: oklch(from var(--brand) min(l, 0.5) c h);
@@ -50,7 +50,7 @@
 }
 
 .dark {
-  --brand: oklch(0.72 0.15 264);
+  --brand: oklch(from var(--workspace-accent, oklch(0.49 0.19 264)) max(l, 0.72) min(c, 0.15) h);
   --background: oklch(0.16 0 0);
   --foreground: oklch(0.97 0 0);
   --card: oklch(0.2 0 0);
