@@ -209,7 +209,7 @@ function SearchPage() {
           </div>
           <fieldset className="space-y-2">
             <legend className="mb-1.5 font-medium">{t`Updated`}</legend>
-            <div className="space-y-1">
+            <div className="space-y-1 pt-px">
               <Label htmlFor="search-from">{t`From`}</Label>
               <Input
                 id="search-from"
