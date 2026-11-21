@@ -98,7 +98,7 @@ function ShortcutGroup({
   return (
     <section className="grid gap-2">
       <h3 className="text-xs font-medium uppercase text-muted-foreground">{heading}</h3>
-      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">{children}</dl>
+      <dl className="grid grid-cols-[10rem_1fr] items-center gap-x-4 gap-y-2">{children}</dl>
     </section>
   )
 }
