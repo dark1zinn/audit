@@ -68,6 +68,7 @@ export function LifecycleSection({ project }: { readonly project: ProjectDetail 
           <form className="grid gap-4 sm:max-w-md" onSubmit={onDelete}>
             <TextField
               name="confirm-key"
+              width="2xs"
               label={t`Type ${project.key} to confirm`}
               autoComplete="off"
               value={confirmKey}

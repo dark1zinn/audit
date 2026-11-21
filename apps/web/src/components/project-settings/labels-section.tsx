@@ -96,6 +96,7 @@ export function LabelsSection({ projectId }: { readonly projectId: ProjectId }) 
         <form className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end" onSubmit={onCreate}>
           <TextField
             name="label-name"
+            width="md"
             label={t`New label name`}
             required
             maxLength={60}

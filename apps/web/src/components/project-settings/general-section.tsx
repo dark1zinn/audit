@@ -23,7 +23,7 @@ import {
 import { callApi } from "../../lib/api.ts"
 import { membersQuery } from "../../lib/queries.ts"
 import { ErrorMessage } from "../feedback.tsx"
-import { TextField } from "../form.tsx"
+import { fieldWidth, TextField } from "../form.tsx"
 import { invalidateProject } from "./invalidate.ts"
 import { useSettingsLabels } from "./options.ts"
 
@@ -75,6 +75,7 @@ export function GeneralSection({ project }: { readonly project: ProjectDetail })
         <form className="grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
           <TextField
             name="name"
+            width="md"
             label={t`Name`}
             required
             maxLength={120}
@@ -89,7 +90,7 @@ export function GeneralSection({ project }: { readonly project: ProjectDetail })
               value={leadUserId ?? NO_LEAD}
               onValueChange={(value) => setLeadUserId(value === NO_LEAD ? null : (value as UserId))}
             >
-              <SelectTrigger id="project-lead" className="w-full">
+              <SelectTrigger id="project-lead" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -112,7 +113,7 @@ export function GeneralSection({ project }: { readonly project: ProjectDetail })
               value={visibility}
               onValueChange={(value) => setVisibility(value as ProjectVisibility)}
             >
-              <SelectTrigger id="project-visibility" className="w-full">
+              <SelectTrigger id="project-visibility" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -129,7 +130,7 @@ export function GeneralSection({ project }: { readonly project: ProjectDetail })
               value={memberRole}
               onValueChange={(value) => setMemberRole(value as ResourceRole)}
             >
-              <SelectTrigger id="project-member-role" className="w-full">
+              <SelectTrigger id="project-member-role" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

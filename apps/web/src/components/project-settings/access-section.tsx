@@ -36,6 +36,7 @@ import {
 import { callApi } from "../../lib/api.ts"
 import { membersQuery, projectAccessQuery, teamsQuery } from "../../lib/queries.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { invalidateProject } from "./invalidate.ts"
 import { principalTypes, useSettingsLabels, workspaceRoles } from "./options.ts"
 
@@ -221,7 +222,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
                 setPrincipalId("")
               }}
             >
-              <SelectTrigger id="grant-type" className="w-40">
+              <SelectTrigger id="grant-type" className={fieldWidth.xs}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +239,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
               <Trans>Principal</Trans>
             </Label>
             <Select value={principalId} onValueChange={setPrincipalId}>
-              <SelectTrigger id="grant-principal" className="w-full">
+              <SelectTrigger id="grant-principal" className={fieldWidth.md}>
                 <SelectValue placeholder={t`Choose`} />
               </SelectTrigger>
               <SelectContent>
@@ -255,7 +256,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
               <Trans>Role</Trans>
             </Label>
             <Select value={role} onValueChange={(value) => setRole(value as ResourceRole)}>
-              <SelectTrigger id="grant-role" className="w-36">
+              <SelectTrigger id="grant-role" className={fieldWidth.xs}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

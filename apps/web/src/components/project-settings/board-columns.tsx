@@ -23,7 +23,7 @@ import {
 } from "@audit/ui/components/ui/table.tsx"
 import { callApi } from "../../lib/api.ts"
 import { ErrorMessage } from "../feedback.tsx"
-import { TextField } from "../form.tsx"
+import { fieldWidth, TextField } from "../form.tsx"
 import { invalidateBoards } from "./invalidate.ts"
 import { columnCategories, useSettingsLabels } from "./options.ts"
 
@@ -104,6 +104,7 @@ export function BoardColumns({ board }: { readonly board: Board }) {
       >
         <TextField
           name={`column-name-${board.id}`}
+          width="md"
           label={t`New column name`}
           required
           maxLength={120}
@@ -115,7 +116,7 @@ export function BoardColumns({ board }: { readonly board: Board }) {
             <Trans>Category</Trans>
           </Label>
           <Select value={category} onValueChange={(value) => setCategory(value as ColumnCategory)}>
-            <SelectTrigger id={`column-category-${board.id}`} className="w-40">
+            <SelectTrigger id={`column-category-${board.id}`} className={fieldWidth.xs}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -133,7 +134,7 @@ export function BoardColumns({ board }: { readonly board: Board }) {
           type="number"
           min={1}
           max={999}
-          className="w-28"
+          width="xs"
           value={wipLimit}
           onChange={(event) => setWipLimit(event.target.value)}
         />
@@ -212,7 +213,7 @@ function ColumnRow({
         </TableCell>
         <TableCell>
           <Select value={category} onValueChange={(value) => setCategory(value as ColumnCategory)}>
-            <SelectTrigger aria-label={t`Category`} className="w-40">
+            <SelectTrigger aria-label={t`Category`} className={fieldWidth.xs}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -230,7 +231,7 @@ function ColumnRow({
             type="number"
             min={1}
             max={999}
-            className="w-24"
+            className={fieldWidth["2xs"]}
             placeholder={t`None`}
             value={wipLimit}
             onChange={(event) => setWipLimit(event.target.value)}
@@ -268,7 +269,7 @@ function ColumnRow({
                 value={moveTasksTo ?? ""}
                 onValueChange={(value) => setMoveTasksTo(value as ColumnId)}
               >
-                <SelectTrigger aria-label={t`Move tasks to`} className="w-40">
+                <SelectTrigger aria-label={t`Move tasks to`} className={fieldWidth.xs}>
                   <SelectValue placeholder={t`Move tasks to`} />
                 </SelectTrigger>
                 <SelectContent>
