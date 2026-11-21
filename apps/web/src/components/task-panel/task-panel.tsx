@@ -24,6 +24,7 @@ import { TaskFields } from "./task-fields.tsx"
 import { useTaskUpdate } from "./use-task-update.ts"
 import { BacklinksPanel } from "../docs/backlinks-panel.tsx"
 import { useRecordRecent } from "../../lib/search.ts"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
 
 interface TaskPanelProps {
   readonly projectId: ProjectId
@@ -78,33 +79,36 @@ function TaskView({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="min-w-0 space-y-8">
         <header className="space-y-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{task.key}</p>
-            <div className="flex items-center gap-2">
-              {others.length > 0 && (
-                <ul aria-label={t`Also viewing`} className="flex -space-x-2">
-                  {others.map((viewer) => (
-                    <li key={viewer.userId}>
-                      <Avatar className="size-7 ring-2 ring-background" title={viewer.name}>
-                        <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
-                      </Avatar>
-                      <span className="sr-only">{viewer.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                aria-pressed={task.watching}
-                disabled={watch.isPending}
-                onClick={() => watch.mutate(task.watching)}
-              >
-                {task.watching ? t`Watching` : t`Watch`}
-              </Button>
+          <EntityContextMenu target={{ kind: "task", task }}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <p className="text-sm text-muted-foreground">{task.key}</p>
+              <div className="flex items-center gap-2">
+                {others.length > 0 && (
+                  <ul aria-label={t`Also viewing`} className="flex -space-x-2">
+                    {others.map((viewer) => (
+                      <li key={viewer.userId}>
+                        <Avatar className="size-7 ring-2 ring-background" title={viewer.name}>
+                          <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="sr-only">{viewer.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-pressed={task.watching}
+                  disabled={watch.isPending}
+                  onClick={() => watch.mutate(task.watching)}
+                >
+                  {task.watching ? t`Watching` : t`Watch`}
+                </Button>
+                <EntityActionsButton target={{ kind: "task", task }} label={t`Actions for ${task.key}`} />
+              </div>
             </div>
-          </div>
+          </EntityContextMenu>
           <TitleEditor
             title={task.title}
             canEdit={canEdit}
