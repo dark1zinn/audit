@@ -15,6 +15,7 @@ import {
 import { useTheme, type ThemeMode } from "@audit/ui/theme.tsx"
 import { useSidebar } from "@audit/ui/components/ui/sidebar.tsx"
 import { isWorkspaceAdmin } from "@audit/domain/roles"
+import type { SearchHit } from "@audit/domain/search/schema"
 import { modKey } from "../../lib/platform.ts"
 import { useMe } from "../use-me.ts"
 import { LOCALE_NAMES, LOCALES, useChangeLocale } from "../../lib/locale.ts"
@@ -92,6 +93,24 @@ export function CommandPalette() {
     { to: "/settings/profile", label: t`Settings` },
     { to: "/admin", label: t`Admin console`, admin: true },
   ]
+  const hitTypeLabel = (type: SearchHit["type"]): string => {
+    const labels: Record<SearchHit["type"], string> = {
+      task: t`Task`,
+      doc: t`Doc`,
+      message: t`Message`,
+      channel: t`Channel`,
+      event: t`Event`,
+      user: t`Person`,
+      team: t`Team`,
+      project: t`Project`,
+      board: t`Board`,
+      calendar: t`Calendar`,
+      comment: t`Comment`,
+      file: t`File`,
+      space: t`Space`,
+    }
+    return labels[type]
+  }
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange} title={t`Command palette`}>
       <Command shouldFilter={false}>
@@ -102,17 +121,26 @@ export function CommandPalette() {
         />
         <CommandList>
           <CommandEmpty>{t`No matches.`}</CommandEmpty>
-          <CommandGroup heading={emptyQuery ? t`Recent` : t`Results`}>
-            {(hits.data ?? []).map((hit) => (
-              <CommandItem
-                key={hit.entityId}
-                value={`hit-${hit.entityId}`}
-                onSelect={() => choose(() => void router.history.push(hit.url))}
-              >
-                <span className="truncate">{hit.title}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {(hits.data ?? []).length > 0 && (
+            <CommandGroup heading={emptyQuery ? t`Recent` : t`Results`}>
+              {(hits.data ?? []).map((hit) => {
+                const projectKey = projects.data?.find((p) => p.id === hit.projectId)?.key
+                return (
+                  <CommandItem
+                    key={hit.entityId}
+                    value={`hit-${hit.entityId}`}
+                    onSelect={() => choose(() => void router.history.push(hit.url))}
+                  >
+                    <span className="min-w-0 truncate">{hit.title}</span>
+                    <span className="ms-auto shrink-0 text-xs text-muted-foreground">
+                      {hitTypeLabel(hit.type)}
+                      {projectKey !== undefined ? ` · ${projectKey}` : ""}
+                    </span>
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          )}
           <CommandGroup heading={t`Navigate`}>
             {navItems
               .filter((item) => item.admin !== true || admin)
