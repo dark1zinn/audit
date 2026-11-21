@@ -44,8 +44,14 @@ const chainStep = sql`select p.id, p.parent_id, p.restricted, p.type from chain 
   join entities p on p.id = c.parent_id
   where not c.restricted and c.type not in (${containers})`
 
+/** Owners and admins manage all project content and every doc: the same rule as `adminManaged`. */
+const adminOn = (userId: string, entityId: string) => sql`(exists (
+  select 1 from workspace_members om where om.user_id = ${userId} and om.role in ('owner', 'admin'))
+  and exists (select 1 from entities oe where oe.id = ${entityId}
+    and (oe.type = 'project' or oe.project_id is not null or oe.type = 'doc')))`
+
 /** Recursive reference: the original `visibleTo`, kept only as the oracle. */
-const oldVisible = (userId: string, entityId: string) => sql`(${active(userId)} and exists (
+const oldVisible = (userId: string, entityId: string) => sql`(${active(userId)} and (exists (
   with recursive chain(id, parent_id, restricted, type) as (
     select e.id, e.parent_id, e.restricted, e.type from entities e
     where e.id = ${entityId} and e.deleted_at is null
@@ -56,9 +62,10 @@ const oldVisible = (userId: string, entityId: string) => sql`(${active(userId)} 
       select 1 from container_access ca where ca.container_id = c.id and ca.user_id = ${userId}))
     or (c.type not in (${containers}) and exists (
       select 1 from access_entries ae where ae.resource_id = c.id and ${entryMatch(userId)}))
-))`
+) or (${adminOn(userId, entityId)} and exists (
+  select 1 from entities de where de.id = ${entityId} and de.deleted_at is null))))`
 
-/** Recursive reference: the original `roleOnEntity`. */
+/** Recursive reference: the original `roleOnEntity`, plus the owner/admin manager row. */
 const oldRole = (userId: string, entityId: string) => sql`
   with recursive chain(id, parent_id, restricted, type) as (
     select e.id, e.parent_id, e.restricted, e.type from entities e where e.id = ${entityId}
@@ -66,6 +73,8 @@ const oldRole = (userId: string, entityId: string) => sql`
   ),
   roles as (
     select 'viewer' as role from chain c where c.type in (${directory})
+    union all
+    select 'manager' where ${adminOn(userId, entityId)}
     union all
     select ca.role from chain c join container_access ca
       on ca.container_id = c.id and ca.user_id = ${userId}
@@ -136,7 +145,8 @@ beforeAll(async () => {
   const owner = await setupWorkspace(database)
   const member = await addPerson(database, owner, "Mia", "member")
   const guest = await addPerson(database, owner, "Gus", "guest")
-  people = [owner, member, guest]
+  const admin = await addPerson(database, owner, "Ada", "admin")
+  people = [owner, member, guest, admin]
 })
 
 afterAll(() => database.drop())
