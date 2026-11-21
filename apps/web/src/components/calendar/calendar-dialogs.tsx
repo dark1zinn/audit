@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { callApi } from "../../lib/api.ts"
-import { formValue, TextField } from "../form.tsx"
+import { fieldWidth, formValue, TextField } from "../form.tsx"
 import { ErrorMessage } from "../feedback.tsx"
 import { teamsQuery } from "../../lib/queries.ts"
 import { ConfirmDialog } from "./confirm-dialogs.tsx"
@@ -147,7 +147,7 @@ function CalendarForm({
               <span>{t`Owner`}</span>
             </Label>
             <Select value={teamId} onValueChange={setTeamId}>
-              <SelectTrigger id="calendar-team" className="w-full sm:w-56">
+              <SelectTrigger id="calendar-team" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
