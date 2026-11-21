@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -34,6 +35,7 @@ import { TextField } from "../components/form.tsx"
 import { adminProjectsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/projects")({
+  staticData: { crumb: () => ({ label: tMacro`Projects` }) },
   component: AdminProjectsPage,
 })
 

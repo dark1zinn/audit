@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -20,6 +21,7 @@ import { authClient } from "../lib/auth.ts"
 import { keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/settings/security")({
+  staticData: { crumb: () => ({ label: tMacro`Security` }) },
   component: SecurityPage,
 })
 

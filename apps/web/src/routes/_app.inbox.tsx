@@ -2,13 +2,15 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { t as tMacro } from "@lingui/core/macro"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { useInboxActions } from "../components/inbox/actions.ts"
 import { InboxList } from "../components/inbox/inbox-list.tsx"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { ErrorMessage, LoadingRows, PageBody, PageHeader } from "../components/feedback.tsx"
 import { notificationsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/inbox")({
+  staticData: { crumb: () => ({ label: tMacro`Inbox` }) },
   component: InboxPage,
 })
 
@@ -38,7 +40,7 @@ function InboxPage() {
   ]
 
   return (
-    <>
+    <PageBody width="wide">
       <PageHeader
         title={t`Inbox`}
         description={t`Mentions, assignments, due dates, and replies that concern you.`}
@@ -82,6 +84,6 @@ function InboxPage() {
       {inbox.data !== undefined && visible.length > 0 && (
         <InboxList notifications={visible} archived={archived} />
       )}
-    </>
+    </PageBody>
   )
 }

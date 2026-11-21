@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -29,6 +30,7 @@ import { keys, notificationSettingsQuery } from "../lib/queries.ts"
 import { urlBase64ToBytes } from "../lib/push.ts"
 
 export const Route = createFileRoute("/_app/settings/notifications")({
+  staticData: { crumb: () => ({ label: tMacro`Notifications` }) },
   component: NotificationSettingsPage,
 })
 

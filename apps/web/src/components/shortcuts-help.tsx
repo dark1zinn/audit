@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -7,6 +7,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@audit/ui/components/ui/dialog.tsx"
+import {
+  setShortcutsHelpOpen,
+  toggleShortcutsHelp,
+  useShortcutsHelpOpen,
+} from "./shortcuts-store.ts"
 
 const Key = ({ children }: { readonly children: string }) => (
   <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">{children}</kbd>
@@ -15,7 +20,7 @@ const Key = ({ children }: { readonly children: string }) => (
 /** Global `?` dialog listing shortcuts. Ignored while typing or inside other dialogs/menus. */
 export function ShortcutsHelp() {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
+  const open = useShortcutsHelpOpen()
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -29,14 +34,14 @@ export function ShortcutsHelp() {
           target.closest('[role="dialog"], [role="listbox"], [role="menu"]') !== null)
       if (editable) return
       event.preventDefault()
-      setOpen((current) => !current)
+      toggleShortcutsHelp()
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setShortcutsHelpOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>

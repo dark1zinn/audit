@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
@@ -29,13 +30,14 @@ import {
   TableHeader,
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
-import { EntityActionsButton } from "../components/actions/entity-menu.tsx"
+import { EntityActionsButton, EntityContextMenu } from "../components/actions/entity-menu.tsx"
 import { useChangeMemberRole } from "../components/actions/member-actions.ts"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
 import { membersQuery, keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/members")({
+  staticData: { crumb: () => ({ label: tMacro`Members` }) },
   component: MembersPage,
 })
 
@@ -91,13 +93,13 @@ function MembersPage() {
                 <TableHead>
                   <Trans>Role</Trans>
                 </TableHead>
-                <TableHead>
+                <TableHead className="hidden sm:table-cell">
                   <Trans>Two-factor</Trans>
                 </TableHead>
-                <TableHead>
+                <TableHead className="hidden sm:table-cell">
                   <Trans>Status</Trans>
                 </TableHead>
-                <TableHead className="text-right">
+                <TableHead className="sticky end-0 bg-background text-right">
                   <span className="sr-only">
                     <Trans>Actions</Trans>
                   </span>
@@ -108,64 +110,74 @@ function MembersPage() {
               {members.data.map((member: Member) => {
                 const owner = member.role === "owner"
                 return (
-                  <TableRow key={member.userId}>
-                    <TableCell>
-                      <div className="font-medium">{member.displayName}</div>
-                      <div className="text-xs text-muted-foreground">{member.email}</div>
-                    </TableCell>
-                    <TableCell>
-                      {owner ? (
-                        roleLabel(member.role)
-                      ) : (
-                        <Select
-                          value={member.role}
-                          onValueChange={(value) => {
-                            const role = assignableRoles.find((candidate) => candidate === value)
-                            if (role !== undefined) changeRole(member.userId, role)
-                          }}
-                        >
-                          <SelectTrigger
-                            aria-label={t`Role for ${member.displayName}`}
-                            className="w-36"
+                  <EntityContextMenu
+                    key={member.userId}
+                    target={{
+                      kind: "member",
+                      member,
+                      onOpenChannel: () => setChannelPickerFor(member),
+                      onResetLink: setResetLink,
+                    }}
+                  >
+                    <TableRow>
+                      <TableCell>
+                        <div className="font-medium">{member.displayName}</div>
+                        <div className="text-xs text-muted-foreground">{member.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        {owner ? (
+                          roleLabel(member.role)
+                        ) : (
+                          <Select
+                            value={member.role}
+                            onValueChange={(value) => {
+                              const role = assignableRoles.find((candidate) => candidate === value)
+                              if (role !== undefined) changeRole(member.userId, role)
+                            }}
                           >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
-                            <SelectItem value="member">{roleLabel("member")}</SelectItem>
-                            <SelectItem value="guest">{roleLabel("guest")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
-                        {member.twoFactorEnabled ? t`On` : t`Off`}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {member.deactivatedAt === null ? (
-                        <Trans>Active</Trans>
-                      ) : (
-                        <Badge variant="secondary">
-                          <Trans>Deactivated</Trans>
+                            <SelectTrigger
+                              aria-label={t`Role for ${member.displayName}`}
+                              className="w-36"
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
+                              <SelectItem value="member">{roleLabel("member")}</SelectItem>
+                              <SelectItem value="guest">{roleLabel("guest")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
+                          {member.twoFactorEnabled ? t`On` : t`Off`}
                         </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {!owner && (
-                        <EntityActionsButton
-                          target={{
-                            kind: "member",
-                            member,
-                            onOpenChannel: () => setChannelPickerFor(member),
-                            onResetLink: setResetLink,
-                          }}
-                          label={t`Actions for ${member.displayName}`}
-                        />
-                      )}
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {member.deactivatedAt === null ? (
+                          <Trans>Active</Trans>
+                        ) : (
+                          <Badge variant="secondary">
+                            <Trans>Deactivated</Trans>
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="sticky end-0 bg-background text-right">
+                        {!owner && (
+                          <EntityActionsButton
+                            target={{
+                              kind: "member",
+                              member,
+                              onOpenChannel: () => setChannelPickerFor(member),
+                              onResetLink: setResetLink,
+                            }}
+                            label={t`Actions for ${member.displayName}`}
+                          />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  </EntityContextMenu>
                 )
               })}
             </TableBody>

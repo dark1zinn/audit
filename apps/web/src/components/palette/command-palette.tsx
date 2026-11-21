@@ -1,9 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import type { Locale } from "@audit/domain/identity/schema"
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,18 +14,14 @@ import {
 } from "@audit/ui/components/ui/command.tsx"
 import { useTheme, type ThemeMode } from "@audit/ui/theme.tsx"
 import { useMe } from "../use-me.ts"
-import { callApi } from "../../lib/api.ts"
-import { keys, projectsQuery } from "../../lib/queries.ts"
+import { LOCALE_NAMES, LOCALES, useChangeLocale } from "../../lib/locale.ts"
+import { projectsQuery } from "../../lib/queries.ts"
 import { quickFindQuery } from "../../lib/search.ts"
-
-const LOCALES: ReadonlyArray<Locale> = ["en", "es", "pt-BR"]
-
-/** Language names are shown in their own language, so they are not translated. */
-const LOCALE_NAMES: Record<Locale, string> = {
-  en: "English",
-  "pt-BR": "Português (Brasil)",
-  es: "Español",
-}
+import {
+  setCommandPaletteOpen,
+  toggleCommandPalette,
+  useCommandPaletteOpen,
+} from "./palette-store.ts"
 
 const THEMES: ReadonlyArray<ThemeMode> = ["light", "dark", "system"]
 
@@ -36,38 +30,27 @@ const projectKeyFromPath = (pathname: string): string | undefined =>
   /^\/p\/([^/]+)/.exec(pathname)?.[1]
 
 /**
- * Global command palette, opened with Ctrl/⌘K. Quick find lists recent items when the query is
- * empty and matching items otherwise; actions navigate or change preferences.
+ * Global command palette, opened with Ctrl/⌘K or `openCommandPalette()`. Quick find lists recent
+ * items when the query is empty and matching items otherwise; actions navigate or change preferences.
  */
 export function CommandPalette() {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
+  const open = useCommandPaletteOpen()
   const [query, setQuery] = useState("")
   const navigate = useNavigate()
   const router = useRouter()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const me = useMe()
-  const queryClient = useQueryClient()
   const { setTheme } = useTheme()
   const projects = useQuery(projectsQuery)
   const hits = useQuery({ ...quickFindQuery(query.trim()), enabled: open })
-
-  const changeLocale = useMutation({
-    mutationFn: (locale: Locale) =>
-      callApi((api) =>
-        api.me.updateProfile({
-          payload: { displayName: me.displayName, title: me.title, timezone: me.timezone, locale },
-        }),
-      ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.session }),
-    onError: () => toast.error(t`Could not change language`),
-  })
+  const changeLocale = useChangeLocale(me)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault()
-        setOpen((value) => !value)
+        toggleCommandPalette()
       }
     }
     window.addEventListener("keydown", onKeyDown)
@@ -75,7 +58,7 @@ export function CommandPalette() {
   }, [])
 
   const onOpenChange = (next: boolean) => {
-    setOpen(next)
+    setCommandPaletteOpen(next)
     if (!next) setQuery("")
   }
 

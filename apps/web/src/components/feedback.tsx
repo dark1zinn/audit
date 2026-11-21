@@ -43,15 +43,46 @@ export function PageHeader({
   readonly actions?: ReactNode
 }) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4 pb-6">
-      <div className="space-y-1">
+    <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 pb-6">
+      <div className="min-w-0 space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description !== undefined && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions}
+      {actions !== undefined && (
+        <div className="flex flex-wrap items-center gap-2 ms-auto">{actions}</div>
+      )}
     </header>
+  )
+}
+
+/**
+ * Page content container. `full` fills the content area (boards, docs, chat); `wide` is for lists,
+ * inbox and admin; `narrow` is for settings and forms.
+ */
+export function PageBody({
+  width = "full",
+  className,
+  children,
+}: {
+  readonly width?: "full" | "wide" | "narrow"
+  readonly className?: string
+  readonly children: ReactNode
+}) {
+  return (
+    <div
+      className={[
+        "mx-auto w-full",
+        width === "wide" ? "max-w-6xl" : "",
+        width === "narrow" ? "max-w-3xl" : "",
+        className ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {children}
+    </div>
   )
 }
 
