@@ -173,6 +173,23 @@ const DocPaneBody = ({
               {doc.title}
             </h1>
           )}
+          <EntityActionsButton
+            label={t`Actions for ${doc.title}`}
+            target={{
+              kind: "doc",
+              doc,
+              projectKey: projectKey ?? undefined,
+              onRename: () => titleRef.current?.focus(),
+              onOpenTab: () => openTab({ id: docId, projectKey }),
+              onOpenSide,
+              onNewSubDoc,
+              onOpenProperties: () => {
+                const panel = document.getElementById("doc-properties")
+                panel?.scrollIntoView({ block: "start" })
+                panel?.querySelector<HTMLElement>("button, input, select, [role=combobox]")?.focus()
+              },
+            }}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-1 print:hidden">
           {canWrite && (
@@ -248,23 +265,6 @@ const DocPaneBody = ({
             </>
           )}
           <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
-          <EntityActionsButton
-            label={t`Actions for ${doc.title}`}
-            target={{
-              kind: "doc",
-              doc,
-              projectKey: projectKey ?? undefined,
-              onRename: () => titleRef.current?.focus(),
-              onOpenTab: () => openTab({ id: docId, projectKey }),
-              onOpenSide,
-              onNewSubDoc,
-              onOpenProperties: () => {
-                const panel = document.getElementById("doc-properties")
-                panel?.scrollIntoView({ block: "start" })
-                panel?.querySelector<HTMLElement>("button, input, select, [role=combobox]")?.focus()
-              },
-            }}
-          />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
           <a href={`/api/docs/${docId}/export/md`} download className="inline-flex min-h-11 items-center text-link underline md:min-h-6">
