@@ -103,7 +103,7 @@ export const VersionsPanel = ({ docId, canWrite }: VersionsPanelProps) => {
       {list.length === 0 && (
         <EmptyState
           icon={History}
-          title={t`No versions yet`}
+          title={t`No versions yet.`}
           description={t`Save a named version to keep a snapshot of this doc.`}
         />
       )}
