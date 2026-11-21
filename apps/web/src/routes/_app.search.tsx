@@ -238,7 +238,7 @@ function SearchPage() {
             />
             <Label htmlFor="search-mentions-me">{t`Mentions me`}</Label>
           </div>
-          <Button type="submit" variant="outline" size="sm">
+          <Button type="submit" variant="outline">
             {t`Apply search`}
           </Button>
         </form>
