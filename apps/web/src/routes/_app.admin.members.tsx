@@ -94,7 +94,7 @@ function MembersPage() {
                 <TableHead>
                   <Trans>Role</Trans>
                 </TableHead>
-                <TableHead className="hidden sm:table-cell">
+                <TableHead className="hidden whitespace-nowrap xl:table-cell">
                   <Trans>Two-factor</Trans>
                 </TableHead>
                 <TableHead className="hidden sm:table-cell">
@@ -150,7 +150,7 @@ function MembersPage() {
                           </Select>
                         )}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
+                      <TableCell className="hidden xl:table-cell">
                         <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
                           {member.twoFactorEnabled ? t`On` : t`Off`}
                         </Badge>
