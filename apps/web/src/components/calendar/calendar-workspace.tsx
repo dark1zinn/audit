@@ -304,7 +304,7 @@ export function CalendarWorkspace({
             className="min-h-11 md:min-h-8"
           >
             <PanelLeft aria-hidden="true" />
-            <Trans>Calendars</Trans>
+            {listOpen ? <Trans>Hide calendars</Trans> : <Trans>Show calendars</Trans>}
           </Button>
         </div>
         {calendarsResult.isError && <ErrorMessage error={calendarsResult.error} />}
