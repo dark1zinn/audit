@@ -17,6 +17,7 @@ const doc = (id: string, parentId: string, position: string): DocNode => ({
   lastEditedAt: null,
   updatedAt: new Date(0),
   version: 1,
+  createdBy: null,
 })
 
 const docs = [

@@ -32,6 +32,7 @@ export const DocNode = Schema.Struct({
   verifiedAt: Schema.NullOr(Schema.Date),
   lastEditedAt: Schema.NullOr(Schema.Date),
   updatedAt: Schema.Date,
+  createdBy: Schema.NullOr(UserId),
   version: Schema.Int,
 })
 export type DocNode = typeof DocNode.Type
@@ -166,6 +167,9 @@ export const EntityRef = Schema.Struct({
   type: Schema.optionalKey(Schema.String),
   title: Schema.optionalKey(Schema.String),
   key: Schema.optionalKey(Schema.String),
+  projectKey: Schema.optionalKey(Schema.String),
+  number: Schema.optionalKey(Schema.Int),
+  channelId: Schema.optionalKey(EntityId),
   restricted: Schema.Boolean,
   deleted: Schema.Boolean,
 })
