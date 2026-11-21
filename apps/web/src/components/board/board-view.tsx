@@ -31,6 +31,7 @@ import {
   type Lanes,
   type MoveRequest,
 } from "./board-model.ts"
+import type { MoveColumn } from "../actions/types.ts"
 import { BoardColumn } from "./board-column.tsx"
 import { TaskCardBody } from "./task-card.tsx"
 
@@ -155,6 +156,10 @@ export function BoardView({
   }
 
   const activeTask = activeId === null ? undefined : findTask(view, activeId)
+  const moveColumns: ReadonlyArray<MoveColumn> = view.columns.map((column) => ({
+    id: column.id,
+    name: column.name,
+  }))
 
   return (
     <DndContext
@@ -176,6 +181,7 @@ export function BoardView({
           <BoardColumn
             key={column.id}
             column={column}
+            columns={moveColumns}
             cards={(current[column.id] ?? []).flatMap((id) => {
               const task = tasksById.get(id)
               return task === undefined ? [] : [task]

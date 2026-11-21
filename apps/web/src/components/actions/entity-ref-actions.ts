@@ -12,7 +12,9 @@ export const useEntityRefActions = (target: EntityRefTarget | null): ReadonlyArr
   const go = useGo()
   const copy = useCopyText()
   if (target === null) return []
-  const href = entityHref(target.ref)
+  const href =
+    entityHref(target.ref) ??
+    (target.ref.restricted || target.ref.deleted ? undefined : target.href)
   if (href === undefined) return []
   const key = target.ref.key
 

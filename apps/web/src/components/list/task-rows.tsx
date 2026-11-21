@@ -6,6 +6,7 @@ import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import type { TaskCard, TaskGroup } from "@audit/domain/tasks/schema"
 import { useTaskText } from "./task-labels.ts"
 import { taskHref } from "../../lib/entity-links.ts"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -169,7 +170,7 @@ function TaskRow({
   readonly onFocus: () => void
   readonly onKeyDown: (event: KeyboardEvent<HTMLAnchorElement>) => void
 }) {
-  const { i18n } = useLingui()
+  const { i18n, t } = useLingui()
   const { priorities, categories } = useTaskText()
   const [now] = useState(() => Date.now())
   const done = task.columnCategory === "done" || task.columnCategory === "canceled"
@@ -177,37 +178,46 @@ function TaskRow({
   const dateFormat = new Intl.DateTimeFormat(i18n.locale, { dateStyle: "medium" })
 
   return (
-    <Link
-      to={taskHref(task.projectKey, taskNumber(task.key))}
-      tabIndex={tabIndex}
-      onFocus={onFocus}
-      onKeyDown={onKeyDown}
-      className="flex h-full items-center gap-3 border-b px-3 text-sm hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
-    >
-      <span className="w-20 shrink-0 font-mono text-xs text-muted-foreground">{task.key}</span>
-      <span className="min-w-0 flex-1 truncate font-medium">{task.title}</span>
-      {task.priority !== "none" && <Badge variant="outline">{priorities[task.priority]}</Badge>}
-      <Badge variant="secondary">{categories[task.columnCategory]}</Badge>
-      {task.subtaskCount > 0 && (
-        <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
-          <Trans>
-            {task.subtasksDone}/{task.subtaskCount} subtasks
-          </Trans>
-        </span>
-      )}
-      {task.assignees.length > 0 && (
-        <span className="hidden text-xs text-muted-foreground md:inline">
-          <Plural value={task.assignees.length} one="# assignee" other="# assignees" />
-        </span>
-      )}
-      {task.dueAt !== null && (
-        <time
-          dateTime={task.dueAt.toISOString()}
-          className={`shrink-0 text-xs tabular-nums${overdue ? " font-medium text-destructive" : ""}`}
+    <EntityContextMenu target={{ kind: "task", task }}>
+      <div className="flex h-full items-center">
+        <Link
+          to={taskHref(task.projectKey, taskNumber(task.key))}
+          tabIndex={tabIndex}
+          onFocus={onFocus}
+          onKeyDown={onKeyDown}
+          className="flex h-full min-w-0 flex-1 items-center gap-3 border-b px-3 text-sm hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
         >
-          {dateFormat.format(task.dueAt)}
-        </time>
-      )}
-    </Link>
+          <span className="min-w-20 shrink-0 font-mono text-xs text-muted-foreground">
+            {task.key}
+          </span>
+          <span className="min-w-0 flex-1 truncate font-medium">{task.title}</span>
+          {task.priority !== "none" && <Badge variant="outline">{priorities[task.priority]}</Badge>}
+          <Badge variant="secondary">{categories[task.columnCategory]}</Badge>
+          {task.subtaskCount > 0 && (
+            <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
+              <Trans>
+                {task.subtasksDone}/{task.subtaskCount} subtasks
+              </Trans>
+            </span>
+          )}
+          {task.assignees.length > 0 && (
+            <span className="hidden text-xs text-muted-foreground md:inline">
+              <Plural value={task.assignees.length} one="# assignee" other="# assignees" />
+            </span>
+          )}
+          {task.dueAt !== null && (
+            <time
+              dateTime={task.dueAt.toISOString()}
+              className={`shrink-0 text-xs tabular-nums${overdue ? " font-medium text-destructive" : ""}`}
+            >
+              {dateFormat.format(task.dueAt)}
+            </time>
+          )}
+        </Link>
+        <span className="border-b px-2">
+          <EntityActionsButton target={{ kind: "task", task }} label={t`Actions for ${task.key}`} />
+        </span>
+      </div>
+    </EntityContextMenu>
   )
 }

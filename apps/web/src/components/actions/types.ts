@@ -98,6 +98,8 @@ export type EntityTarget =
   | {
       readonly kind: "notification"
       readonly notification: Notification
+      /** Bulk selection: when set, the group applies to every item. */
+      readonly items?: ReadonlyArray<Notification> | undefined
       readonly onOpen?: (() => void) | undefined
     }
   | {
@@ -106,4 +108,9 @@ export type EntityTarget =
       readonly onEdit?: (() => void) | undefined
       readonly onImport?: (() => void) | undefined
     }
-  | { readonly kind: "entity"; readonly ref: EntityRef }
+  | {
+      readonly kind: "entity"
+      readonly ref: EntityRef
+      /** Fallback link for refs that carry no route data, e.g. search hits (`url`). */
+      readonly href?: string | undefined
+    }

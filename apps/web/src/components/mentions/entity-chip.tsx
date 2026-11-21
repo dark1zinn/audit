@@ -87,7 +87,7 @@ export function EntityChip({ id, type, label }: EntityChipProps) {
 
   return (
     <EntityContextMenu target={{ kind: "entity", ref: data }}>
-      <span className="inline-flex max-w-full">
+      <span className="inline-flex max-w-full" onContextMenu={(event) => event.stopPropagation()}>
         <HoverCard openDelay={400}>
           <HoverCardTrigger asChild>
             <Link

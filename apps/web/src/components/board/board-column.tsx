@@ -6,6 +6,7 @@ import type { Label } from "@audit/domain/projects/schema"
 import type { BoardView, TaskCard as TaskCardModel } from "@audit/domain/tasks/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
+import type { MoveColumn } from "../actions/types.ts"
 import { columnDropId } from "./board-model.ts"
 import { SortableTaskCard, type CardHandlers } from "./task-card.tsx"
 
@@ -13,6 +14,7 @@ type BoardColumnModel = BoardView["columns"][number]
 
 export interface BoardColumnProps extends CardHandlers {
   readonly column: BoardColumnModel
+  readonly columns: ReadonlyArray<MoveColumn>
   readonly cards: ReadonlyArray<TaskCardModel>
   readonly labels: ReadonlyMap<string, Label>
   readonly members: ReadonlyMap<string, Member>
@@ -24,6 +26,7 @@ export interface BoardColumnProps extends CardHandlers {
 
 export function BoardColumn({
   column,
+  columns,
   cards,
   labels,
   members,
@@ -72,6 +75,7 @@ export function BoardColumn({
             <SortableTaskCard
               key={card.id}
               card={card}
+              columns={columns}
               columnId={column.id}
               labels={labels}
               members={members}

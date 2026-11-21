@@ -103,13 +103,17 @@ export const useTaskActions = (
         icon: ExternalLink,
         run: () => go(href),
       },
-      {
-        id: "move",
-        label: t`Move to`,
-        disabled: moveTo.length === 0,
-        disabledReason: t`No other columns`,
-        children: moveTo,
-      },
+      ...(target.columns === undefined
+        ? []
+        : [
+            {
+              id: "move",
+              label: t`Move to`,
+              disabled: moveTo.length === 0,
+              disabledReason: t`No other columns`,
+              children: moveTo,
+            },
+          ]),
       {
         id: "assign",
         label: t`Assign to`,

@@ -33,7 +33,7 @@ const task: TaskCard = {
   updatedAt: new Date(0),
 }
 
-const target: EntityTarget = { kind: "task", task }
+const target: EntityTarget = { kind: "task", task, columns: [] }
 
 const Board = () => (
   <div>

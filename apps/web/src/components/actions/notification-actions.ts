@@ -16,10 +16,11 @@ export const useNotificationActions = (
   const queryClient = useQueryClient()
   const run = useRunAction(() => queryClient.invalidateQueries({ queryKey: keys.notifications }))
   if (target === null) return []
-  const { notification } = target
-  const notificationId = notification.id as NotificationId
-  const read = notification.readAt !== null
-  const archived = notification.archivedAt !== null
+  // With `items` (a bulk selection) the group applies to every item; a state flips
+  // only when all items are in it, so one click never splits a selection.
+  const items = target.items ?? [target.notification]
+  const read = items.every((item) => item.readAt !== null)
+  const archived = items.every((item) => item.archivedAt !== null)
 
   return [
     [
@@ -30,9 +31,14 @@ export const useNotificationActions = (
         icon: read ? Mail : MailOpen,
         run: () =>
           run.mutate(() =>
-            read
-              ? callApi((api) => api.notifications.unread({ params: { notificationId } }))
-              : callApi((api) => api.notifications.read({ params: { notificationId } })),
+            Promise.all(
+              items.map((item) => {
+                const notificationId = item.id as NotificationId
+                return read
+                  ? callApi((api) => api.notifications.unread({ params: { notificationId } }))
+                  : callApi((api) => api.notifications.read({ params: { notificationId } }))
+              }),
+            ),
           ),
       },
       {
@@ -41,9 +47,14 @@ export const useNotificationActions = (
         icon: archived ? ArchiveRestore : Archive,
         run: () =>
           run.mutate(() =>
-            archived
-              ? callApi((api) => api.notifications.unarchive({ params: { notificationId } }))
-              : callApi((api) => api.notifications.archive({ params: { notificationId } })),
+            Promise.all(
+              items.map((item) => {
+                const notificationId = item.id as NotificationId
+                return archived
+                  ? callApi((api) => api.notifications.unarchive({ params: { notificationId } }))
+                  : callApi((api) => api.notifications.archive({ params: { notificationId } }))
+              }),
+            ),
           ),
       },
     ],

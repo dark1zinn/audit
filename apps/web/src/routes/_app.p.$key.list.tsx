@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -11,6 +12,7 @@ import { WithProject } from "../components/list/with-project.tsx"
 import { taskListQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/p/$key/list")({
+  staticData: { crumb: () => ({ label: t`List` }) },
   validateSearch: parseTaskSearch,
   component: ListPage,
 })
