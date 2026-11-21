@@ -10,6 +10,7 @@
   },
   "include": [
     "src",
+    "test",
     "../../packages/ui/src",
     "../../packages/i18n/src",
     "vite.config.ts",
