@@ -8,6 +8,7 @@ import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { callApi } from "../../lib/api.ts"
+import { fieldWidth } from "../form.tsx"
 import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { invalidateTask, subtasksQuery } from "./queries.ts"
 
@@ -77,7 +78,7 @@ export function Subtasks({
       )}
       {canEdit && (
         <form
-          className="flex gap-2"
+          className="flex flex-wrap gap-2"
           onSubmit={(event) => {
             event.preventDefault()
             const value = title.trim()
@@ -86,6 +87,7 @@ export function Subtasks({
           }}
         >
           <Input
+            className={fieldWidth.md}
             aria-label={t`New subtask title`}
             value={title}
             maxLength={300}

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { callApi } from "../../lib/api.ts"
+import { fieldWidth } from "../form.tsx"
 import { EmptyState, ErrorMessage } from "../feedback.tsx"
 import { taskListQuery } from "../../lib/queries.ts"
 import { invalidateTask } from "./queries.ts"
@@ -129,6 +130,7 @@ export function Relations({ task, projectId, canEdit }: RelationsProps) {
             <div className="space-y-2">
               <Label htmlFor="relation-search">{t`Search tasks to link`}</Label>
               <Input
+                className={fieldWidth.md}
                 id="relation-search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
