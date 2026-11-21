@@ -12,6 +12,7 @@ import { createChannel, postMessage } from "@audit/core/chat/commands"
 import { createProject } from "@audit/core/projects/commands"
 import { defaultBoardId } from "@audit/core/projects/read"
 import { createTask } from "@audit/core/tasks/commands"
+import { createCalendar, createEvent } from "@audit/core/calendar/commands"
 
 const messageBody = (text: string) => ({
   type: "doc" as const,
@@ -213,5 +214,37 @@ describe("entity route data", () => {
 
     const refs = await runAs(database, member.actor)(resolveEntities([task.id] as EntityId[]))
     expect(refs[task.id]).toEqual({ id: task.id, restricted: true, deleted: false })
+  })
+
+  test("visible events carry startsAt; a restricted event carries none", async () => {
+    const calendar = await runAs(
+      database,
+      owner.actor,
+    )(createCalendar.execute({ name: "Deadlines", color: "#336699", teamId: null }))
+    const event = await runAs(
+      database,
+      owner.actor,
+    )(
+      createEvent.execute({
+        calendarId: calendar.id,
+        title: "Launch",
+        startsAt: new Date("2026-06-10T15:00:00Z"),
+        endsAt: new Date("2026-06-10T16:00:00Z"),
+        allDay: false,
+        timezone: "UTC",
+        rrule: null,
+        location: "",
+        description: null,
+        attendees: [],
+        reminders: [],
+      }),
+    )
+    const eventId = event.eventId as EntityId
+    const visible = await runAs(database, owner.actor)(resolveEntities([eventId]))
+    expect(visible[eventId]?.startsAt).toBe("2026-06-10T15:00:00.000Z")
+
+    await database.superuser`update entities set restricted = true where id = ${eventId}`
+    const hidden = await runAs(database, member.actor)(resolveEntities([eventId]))
+    expect(hidden[eventId]).toEqual({ id: eventId, restricted: true, deleted: false })
   })
 })

@@ -6,7 +6,8 @@ import { Checkbox } from "@audit/ui/components/ui/checkbox.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { toast } from "sonner"
 import { useCalendarMutations } from "../actions/calendar-actions.ts"
-import { EntityActionsButton } from "../actions/entity-menu.tsx"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { EntityTarget } from "../actions/types.ts"
 import { ErrorMessage } from "../feedback.tsx"
 
 /** Calendar sidebar: visibility, colour, per-calendar actions and the task overlay toggle. */
@@ -89,32 +90,32 @@ function CalendarRow({
   const { t } = useLingui()
   const mutations = useCalendarMutations()
 
+  const target: EntityTarget = {
+    kind: "calendar",
+    calendar,
+    onEdit: () => onEdit(calendar),
+    onImport: () => onImport(calendar),
+  }
   return (
     <li className="grid gap-1">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          aria-label={label}
-          checked={visible}
-          onCheckedChange={(checked) => onVisibleChange(calendar.id, checked === true)}
-        />
-        <Input
-          type="color"
-          aria-label={t`Colour of ${calendar.name}`}
-          className="h-7 w-8 shrink-0 p-0.5"
-          value={calendar.color}
-          onChange={(event) => mutations.recolour(calendar, event.currentTarget.value)}
-        />
-        <span className="min-w-0 flex-1 truncate text-sm">{calendar.name}</span>
-        <EntityActionsButton
-          target={{
-            kind: "calendar",
-            calendar,
-            onEdit: () => onEdit(calendar),
-            onImport: () => onImport(calendar),
-          }}
-          label={t`Actions for ${calendar.name}`}
-        />
-      </div>
+      <EntityContextMenu target={target}>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            aria-label={label}
+            checked={visible}
+            onCheckedChange={(checked) => onVisibleChange(calendar.id, checked === true)}
+          />
+          <Input
+            type="color"
+            aria-label={t`Colour of ${calendar.name}`}
+            className="h-7 w-8 shrink-0 p-0.5"
+            value={calendar.color}
+            onChange={(event) => mutations.recolour(calendar, event.currentTarget.value)}
+          />
+          <span className="min-w-0 flex-1 truncate text-sm">{calendar.name}</span>
+          <EntityActionsButton target={target} label={t`Actions for ${calendar.name}`} />
+        </div>
+      </EntityContextMenu>
       {mutations.error !== null && <ErrorMessage error={mutations.error} />}
     </li>
   )

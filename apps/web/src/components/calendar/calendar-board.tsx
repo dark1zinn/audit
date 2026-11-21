@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import type { Temporal } from "temporal-polyfill"
+import { Temporal } from "temporal-polyfill"
 import { useLingui } from "@lingui/react/macro"
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react"
 import {
@@ -9,8 +9,11 @@ import {
   createViewWeek,
 } from "@schedule-x/calendar"
 import "@schedule-x/theme-default/dist/index.css"
+import { useTheme } from "@audit/ui/theme.tsx"
 import type { CalendarDisplayEvent } from "../../lib/calendar.ts"
-import { tint } from "../../lib/calendar.ts"
+import type { EntityTarget } from "../actions/types.ts"
+import { calendarColorSets, tasksColorSets } from "./calendar-theme.ts"
+import { DateGridEventSlot, EventTargetContext, TimeGridEventSlot } from "./calendar-event.tsx"
 
 export interface BoardCalendar {
   readonly id: string
@@ -29,14 +32,9 @@ interface BoardProps {
   readonly onRangeChange: (range: BoardRange) => void
   readonly onEventClick: (id: string) => void
   readonly onSlotClick: (start: Temporal.ZonedDateTime | Temporal.PlainDate) => void
+  readonly eventTargetFor: (id: string) => EntityTarget | undefined
+  readonly initialDate?: string | undefined
 }
-
-const TASKS_COLOR = "#64748b"
-
-const colorsFor = (color: string) => ({
-  lightColors: { main: color, container: tint(color, "33"), onContainer: "#1a1a1a" },
-  darkColors: { main: color, container: tint(color, "55"), onContainer: "#f5f5f5" },
-})
 
 /** Schedule-X needs full BCP-47 tags; Lingui uses bare language codes. */
 const SCHEDULE_LOCALES: Readonly<Record<string, string>> = {
@@ -46,16 +44,36 @@ const SCHEDULE_LOCALES: Readonly<Record<string, string>> = {
 }
 
 /**
+ * Slot components must be stable: Schedule-X registers them when the app is set up, so an inline
+ * object would re-register on every render.
+ */
+const CUSTOM_COMPONENTS = {
+  timeGridEvent: TimeGridEventSlot,
+  dateGridEvent: DateGridEventSlot,
+}
+
+/** The day the board opens on, from a `YYYY-MM-DD` search param; undefined when absent or invalid. */
+function selectedDateFrom(value: string | undefined): Temporal.PlainDate | undefined {
+  if (value === undefined) return undefined
+  try {
+    return Temporal.PlainDate.from(value)
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Schedule-X board. Its configuration is read once at creation, so the inner board is keyed by
  * timezone, locale and calendar colours: changing any of them remounts it. Event data is pushed
- * with `events.set`, so visibility toggles never remount the board.
+ * with `events.set`, so visibility toggles never remount the board. Theme changes do not remount:
+ * they go through `setTheme`, and colours are CSS references resolved at paint time.
  */
 export function CalendarBoard(props: BoardProps) {
   const { i18n } = useLingui()
   const colorKey = props.calendars.map((calendar) => `${calendar.id}:${calendar.color}`).join(",")
   return (
     <CalendarBoardInner
-      key={`${props.timezone}|${i18n.locale}|${colorKey}`}
+      key={`${props.timezone}|${i18n.locale}|${colorKey}|${props.initialDate ?? ""}`}
       {...props}
       locale={SCHEDULE_LOCALES[i18n.locale] ?? "en-US"}
     />
@@ -70,27 +88,35 @@ function CalendarBoardInner({
   onRangeChange,
   onEventClick,
   onSlotClick,
+  eventTargetFor,
+  initialDate,
 }: BoardProps & { readonly locale: string }) {
+  const { resolvedTheme } = useTheme()
+  const selected = selectedDateFrom(initialDate)
+
   // Schedule-X keeps the callbacks it was created with: route them through a ref.
   const handlers = useRef({ onRangeChange, onEventClick, onSlotClick })
   useEffect(() => {
     handlers.current = { onRangeChange, onEventClick, onSlotClick }
   })
 
-  const calendarConfig = Object.fromEntries(
-    [...calendars, { id: "tasks", color: TASKS_COLOR }].map((calendar) => [
+  const calendarConfig = Object.fromEntries([
+    ...calendars.map((calendar) => [
       calendar.id,
-      { colorName: calendar.id, ...colorsFor(calendar.color) },
+      { colorName: calendar.id, ...calendarColorSets(calendar.color) },
     ]),
-  )
+    ["tasks", { colorName: "tasks", ...tasksColorSets() }],
+  ])
 
   const calendarApp = useCalendarApp({
     locale,
     timezone,
     calendars: calendarConfig,
+    isDark: resolvedTheme === "dark",
     views: [createViewMonthGrid(), createViewWeek(), createViewDay(), createViewMonthAgenda()],
     defaultView: "week",
     events: [],
+    ...(selected === undefined ? {} : { selectedDate: selected }),
     callbacks: {
       onRangeUpdate(range) {
         handlers.current.onRangeChange({
@@ -109,6 +135,10 @@ function CalendarBoardInner({
       },
     },
   })
+
+  useEffect(() => {
+    calendarApp?.setTheme(resolvedTheme)
+  }, [calendarApp, resolvedTheme])
 
   useEffect(() => {
     calendarApp?.events.set([...events])
@@ -134,8 +164,10 @@ function CalendarBoardInner({
   }, [])
 
   return (
-    <div ref={boardRef}>
-      <ScheduleXCalendar calendarApp={calendarApp} />
-    </div>
+    <EventTargetContext.Provider value={eventTargetFor}>
+      <div ref={boardRef} className="min-w-0 max-w-full overflow-x-auto">
+        <ScheduleXCalendar calendarApp={calendarApp} customComponents={CUSTOM_COMPONENTS} />
+      </div>
+    </EventTargetContext.Provider>
   )
 }

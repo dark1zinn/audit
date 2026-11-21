@@ -4,7 +4,7 @@
  * backlinks into an entity. Invisible entities are masked (`restricted`, untitled); soft-deleted
  * ones are `deleted` to callers who could see them before deletion, `restricted` to the rest.
  */
-import { entities, messages, projects, references, tasks } from "@audit/db/schema"
+import { entities, events, messages, projects, references, tasks } from "@audit/db/schema"
 import { actorUserId, CurrentActor } from "@audit/domain/actor"
 import type { BacklinkGroup, Backlink, EntityRef } from "@audit/domain/docs/schema"
 import type { ReferenceKind } from "@audit/domain/entity"
@@ -155,6 +155,7 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
               projectKey: projects.key,
               number: tasks.number,
               channelId: messages.channelId,
+              startsAt: events.startsAt,
             })
             .from(entities)
             .leftJoin(
@@ -166,6 +167,7 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
             )
             .leftJoin(tasks, eq(tasks.id, entities.id))
             .leftJoin(messages, eq(messages.id, entities.id))
+            .leftJoin(events, eq(events.id, entities.id))
             .where(inArray(entities.id, [...visibleIds] as EntityId[]))
             .pipe(Effect.orDie)
     const routeById = new Map(routeRows.map((row) => [row.id, row]))
@@ -184,6 +186,7 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
           ...(key === undefined ? {} : { key }),
           ...(route?.projectKey == null ? {} : { projectKey: route.projectKey }),
           ...(route?.number == null ? {} : { number: route.number }),
+          ...(route?.startsAt == null ? {} : { startsAt: route.startsAt.toISOString() }),
           ...(route?.channelId == null ? {} : { channelId: route.channelId as EntityId }),
           restricted: false,
           deleted: false,

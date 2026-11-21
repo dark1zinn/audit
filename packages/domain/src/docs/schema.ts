@@ -170,6 +170,8 @@ export const EntityRef = Schema.Struct({
   projectKey: Schema.optionalKey(Schema.String),
   number: Schema.optionalKey(Schema.Int),
   channelId: Schema.optionalKey(EntityId),
+  /** ISO date-time of an event's start, for deep links to its day. */
+  startsAt: Schema.optionalKey(Schema.String),
   restricted: Schema.Boolean,
   deleted: Schema.Boolean,
 })

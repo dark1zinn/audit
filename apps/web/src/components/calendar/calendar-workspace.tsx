@@ -1,10 +1,18 @@
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useNavigate } from "@tanstack/react-router"
 import { useQueries, useQuery } from "@tanstack/react-query"
+import { PanelLeft } from "lucide-react"
+import { toast } from "sonner"
 import type { ProjectId } from "@audit/domain/ids"
 import type { CalendarSummary } from "@audit/domain/calendar/schema"
 import type { ListTasksQuery } from "@audit/domain/tasks/schema"
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Button } from "@audit/ui/components/ui/button.tsx"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@audit/ui/components/ui/collapsible.tsx"
 import { useCalendarPrefs } from "../../lib/calendar-prefs.ts"
 import {
   dueToDisplay,
@@ -29,9 +37,16 @@ import { CalendarBoard } from "./calendar-board.tsx"
 import { CalendarDialog, ImportDialog, type CalendarDialogTarget } from "./calendar-dialogs.tsx"
 import { CalendarList } from "./calendar-list.tsx"
 import { EventDialog, type EventDialogTarget } from "./event-dialog.tsx"
+import type { EntityTarget } from "../actions/types.ts"
 
 /** Pseudo calendar id for task due dates shown in the board. */
 const TASKS_CALENDAR_ID = "tasks"
+
+/** Half-width of the fallback window searched when `?event=` is outside the visible range. */
+const DEEP_LINK_WINDOW_MS = 45 * 24 * 60 * 60 * 1000
+
+/** localStorage key for the calendars column (`open` or `closed`). */
+const LIST_STORAGE_KEY = "audit.calendar.list"
 
 export type CalendarScope =
   | { readonly kind: "all" }
@@ -40,6 +55,20 @@ export type CalendarScope =
 interface TaskLink {
   readonly projectKey: string
   readonly number: string
+}
+
+/** The date the board centres on: the `date` param at noon wall time, else today. */
+function anchorDate(dateParam: string | undefined, timezone: string): Date {
+  if (dateParam === undefined) return new Date()
+  return fromWall(dateParam, "12:00", timezone) ?? new Date()
+}
+
+/** Column open state: the stored choice, else open only on very wide screens. */
+function readListOpen(): boolean {
+  const stored = localStorage.getItem(LIST_STORAGE_KEY)
+  if (stored === "open") return true
+  if (stored === "closed") return false
+  return window.matchMedia("(min-width: 1536px)").matches
 }
 
 /**
@@ -53,25 +82,40 @@ export function CalendarWorkspace({
   userId,
   filter,
   newRequest,
+  eventParam,
+  dateParam,
+  onEventParamDone,
 }: {
   readonly scope: CalendarScope
   readonly timezone: string
   readonly userId: string
   readonly filter?: ListTasksQuery
   readonly newRequest?: string | undefined
+  readonly eventParam?: string | undefined
+  readonly dateParam?: string | undefined
+  readonly onEventParamDone?: (() => void) | undefined
 }) {
   const navigate = useNavigate()
+  const { t } = useLingui()
   const prefs = useCalendarPrefs()
-  // Schedule-X does not report its first range, so start from the default week view.
+  // Schedule-X does not report its first range, so start from the week of the anchor date.
   const [range, setRange] = useState<{ readonly from: string; readonly to: string } | null>(() => {
-    const week = weekRange(new Date(), timezone)
+    const week = weekRange(anchorDate(dateParam, timezone), timezone)
     return { from: week.from.toISOString(), to: week.to.toISOString() }
   })
   const [eventTarget, setEventTarget] = useState<EventDialogTarget | null>(() =>
     newRequest === undefined ? null : { kind: "create", start: new Date(), allDay: false },
   )
+  // The deep-linked event the user closed; kept until the `event` param is cleared from the URL.
+  const [dismissedParam, setDismissedParam] = useState<string | null>(null)
   const [calendarTarget, setCalendarTarget] = useState<CalendarDialogTarget | null>(null)
   const [importing, setImporting] = useState<CalendarSummary | null>(null)
+  const [listOpen, setListOpen] = useState(readListOpen)
+
+  const toggleList = (open: boolean) => {
+    setListOpen(open)
+    localStorage.setItem(LIST_STORAGE_KEY, open ? "open" : "closed")
+  }
 
   const calendarsResult = useQuery(calendarsQuery)
   const allCalendars = useMemo(() => calendarsResult.data ?? [], [calendarsResult.data])
@@ -86,6 +130,19 @@ export function CalendarWorkspace({
   const events = useQuery({
     ...calendarEventsQuery(range?.from ?? "", range?.to ?? ""),
     enabled: range !== null,
+  })
+
+  // Wider window around the anchor date, only fetched for `?event=` links.
+  const wideRange = useMemo(() => {
+    const center = anchorDate(dateParam, timezone).getTime()
+    return {
+      from: new Date(center - DEEP_LINK_WINDOW_MS).toISOString(),
+      to: new Date(center + DEEP_LINK_WINDOW_MS).toISOString(),
+    }
+  }, [dateParam, timezone])
+  const wideEvents = useQuery({
+    ...calendarEventsQuery(wideRange.from, wideRange.to),
+    enabled: eventParam !== undefined,
   })
 
   const projectsResult = useQuery(projectsQuery)
@@ -112,12 +169,42 @@ export function CalendarWorkspace({
     [occurrences],
   )
 
+  // The `?event=` occurrence, from the visible range first, then the wider window.
+  const deepOccurrence = useMemo(() => {
+    if (eventParam === undefined) return undefined
+    return (
+      occurrences.find((item) => item.eventId === eventParam) ??
+      wideEvents.data?.find((item) => item.eventId === eventParam)
+    )
+  }, [eventParam, occurrences, wideEvents.data])
+
+  const deepTarget = useMemo<EventDialogTarget | null>(
+    () =>
+      deepOccurrence !== undefined && eventParam !== dismissedParam
+        ? { kind: "edit", occurrence: deepOccurrence }
+        : null,
+    [deepOccurrence, eventParam, dismissedParam],
+  )
+
+  const activeTarget = eventTarget ?? deepTarget
+
   // The dialog reads links and versions from the live occurrence, so refetches show up in it.
   const liveEventTarget = useMemo<EventDialogTarget | null>(() => {
-    if (eventTarget?.kind !== "edit") return eventTarget
-    const live = occurrenceById.get(occurrenceKey(eventTarget.occurrence))
-    return live === undefined ? eventTarget : { kind: "edit", occurrence: live }
-  }, [eventTarget, occurrenceById])
+    if (activeTarget?.kind !== "edit") return activeTarget
+    const live = occurrenceById.get(occurrenceKey(activeTarget.occurrence))
+    return live === undefined ? activeTarget : { kind: "edit", occurrence: live }
+  }, [activeTarget, occurrenceById])
+
+  // `?event=` not found in either window: say so once, then clear the param.
+  const reportedMissing = useRef<string | null>(null)
+  useEffect(() => {
+    if (eventParam === undefined || deepOccurrence !== undefined) return
+    if (!events.isSuccess || !wideEvents.isSuccess) return
+    if (reportedMissing.current === eventParam) return
+    reportedMissing.current = eventParam
+    toast.error(t`Event not found`)
+    onEventParamDone?.()
+  }, [eventParam, deepOccurrence, events.isSuccess, wideEvents.isSuccess, onEventParamDone, t])
 
   const visibleCalendarIds = useMemo(
     () => new Set(calendars.map((calendar) => calendar.id).filter((id) => !prefs.hidden.has(id))),
@@ -154,10 +241,7 @@ export function CalendarWorkspace({
   useRealtimeScopes(calendars.map((calendar) => `entity:${calendar.id}`))
 
   const boardCalendars = useMemo(
-    () => [
-      ...calendars.map((calendar) => ({ id: calendar.id, color: calendar.color })),
-      { id: TASKS_CALENDAR_ID, color: "#64748b" },
-    ],
+    () => calendars.map((calendar) => ({ id: calendar.id, color: calendar.color })),
     [calendars],
   )
 
@@ -174,31 +258,58 @@ export function CalendarWorkspace({
     if (occurrence !== undefined) setEventTarget({ kind: "edit", occurrence })
   }
 
+  // Context-menu target for an event occurrence. Task due dates have no occurrence, so none.
+  const eventTargetFor = useCallback(
+    (id: string): EntityTarget | undefined => {
+      const occurrence = occurrenceById.get(id)
+      if (occurrence === undefined) return undefined
+      return {
+        kind: "event",
+        event: occurrence,
+        onOpen: () => setEventTarget({ kind: "edit", occurrence }),
+      }
+    },
+    [occurrenceById],
+  )
+
   const createAt = (start: Date, allDay: boolean) =>
     setEventTarget({ kind: "create", start, allDay })
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
-      <CalendarList
-        calendars={calendars}
-        hidden={prefs.hidden}
-        showTasks={prefs.showTasks}
-        onVisibleChange={prefs.setCalendarVisible}
-        onShowTasksChange={prefs.setShowTasks}
-        onNew={() =>
-          setCalendarTarget(
-            scope.kind === "project"
-              ? { kind: "create", projectId: scope.projectId }
-              : { kind: "create" },
-          )
-        }
-        onEdit={(calendar) => setCalendarTarget({ kind: "edit", calendar })}
-        onImport={setImporting}
-      />
+    <div className="flex min-w-0 flex-col gap-4 md:flex-row md:gap-6">
+      <Collapsible open={listOpen} onOpenChange={toggleList} className="min-w-0 md:shrink-0">
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="min-h-11 md:min-h-8">
+            <PanelLeft aria-hidden="true" />
+            <Trans>Calendars</Trans>
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-3 md:w-64">
+          <CalendarList
+            calendars={calendars}
+            hidden={prefs.hidden}
+            showTasks={prefs.showTasks}
+            onVisibleChange={prefs.setCalendarVisible}
+            onShowTasksChange={prefs.setShowTasks}
+            onNew={() =>
+              setCalendarTarget(
+                scope.kind === "project"
+                  ? { kind: "create", projectId: scope.projectId }
+                  : { kind: "create" },
+              )
+            }
+            onEdit={(calendar) => setCalendarTarget({ kind: "edit", calendar })}
+            onImport={setImporting}
+          />
+        </CollapsibleContent>
+      </Collapsible>
 
-      <div className="isolate grid gap-3">
+      <div className="isolate grid min-w-0 flex-1 gap-3">
         {calendarsResult.isError && <ErrorMessage error={calendarsResult.error} />}
         {events.isError && <ErrorMessage error={events.error} />}
+        {wideEvents.isError && eventParam !== undefined && (
+          <ErrorMessage error={wideEvents.error} />
+        )}
         {events.isPending && range !== null && <LoadingRows rows={1} />}
         {calendars.length === 0 && calendarsResult.isSuccess && (
           <p className="text-sm text-muted-foreground">
@@ -209,6 +320,7 @@ export function CalendarWorkspace({
           timezone={timezone}
           calendars={boardCalendars}
           events={displayEvents}
+          initialDate={dateParam}
           onRangeChange={(next) =>
             setRange((prev) => {
               const from = next.from.toISOString()
@@ -225,6 +337,7 @@ export function CalendarWorkspace({
             const start = fromWall(slot.toString(), "09:00", timezone)
             if (start !== undefined) createAt(start, true)
           }}
+          eventTargetFor={eventTargetFor}
         />
       </div>
 
@@ -235,7 +348,12 @@ export function CalendarWorkspace({
         calendars={calendars}
         defaultCalendarId={defaultCalendarId}
         onOpenChange={(open) => {
-          if (!open) setEventTarget(null)
+          if (open) return
+          setEventTarget(null)
+          if (eventParam !== undefined) {
+            setDismissedParam(eventParam)
+            onEventParamDone?.()
+          }
         }}
       />
       <CalendarDialog

@@ -36,7 +36,9 @@ export const entityHref = (ref: EntityRef): string | undefined => {
     case "message":
       return ref.channelId !== undefined ? messageHref(ref.channelId, ref.id) : undefined
     case "event":
-      return `/calendar?event=${ref.id}`
+      return ref.startsAt !== undefined
+        ? `/calendar?event=${ref.id}&date=${ref.startsAt.slice(0, 10)}`
+        : `/calendar?event=${ref.id}`
     case "user":
       return `/dm/${ref.id}`
     default:

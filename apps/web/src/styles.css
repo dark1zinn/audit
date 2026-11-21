@@ -36,6 +36,35 @@
   line-height: 1.2;
 }
 
+/* Schedule-X colours come from the shadcn tokens, so light and dark follow the app theme. The
+   theme sets its own values on `.is-dark` (same element), so the dark block repeats the mapping
+   with higher specificity. */
+.sx__calendar-wrapper,
+.sx__calendar-wrapper.is-dark {
+  --sx-color-primary: var(--primary);
+  --sx-color-on-primary: var(--primary-foreground);
+  --sx-color-background: var(--background);
+  --sx-color-on-background: var(--foreground);
+  --sx-color-surface: var(--background);
+  --sx-color-surface-dim: var(--card);
+  --sx-color-surface-container-low: var(--card);
+  --sx-color-surface-container: var(--card);
+  --sx-color-surface-container-high: var(--muted);
+  --sx-color-on-surface: var(--foreground);
+  --sx-color-outline: var(--muted-foreground);
+  --sx-color-outline-variant: var(--border);
+  --sx-color-neutral: var(--muted-foreground);
+  --sx-internal-color-text: var(--foreground);
+  --sx-border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+/* The all-day strip can hold many task due dates: cap its height and scroll it, so the time grid stays visible. */
+.sx__calendar-wrapper .sx__date-grid {
+  max-height: 9rem;
+  overflow-y: auto;
+}
+
 /* Default focus indicator for elements without their own focus style. */
 :focus-visible {
   outline: 2px solid var(--ring);

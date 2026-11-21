@@ -48,6 +48,7 @@ import {
   type RecurrenceState,
 } from "../../lib/calendar.ts"
 import { membersQuery, teamsQuery } from "../../lib/queries.ts"
+import { EntityActionsButton } from "../actions/entity-menu.tsx"
 import { ErrorMessage } from "../feedback.tsx"
 import { useEventMutations } from "../actions/event-actions.ts"
 import { RichEditor } from "../task-panel/rich-editor.tsx"
@@ -375,12 +376,26 @@ function EventForm({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>
-          {occurrence === null ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
-        </DialogTitle>
-        <DialogDescription>
-          {recurring ? <Trans>Part of a repeating series.</Trans> : <Trans>One-time event.</Trans>}
-        </DialogDescription>
+        <div className="flex items-start justify-between gap-2">
+          <div className="grid min-w-0 gap-1.5">
+            <DialogTitle>
+              {occurrence === null ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
+            </DialogTitle>
+            <DialogDescription>
+              {recurring ? (
+                <Trans>Part of a repeating series.</Trans>
+              ) : (
+                <Trans>One-time event.</Trans>
+              )}
+            </DialogDescription>
+          </div>
+          {occurrence !== null && (
+            <EntityActionsButton
+              target={{ kind: "event", event: occurrence }}
+              label={t`Event actions`}
+            />
+          )}
+        </div>
       </DialogHeader>
 
       <form id="event-form" className="grid gap-4" onSubmit={onSubmit}>

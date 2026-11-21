@@ -24,6 +24,11 @@ describe("entityHref", () => {
     ["message", { type: "message", channelId: id }, `/c/${id}/t/${id}`],
     ["message without channel", { type: "message" }, undefined],
     ["event", { type: "event" }, `/calendar?event=${id}`],
+    [
+      "event with start",
+      { type: "event", startsAt: "2026-06-10T15:00:00.000Z" },
+      `/calendar?event=${id}&date=2026-06-10`,
+    ],
     ["user", { type: "user" }, `/dm/${id}`],
     ["team", { type: "team" }, undefined],
   ])("%s", (_name, fields, expected) => {
