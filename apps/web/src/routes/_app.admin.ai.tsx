@@ -227,7 +227,7 @@ function SettingsForm({
       </CardHeader>
       <CardContent>
         <form className="space-y-6" onSubmit={onSubmit}>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex max-w-2xl items-center justify-between gap-4 rounded-md border p-3">
             <Label htmlFor="aiEnabled">
               <Trans>AI enabled</Trans>
             </Label>
@@ -339,9 +339,12 @@ function SettingsForm({
             <legend className="text-sm font-medium">
               <Trans>Features</Trans>
             </legend>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid max-w-2xl gap-3">
               {FEATURES.map((feature) => (
-                <div key={feature} className="flex items-center justify-between gap-4">
+                <div
+                  key={feature}
+                  className="flex items-center justify-between gap-4 rounded-md border p-3"
+                >
                   <Label htmlFor={`feature-${feature}`} className="font-normal">
                     {labels.feature[feature]}
                   </Label>
