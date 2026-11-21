@@ -23,7 +23,7 @@ import {
 } from "@audit/ui/components/ui/select.tsx"
 import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { Users } from "lucide-react"
-import { formValue, TextField } from "../components/form.tsx"
+import { fieldWidth, formValue, TextField } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys, membersQuery, teamMembersQuery, teamsQuery } from "../lib/queries.ts"
 
@@ -74,9 +74,10 @@ function TeamsPage() {
             </CardHeader>
             <CardContent>
               <form className="grid gap-3" onSubmit={onCreate}>
-                <TextField name="name" label={t`Name`} required maxLength={80} />
+                <TextField name="name" width="md" label={t`Name`} required maxLength={80} />
                 <TextField
                   name="slug"
+                  width="md"
                   label={t`Slug`}
                   required
                   maxLength={60}
@@ -238,7 +239,7 @@ function TeamMembers({ teamId }: { readonly teamId: TeamId }) {
         }}
       >
         <Select value={userId ?? ""} onValueChange={(value) => setUserId(value as UserId)}>
-          <SelectTrigger aria-label={t`Person`}>
+          <SelectTrigger aria-label={t`Person`} className={fieldWidth.md}>
             <SelectValue placeholder={t`Choose a person`} />
           </SelectTrigger>
           <SelectContent>

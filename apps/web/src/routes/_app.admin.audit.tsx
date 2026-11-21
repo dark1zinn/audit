@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 
 export const Route = createFileRoute("/_app/admin/audit")({
@@ -93,12 +94,13 @@ function AuditPage() {
         {verify.error !== null && <ErrorMessage error={verify.error} />}
 
         <form className="flex flex-wrap items-end gap-3" onSubmit={onFilter}>
-          <div className="min-w-64 flex-1 space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="action">
               <Trans>Action</Trans>
             </Label>
             <Input
               id="action"
+              className={fieldWidth.md}
               value={draft}
               placeholder={t`for example member.role.changed`}
               onChange={(event) => setDraft(event.currentTarget.value)}

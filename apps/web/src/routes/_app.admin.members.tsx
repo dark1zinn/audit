@@ -34,6 +34,7 @@ import { EntityActionsButton, EntityContextMenu } from "../components/actions/en
 import { useChangeMemberRole } from "../components/actions/member-actions.ts"
 import { Hash } from "lucide-react"
 import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { membersQuery, keys } from "../lib/queries.ts"
 
@@ -138,7 +139,7 @@ function MembersPage() {
                           >
                             <SelectTrigger
                               aria-label={t`Role for ${member.displayName}`}
-                              className="w-36"
+                              className={fieldWidth.xs}
                             >
                               <SelectValue />
                             </SelectTrigger>
