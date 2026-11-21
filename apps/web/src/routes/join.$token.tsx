@@ -57,7 +57,11 @@ function JoinPage() {
   if (preview.isError) {
     return (
       <AuthLayout title={t`Invite unavailable`}>
-        <ErrorMessage error={preview.error} />
+        <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+          <Trans>
+            This invite has expired or was already used. Ask the person who invited you for a new one.
+          </Trans>
+        </div>
       </AuthLayout>
     )
   }
@@ -67,6 +71,7 @@ function JoinPage() {
 
   return (
     <AuthLayout
+      workspaceName={invite.workspaceName}
       title={t`Join ${invite.workspaceName}`}
       description={t`Create your account to join the workspace.`}
     >
