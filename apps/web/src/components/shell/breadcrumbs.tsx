@@ -40,7 +40,7 @@ export function Breadcrumbs() {
   const crumbs: Array<Crumb> = []
   for (const match of matches) {
     const crumb = match.staticData.crumb?.({
-      params: match.params,
+      params: match.params as Readonly<Record<string, string>>,
       projects: projects.data,
     })
     if (crumb !== undefined) crumbs.push(crumb)
@@ -60,7 +60,11 @@ export function Breadcrumbs() {
             <BreadcrumbItem
               key={`${index}-${crumb.label}`}
               className={
-                isMiddle ? "hidden min-w-0 sm:inline-flex" : "min-w-0 max-w-[12rem] sm:max-w-none"
+                isMiddle
+                  ? "hidden min-w-0 sm:inline-flex"
+                  : isLast
+                    ? "min-w-0 flex-1 sm:flex-none"
+                    : "min-w-0 max-w-[7rem] sm:max-w-none"
               }
             >
               {index === 1 && lastIndex > 1 && (
@@ -76,7 +80,7 @@ export function Breadcrumbs() {
               ) : (
                 <BreadcrumbLink
                   href={link}
-                  className="truncate"
+                  className="inline-flex min-h-6 items-center truncate [@media(pointer:coarse)]:min-h-11"
                   title={crumb.label}
                   onClick={(event) => {
                     event.preventDefault()
