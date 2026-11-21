@@ -7,6 +7,7 @@ import { DocTree } from "./doc-tree.tsx"
 import { DocView } from "./doc-view.tsx"
 import { NewDocDialog } from "./new-doc-dialog.tsx"
 import { docTreeQuery } from "./queries.ts"
+import { docHref } from "../../lib/entity-links.ts"
 
 interface DocsPageProps {
   /** `null` for the workspace space, otherwise the project whose docs are shown. */
@@ -23,8 +24,7 @@ interface DocsPageProps {
 export const DocsPage = ({ projectId, projectKey, docId, template, newRequest }: DocsPageProps) => {
   const { t } = useLingui()
   const tree = useQuery(docTreeQuery(projectId))
-  const hrefFor = (id: DocId) =>
-    projectKey === null ? `/docs/${id}` : `/p/${projectKey}/docs/${id}`
+  const hrefFor = (id: DocId) => docHref(id, projectKey)
   const parentId: EntityId = projectId ?? WORKSPACE_SPACE_ID
 
   return (
@@ -33,7 +33,14 @@ export const DocsPage = ({ projectId, projectKey, docId, template, newRequest }:
         <NewDocDialog parentId={parentId} hrefFor={hrefFor} requestId={newRequest} />
         {tree.isPending && <LoadingRows />}
         {tree.isError && <ErrorMessage error={tree.error} />}
-        {tree.isSuccess && <DocTree docs={tree.data} activeDocId={docId} hrefFor={hrefFor} />}
+        {tree.isSuccess && (
+          <DocTree
+            docs={tree.data}
+            activeDocId={docId}
+            hrefFor={hrefFor}
+            projectKey={projectKey ?? undefined}
+          />
+        )}
       </aside>
       <section className="min-w-0">
         {docId === null ? (

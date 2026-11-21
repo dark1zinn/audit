@@ -1,8 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
-import { toast } from "sonner"
 import type { ProjectSummary } from "@audit/domain/projects/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -29,10 +28,10 @@ import {
   TableHeader,
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
+import { useProjectActions } from "../components/actions/project-actions.ts"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { TextField } from "../components/form.tsx"
-import { callApi } from "../lib/api.ts"
-import { adminProjectsQuery, keys } from "../lib/queries.ts"
+import { adminProjectsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/projects")({
   component: AdminProjectsPage,
@@ -204,66 +203,36 @@ function ProjectActionDialog({
   readonly onClose: () => void
 }) {
   const { t } = useLingui()
-  const queryClient = useQueryClient()
   const { action, project } = pending
   const [typed, setTyped] = useState("")
+  const actions = useProjectActions({ kind: "project", project }).flat()
+  const actionId = action === "unarchive" ? "archive" : action
+  const run = actions.find((candidate) => candidate.id === actionId)?.run
 
   const copy = {
     archive: {
       title: t`Archive project ${project.key}?`,
       description: t`Archived projects are read-only until someone unarchives them.`,
       confirm: t`Archive`,
-      done: t`Project archived`,
     },
     unarchive: {
       title: t`Unarchive project ${project.key}?`,
       description: t`The project becomes editable again.`,
       confirm: t`Unarchive`,
-      done: t`Project unarchived`,
     },
     restore: {
       title: t`Restore project ${project.key}?`,
       description: t`The project and its boards and tasks become visible again.`,
       confirm: t`Restore`,
-      done: t`Project restored`,
     },
     delete: {
       title: t`Delete project ${project.key}?`,
       description: t`The project disappears from every list except this page. Type the project key to confirm.`,
       confirm: t`Delete`,
-      done: t`Project deleted`,
     },
   }[action]
 
-  const run = useMutation({
-    mutationFn: async () => {
-      const projectId = project.id
-      switch (action) {
-        case "archive":
-          await callApi((api) => api.projects.archive({ params: { projectId } }))
-          break
-        case "unarchive":
-          await callApi((api) => api.projects.unarchive({ params: { projectId } }))
-          break
-        case "restore":
-          await callApi((api) => api.projects.restore({ params: { projectId } }))
-          break
-        case "delete":
-          await callApi((api) =>
-            api.projects.delete({ params: { projectId }, payload: { confirm: project.key } }),
-          )
-          break
-      }
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: keys.adminProjects })
-      await queryClient.invalidateQueries({ queryKey: keys.projects })
-      toast.success(copy.done)
-      onClose()
-    },
-  })
-
-  const confirmDisabled = run.isPending || (action === "delete" && typed !== project.key)
+  const confirmDisabled = action === "delete" && typed !== project.key
 
   return (
     <Dialog
@@ -282,7 +251,10 @@ function ProjectActionDialog({
           className="grid gap-3"
           onSubmit={(event) => {
             event.preventDefault()
-            if (!confirmDisabled) run.mutate()
+            if (!confirmDisabled) {
+              run?.()
+              onClose()
+            }
           }}
         >
           {action === "delete" && (
@@ -295,7 +267,6 @@ function ProjectActionDialog({
               hint={<span className="font-mono">{project.key}</span>}
             />
           )}
-          {run.error !== null && <ErrorMessage error={run.error} />}
         </form>
         <DialogFooter>
           <Button

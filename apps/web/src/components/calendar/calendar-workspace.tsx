@@ -23,6 +23,7 @@ import {
 } from "../../lib/queries.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { taskNumber } from "../list/task-rows.tsx"
+import { taskHref } from "../../lib/entity-links.ts"
 import { filterOf, parseTaskSearch } from "../list/task-search.ts"
 import { CalendarBoard } from "./calendar-board.tsx"
 import { CalendarDialog, ImportDialog, type CalendarDialogTarget } from "./calendar-dialogs.tsx"
@@ -166,10 +167,7 @@ export function CalendarWorkspace({
   const openEvent = (id: string) => {
     const link = taskLinks.get(id)
     if (link !== undefined) {
-      void navigate({
-        to: "/p/$key/t/$number",
-        params: { key: link.projectKey, number: link.number },
-      })
+      void navigate({ to: taskHref(link.projectKey, link.number) })
       return
     }
     const occurrence = occurrenceById.get(id)

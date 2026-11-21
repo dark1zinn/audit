@@ -26,6 +26,7 @@ import { formValue, TextField } from "../form.tsx"
 import { ErrorMessage } from "../feedback.tsx"
 import { teamsQuery } from "../../lib/queries.ts"
 import { ConfirmDialog } from "./confirm-dialogs.tsx"
+import { useCalendarMutations } from "../actions/calendar-actions.ts"
 
 export type CalendarDialogTarget =
   | { readonly kind: "create"; readonly projectId?: ProjectId }
@@ -103,16 +104,7 @@ function CalendarForm({
     },
   })
 
-  const remove = useMutation({
-    mutationFn: () => {
-      if (calendar === null) throw new Error("No calendar to delete")
-      return callApi((api) => api.calendar.deleteCalendar({ params: { calendarId: calendar.id } }))
-    },
-    onSuccess: async () => {
-      await refresh()
-      onDone()
-    },
-  })
+  const calendars = useCalendarMutations()
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -177,7 +169,7 @@ function CalendarForm({
             <Button
               type="button"
               variant="destructive"
-              disabled={remove.isPending}
+              disabled={calendars.pending}
               onClick={() => setConfirmingDelete(true)}
             >
               <Trans>Delete calendar</Trans>
@@ -199,9 +191,11 @@ function CalendarForm({
           title={t`Delete calendar`}
           description={t`The calendar and all of its events will be removed.`}
           confirmLabel={t`Delete`}
-          pending={remove.isPending}
-          error={remove.error}
-          onConfirm={() => remove.mutate()}
+          pending={calendars.pending}
+          error={calendars.error}
+          onConfirm={() => {
+            if (calendar !== null) calendars.remove(calendar, onDone)
+          }}
           onOpenChange={setConfirmingDelete}
         />
       )}

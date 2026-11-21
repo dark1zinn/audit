@@ -1,26 +1,13 @@
 import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import {
-  Bookmark,
-  ListTodo,
-  MessageSquare,
-  MoreHorizontal,
-  Pencil,
-  Pin,
-  Trash2,
-} from "lucide-react"
+import { MessageSquare } from "lucide-react"
 import type { Message } from "@audit/domain/chat/schema"
 import type { ChannelId, MessageId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@audit/ui/components/ui/dropdown-menu.tsx"
+import { EntityActionsButton } from "../actions/entity-menu.tsx"
 import { callApi } from "../../lib/api.ts"
 import { messageChangeKeys } from "../../lib/chat.ts"
 import { ErrorMessage } from "../feedback.tsx"
@@ -172,69 +159,18 @@ export function MessageItem({
       </div>
 
       <div className="absolute right-2 top-1 hidden group-hover:block group-focus-within:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={t`Message actions`}>
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() =>
-                run.mutate(() =>
-                  callApi((api) =>
-                    message.saved
-                      ? api.chat.unsave({ params: { messageId: message.id } })
-                      : api.chat.save({ params: { messageId: message.id } }),
-                  ),
-                )
-              }
-            >
-              <Bookmark className="size-4" />
-              {message.saved ? <Trans>Remove from saved</Trans> : <Trans>Save</Trans>}
-            </DropdownMenuItem>
-            {canPin ? (
-              <DropdownMenuItem
-                onClick={() =>
-                  run.mutate(() =>
-                    message.pinned
-                      ? callApi((api) => api.chat.unpin({ params: { messageId: message.id } }))
-                      : callApi((api) => api.chat.pin({ params: { messageId: message.id } })),
-                  )
-                }
-              >
-                <Pin className="size-4" />
-                {message.pinned ? <Trans>Unpin</Trans> : <Trans>Pin</Trans>}
-              </DropdownMenuItem>
-            ) : null}
-            {onCreateTask === undefined ? null : (
-              <DropdownMenuItem onClick={() => onCreateTask(message)}>
-                <ListTodo className="size-4" />
-                <Trans>Create task</Trans>
-              </DropdownMenuItem>
-            )}
-            {isMine ? (
-              <>
-                <DropdownMenuItem onClick={() => setEditing(true)}>
-                  <Pencil className="size-4" />
-                  <Trans>Edit</Trans>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    run.mutate(() =>
-                      callApi((api) =>
-                        api.chat.deleteMessage({ params: { messageId: message.id } }),
-                      ),
-                    )
-                  }
-                >
-                  <Trash2 className="size-4" />
-                  <Trans>Delete</Trans>
-                </DropdownMenuItem>
-              </>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <EntityActionsButton
+          target={{
+            kind: "message",
+            message,
+            channelId,
+            canPin,
+            onReply: onOpenThread === undefined ? undefined : () => onOpenThread(message.id),
+            onCreateTask: onCreateTask === undefined ? undefined : () => onCreateTask(message),
+            onEdit: isMine ? () => setEditing(true) : undefined,
+          }}
+          label={t`Message actions`}
+        />
       </div>
 
       {error === null ? null : <ErrorMessage error={error} />}
