@@ -250,33 +250,35 @@ function AssistantBody() {
 
   return (
     <>
-      <SheetHeader className="flex-row items-center gap-2 border-b p-4 pe-12">
-        <SheetTitle className="mr-auto min-w-0 truncate text-base">
+      <SheetHeader className="gap-2 border-b p-4 pe-12 sm:flex-row sm:items-center">
+        <SheetTitle>
           <Trans>Assistant</Trans>
         </SheetTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t`Assistant settings`}
-          onClick={() => setSettingsOpen(true)}
-        >
-          <Settings aria-hidden="true" className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t`Delete conversation`}
-          disabled={selected === null || live !== null || remove.isPending}
-          onClick={() => {
-            if (selected !== null) remove.mutate(selected)
-          }}
-        >
-          <Trash2 aria-hidden="true" className="size-4" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => choose(null)}>
-          <Plus aria-hidden="true" className="size-4" />
-          <Trans>New</Trans>
-        </Button>
+        <div className="flex w-full items-center gap-1 sm:w-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Assistant settings`}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings aria-hidden="true" className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Delete conversation`}
+            disabled={selected === null || live !== null || remove.isPending}
+            onClick={() => {
+              if (selected !== null) remove.mutate(selected)
+            }}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </Button>
+          <Button variant="outline" size="sm" className="ms-auto" onClick={() => choose(null)}>
+            <Plus aria-hidden="true" className="size-4" />
+            <Trans>New</Trans>
+          </Button>
+        </div>
       </SheetHeader>
 
       <div className="space-y-2 border-b p-4">
