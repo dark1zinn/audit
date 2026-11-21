@@ -15,7 +15,7 @@ import type { ComponentProps, ReactNode } from "react"
 export const fieldWidth = {
   "2xs": "w-24",
   xs: "w-32",
-  sm: "w-full sm:w-64",
+  sm: "w-full sm:max-w-64",
   md: "w-full sm:max-w-sm",
   lg: "w-full sm:max-w-md",
   full: "w-full",
