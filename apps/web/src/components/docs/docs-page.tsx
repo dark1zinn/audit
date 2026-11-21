@@ -422,9 +422,15 @@ interface DocTabBarProps {
 /** Open doc tabs. Middle-click or the close button closes a tab. */
 const DocTabBar = ({ tabs, activeId, docs, onClose }: DocTabBarProps) => {
   const { t } = useLingui()
+  const listRef = useRef<HTMLUListElement>(null)
+  useEffect(() => {
+    listRef.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [activeId])
   return (
     <nav aria-label={t`Open documents`}>
-      <ul className="flex min-w-0 items-end gap-1 overflow-x-auto border-b">
+      <ul ref={listRef} className="flex min-w-0 items-end gap-1 overflow-x-auto border-b">
         {tabs.map((tab) => {
           const node = docs.find((doc) => doc.id === tab.id)
           const active = tab.id === activeId
@@ -463,7 +469,7 @@ const DocTabBar = ({ tabs, activeId, docs, onClose }: DocTabBarProps) => {
                 type="button"
                 aria-label={t`Close ${title}`}
                 onClick={() => onClose(tab.id)}
-                className="focus-visible:ring-ring me-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-100 focus-visible:ring-2 focus-visible:outline-none md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 pointer-coarse:size-11 pointer-coarse:opacity-100"
+                className={`focus-visible:ring-ring me-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground focus-visible:ring-2 focus-visible:outline-none pointer-coarse:size-11 pointer-coarse:opacity-100 ${active ? "opacity-100" : "max-md:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"}`}
               >
                 <X aria-hidden="true" className="size-3.5" />
               </button>
@@ -505,48 +511,28 @@ const DocRightPane = ({
   const canComment = canWrite || role === "commenter"
   return (
     <Tabs value={tab} onValueChange={onTabChange} className="@container min-w-0">
-      <TabsList className="w-full justify-start overflow-x-auto" aria-label={t`Document panel`}>
-        <TabsTrigger
-          value="outline"
-          aria-label={t`Outline`}
-          title={t`Outline`}
-          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
-        >
+      <TabsList className="grid w-full grid-cols-4" aria-label={t`Document panel`}>
+        <TabsTrigger value="outline" aria-label={t`Outline`} title={t`Outline`} className="min-w-0 px-2 max-md:h-11">
           <ListTree aria-hidden="true" className="size-4" />
-          <span className="hidden @[20rem]:inline">
+          <span className="hidden @[28rem]:inline">
             <Trans>Outline</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger
-          value="links"
-          aria-label={t`Links`}
-          title={t`Links`}
-          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
-        >
+        <TabsTrigger value="links" aria-label={t`Links`} title={t`Links`} className="min-w-0 px-2 max-md:h-11">
           <Link2 aria-hidden="true" className="size-4" />
-          <span className="hidden @[20rem]:inline">
+          <span className="hidden @[28rem]:inline">
             <Trans>Links</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger
-          value="comments"
-          aria-label={t`Comments`}
-          title={t`Comments`}
-          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
-        >
+        <TabsTrigger value="comments" aria-label={t`Comments`} title={t`Comments`} className="min-w-0 px-2 max-md:h-11">
           <MessageSquare aria-hidden="true" className="size-4" />
-          <span className="hidden @[20rem]:inline">
+          <span className="hidden @[28rem]:inline">
             <Trans>Comments</Trans>
           </span>
         </TabsTrigger>
-        <TabsTrigger
-          value="versions"
-          aria-label={t`Versions`}
-          title={t`Versions`}
-          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
-        >
+        <TabsTrigger value="versions" aria-label={t`Versions`} title={t`Versions`} className="min-w-0 px-2 max-md:h-11">
           <History aria-hidden="true" className="size-4" />
-          <span className="hidden @[20rem]:inline">
+          <span className="hidden @[28rem]:inline">
             <Trans>Versions</Trans>
           </span>
         </TabsTrigger>
