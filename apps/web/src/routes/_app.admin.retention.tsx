@@ -13,8 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@audit/ui/components/ui/card.tsx"
-import { Input } from "@audit/ui/components/ui/input.tsx"
-import { Label } from "@audit/ui/components/ui/label.tsx"
+import { TextField } from "../components/form.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys, workspaceQuery } from "../lib/queries.ts"
@@ -111,45 +110,36 @@ function RetentionForm({ settings }: { readonly settings: WorkspaceSettings }) {
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={onSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="trailDays">
-              <Trans>Audit log retention (days)</Trans>
-            </Label>
-            <Input
-              id="trailDays"
-              type="number"
-              min={30}
-              max={3650}
-              value={trailDays}
-              onChange={(event) => setTrailDays(event.currentTarget.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="softDeleteDays">
-              <Trans>Deleted file retention (days)</Trans>
-            </Label>
-            <Input
-              id="softDeleteDays"
-              type="number"
-              min={1}
-              max={3650}
-              value={softDeleteDays}
-              onChange={(event) => setSoftDeleteDays(event.currentTarget.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="messageDays">
-              <Trans>Message retention (days)</Trans>
-            </Label>
-            <Input
-              id="messageDays"
-              type="number"
-              min={1}
-              max={3650}
-              value={messageDays}
-              onChange={(event) => setMessageDays(event.currentTarget.value)}
-            />
-          </div>
+          <TextField
+            name="trailDays"
+            type="number"
+            width="xs"
+            min={30}
+            max={3650}
+            label={t`Audit log retention (days)`}
+            value={trailDays}
+            onChange={(event) => setTrailDays(event.currentTarget.value)}
+          />
+          <TextField
+            name="softDeleteDays"
+            type="number"
+            width="xs"
+            min={1}
+            max={3650}
+            label={t`Deleted file retention (days)`}
+            value={softDeleteDays}
+            onChange={(event) => setSoftDeleteDays(event.currentTarget.value)}
+          />
+          <TextField
+            name="messageDays"
+            type="number"
+            width="xs"
+            min={1}
+            max={3650}
+            label={t`Message retention (days)`}
+            value={messageDays}
+            onChange={(event) => setMessageDays(event.currentTarget.value)}
+          />
           {save.error !== null && <ErrorMessage error={save.error} />}
           <Button type="submit" disabled={save.isPending}>
             <Trans>Save</Trans>
