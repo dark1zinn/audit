@@ -136,7 +136,7 @@ function InvitesPage() {
                   value={role}
                   onValueChange={(value) => setRole(value as "member" | "guest")}
                 >
-                  <SelectTrigger id="role" className={fieldWidth.sm}>
+                  <SelectTrigger id="role" className={fieldWidth.md}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,7 +153,7 @@ function InvitesPage() {
                   value={String(expiresInHours)}
                   onValueChange={(value) => setExpiresInHours(Number(value))}
                 >
-                  <SelectTrigger id="expires" className={fieldWidth.sm}>
+                  <SelectTrigger id="expires" className={fieldWidth.md}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -215,19 +215,19 @@ function InvitesPage() {
         {revoke.error !== null && <ErrorMessage error={revoke.error} />}
         {invites.data !== undefined && (
           <div className="overflow-x-auto rounded-md border">
-            <Table>
-              <TableHeader>
+            <Table className="max-sm:block">
+              <TableHeader className="max-sm:hidden">
                 <TableRow>
                   <TableHead>
                     <Trans>Invite</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Status</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Uses</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Expires</Trans>
                   </TableHead>
                   <TableHead className="text-right">
@@ -237,28 +237,35 @@ function InvitesPage() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="max-sm:block">
                 {visibleInvites.map((invite: Invite) => (
-                  <TableRow key={invite.id}>
-                    <TableCell>
+                  <TableRow key={invite.id} className="max-sm:block max-sm:border-b max-sm:py-2">
+                    <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3 max-sm:pt-1">
                       <div className="font-medium">{invite.email ?? t`Anyone with the link`}</div>
                       <div className="text-xs text-muted-foreground">
                         {invite.role === "guest" ? t`Guest` : t`Member`}
                         {invite.note !== null && ` · ${invite.note}`}
                       </div>
+                      <div className="text-xs text-muted-foreground xl:hidden">
+                        {statusLabel(invite.status)} · {`${invite.useCount} / ${invite.maxUses}`} ·{" "}
+                        {invite.expiresAt.toLocaleString()}
+                      </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden xl:table-cell">
                       <Badge variant={invite.status === "active" ? "default" : "outline"}>
                         {statusLabel(invite.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{`${invite.useCount} / ${invite.maxUses}`}</TableCell>
-                    <TableCell>{invite.expiresAt.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden xl:table-cell">{`${invite.useCount} / ${invite.maxUses}`}</TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {invite.expiresAt.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right max-sm:block max-sm:px-3 max-sm:py-1">
                       {invite.status === "active" && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="max-sm:h-11"
                           disabled={revoke.isPending}
                           onClick={() => revoke.mutate(invite.id)}
                         >
@@ -272,7 +279,11 @@ function InvitesPage() {
             </Table>
             {allInvites.length > INVITE_PAGE_SIZE && (
               <div className="border-t p-2 text-center">
-                <Button variant="ghost" size="sm" onClick={() => setShowAllInvites(!showAllInvites)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAllInvites(!showAllInvites)}
+                >
                   {showAllInvites ? t`Show fewer` : t`Show all ${allInvites.length}`}
                 </Button>
               </div>
