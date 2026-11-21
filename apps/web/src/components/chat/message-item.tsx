@@ -7,7 +7,8 @@ import type { ChannelId, MessageId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
-import { EntityActionsButton } from "../actions/entity-menu.tsx"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { EntityTarget } from "../actions/types.ts"
 import { callApi } from "../../lib/api.ts"
 import { messageChangeKeys } from "../../lib/chat.ts"
 import { ErrorMessage } from "../feedback.tsx"
@@ -72,7 +73,16 @@ export function MessageItem({
           ),
     )
 
-  return (
+  const actionTarget: EntityTarget = {
+    kind: "message",
+    message,
+    channelId,
+    canPin,
+    onReply: onOpenThread === undefined ? undefined : () => onOpenThread(message.id),
+    onCreateTask: onCreateTask === undefined ? undefined : () => onCreateTask(message),
+    onEdit: isMine ? () => setEditing(true) : undefined,
+  }
+  const article = (
     <article className="group relative px-4 py-2 hover:bg-muted/40" aria-label={t`Message`}>
       <header className="flex items-baseline gap-2 text-sm">
         <span className="font-semibold">{message.author.name}</span>
@@ -158,22 +168,13 @@ export function MessageItem({
         )}
       </div>
 
-      <div className="absolute right-2 top-1 hidden group-hover:block group-focus-within:block">
-        <EntityActionsButton
-          target={{
-            kind: "message",
-            message,
-            channelId,
-            canPin,
-            onReply: onOpenThread === undefined ? undefined : () => onOpenThread(message.id),
-            onCreateTask: onCreateTask === undefined ? undefined : () => onCreateTask(message),
-            onEdit: isMine ? () => setEditing(true) : undefined,
-          }}
-          label={t`Message actions`}
-        />
+      <div className="absolute right-2 top-1 hidden group-hover:block group-focus-within:block pointer-coarse:block">
+        <EntityActionsButton target={actionTarget} label={t`Message actions`} />
       </div>
 
       {error === null ? null : <ErrorMessage error={error} />}
     </article>
   )
+  if (editing) return article
+  return <EntityContextMenu target={actionTarget}>{article}</EntityContextMenu>
 }

@@ -7,7 +7,7 @@ import { callApi } from "../lib/api.ts"
 import { chatKeys } from "../lib/chat.ts"
 import { ErrorMessage, LoadingRows } from "../components/feedback.tsx"
 
-export const Route = createFileRoute("/_app/dm/$userId")({
+export const Route = createFileRoute("/_app/_chat/dm/$userId")({
   component: DmRoute,
 })
 

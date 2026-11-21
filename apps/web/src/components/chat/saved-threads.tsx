@@ -15,7 +15,7 @@ export function ThreadsView() {
   const { t } = useLingui()
   const threads = useQuery(threadsQuery)
   return (
-    <section className="mx-auto max-w-3xl space-y-4">
+    <section className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
       <PageHeader title={t`Threads`} />
       {threads.isPending ? <LoadingRows /> : null}
       {threads.isError ? <ErrorMessage error={threads.error} /> : null}
@@ -48,7 +48,7 @@ export function SavedView() {
   const { t } = useLingui()
   const saved = useQuery(savedQuery)
   return (
-    <section className="mx-auto max-w-3xl space-y-4">
+    <section className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
       <PageHeader title={t`Saved messages`} />
       {saved.isPending ? <LoadingRows /> : null}
       {saved.isError ? <ErrorMessage error={saved.error} /> : null}
