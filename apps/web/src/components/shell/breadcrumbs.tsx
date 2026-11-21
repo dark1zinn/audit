@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { useMatches, useRouter } from "@tanstack/react-router"
@@ -57,43 +58,46 @@ export function Breadcrumbs() {
           const isMiddle = index > 0 && !isLast
           const link = crumb.to
           return (
-            <BreadcrumbItem
-              key={`${index}-${crumb.label}`}
-              className={
-                isMiddle
-                  ? "hidden min-w-0 sm:inline-flex"
-                  : isLast
-                    ? "min-w-0 flex-1 sm:flex-none"
-                    : "min-w-0 max-w-[7rem] sm:max-w-none"
-              }
-            >
+            <Fragment key={`${index}-${crumb.label}`}>
               {index === 1 && lastIndex > 1 && (
-                <span className="inline-flex items-center gap-1.5 sm:hidden">
-                  <BreadcrumbEllipsis className="size-4" />
-                  <BreadcrumbSeparator />
-                </span>
+                <>
+                  <BreadcrumbItem className="sm:hidden">
+                    <BreadcrumbEllipsis className="size-4" />
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="sm:hidden" />
+                </>
               )}
-              {isLast || link === undefined ? (
-                <BreadcrumbPage className="truncate" title={crumb.label}>
-                  {crumb.label}
-                </BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink
-                  href={link}
-                  className="inline-flex min-h-6 items-center truncate [@media(pointer:coarse)]:min-h-11"
-                  title={crumb.label}
-                  onClick={(event) => {
-                    event.preventDefault()
-                    void router.history.push(link)
-                  }}
-                >
-                  {crumb.label}
-                </BreadcrumbLink>
-              )}
+              <BreadcrumbItem
+                className={
+                  isMiddle
+                    ? "hidden min-w-0 sm:inline-flex"
+                    : isLast
+                      ? "min-w-0 flex-1 sm:flex-none"
+                      : "min-w-0 max-w-[5.5rem] sm:max-w-none"
+                }
+              >
+                {isLast || link === undefined ? (
+                  <BreadcrumbPage className="truncate" title={crumb.label}>
+                    {crumb.label}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink
+                    href={link}
+                    className="inline-flex min-h-6 items-center truncate [@media(pointer:coarse)]:min-h-11"
+                    title={crumb.label}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      void router.history.push(link)
+                    }}
+                  >
+                    {crumb.label}
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
               {!isLast && (
                 <BreadcrumbSeparator className={isMiddle ? "hidden sm:list-item" : undefined} />
               )}
-            </BreadcrumbItem>
+            </Fragment>
           )
         })}
       </BreadcrumbList>
