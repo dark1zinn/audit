@@ -6,6 +6,7 @@ import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { savedQuery, threadsQuery } from "../../lib/chat.ts"
 import { ErrorMessage, LoadingRows, PageHeader } from "../feedback.tsx"
 import { MessageBody } from "./message-body.tsx"
+import { messageHref } from "../../lib/entity-links.ts"
 
 const rowClass = "block rounded-md border p-3 hover:bg-accent"
 
@@ -26,11 +27,7 @@ export function ThreadsView() {
       <ul className="space-y-2">
         {threads.data?.map((thread: ThreadSummary) => (
           <li key={thread.root.id}>
-            <Link
-              to="/c/$channelId/t/$threadId"
-              params={{ channelId: thread.root.channelId, threadId: thread.root.id }}
-              className={rowClass}
-            >
+            <Link to={messageHref(thread.root.channelId, thread.root.id)} className={rowClass}>
               <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span>#{thread.channelName}</span>
                 {thread.unreadReplies > 0 ? (

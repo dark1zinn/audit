@@ -3,7 +3,8 @@ import { CollaborationCaret } from "@tiptap/extension-collaboration-caret"
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type * as Y from "yjs"
 import { extensions as sharedExtensions } from "@audit/editor/extensions"
-import { mentionNode, taskEmbedNode, fileAttachmentNode } from "./nodes.tsx"
+import { taskEmbedNode, fileAttachmentNode } from "./nodes.tsx"
+import { mentionNode } from "../mentions/mention-node.tsx"
 
 /** Shared schema extensions with the web's React node views; Y.UndoManager replaces undo/redo. */
 const OVERRIDDEN = new Set(["mention", "taskEmbed", "fileAttachment"])

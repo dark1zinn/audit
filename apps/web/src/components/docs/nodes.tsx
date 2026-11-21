@@ -3,48 +3,14 @@ import { Link } from "@tanstack/react-router"
 import type { NodeViewProps } from "@tiptap/react"
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react"
 import { useLingui } from "@lingui/react/macro"
-import type { EntityId, TaskId } from "@audit/domain/ids"
-import {
-  Mention as MentionNode,
-  TaskEmbed as TaskEmbedNode,
-  FileAttachment as FileNode,
-} from "@audit/editor/extensions"
+import type { TaskId } from "@audit/domain/ids"
+import { TaskEmbed as TaskEmbedNode, FileAttachment as FileNode } from "@audit/editor/extensions"
 import { taskDetailQuery } from "../../lib/queries.ts"
-import { entityRefQuery } from "./queries.ts"
+import { taskHref } from "../../lib/entity-links.ts"
 
 const stringAttr = (props: NodeViewProps, name: string): string => {
   const value: unknown = props.node.attrs[name]
   return typeof value === "string" ? value : ""
-}
-
-const MentionChip = (props: NodeViewProps) => {
-  const { t } = useLingui()
-  const id = stringAttr(props, "id") as EntityId
-  const fallback = stringAttr(props, "label")
-  const { data, isPending } = useQuery(entityRefQuery(id))
-  if (isPending) return <NodeViewWrapper as="span">@{fallback}</NodeViewWrapper>
-  if (data === null || data === undefined) {
-    return (
-      <NodeViewWrapper as="span" className="text-muted-foreground">
-        {t`@unavailable`}
-      </NodeViewWrapper>
-    )
-  }
-  if (data.restricted) {
-    return (
-      <NodeViewWrapper as="span" className="text-muted-foreground">
-        {t`@restricted`}
-      </NodeViewWrapper>
-    )
-  }
-  const label = data.title ?? data.key ?? fallback
-  const className = data.deleted ? "line-through text-muted-foreground" : "font-medium text-primary"
-  const href = data.type === "doc" ? `/docs/${data.id}` : undefined
-  return (
-    <NodeViewWrapper as="span" className={className}>
-      {href === undefined ? `@${label}` : <Link to={href}>@{label}</Link>}
-    </NodeViewWrapper>
-  )
 }
 
 const TaskEmbedView = (props: NodeViewProps) => {
@@ -66,8 +32,7 @@ const TaskEmbedView = (props: NodeViewProps) => {
   return (
     <NodeViewWrapper className="rounded-md border p-3 text-sm" contentEditable={false}>
       <Link
-        to="/p/$key/t/$number"
-        params={{ key: data.projectKey, number: data.key.slice(data.key.lastIndexOf("-") + 1) }}
+        to={taskHref(data.projectKey, data.key.slice(data.key.lastIndexOf("-") + 1))}
         className="font-medium underline"
       >
         {data.key}
@@ -97,13 +62,6 @@ const FileAttachmentView = (props: NodeViewProps) => {
     </NodeViewWrapper>
   )
 }
-
-/** The base extensions with React node views for the chip-like nodes. */
-export const mentionNode = MentionNode.extend({
-  addNodeView() {
-    return ReactNodeViewRenderer(MentionChip, { as: "span" })
-  },
-})
 
 export const taskEmbedNode = TaskEmbedNode.extend({
   addNodeView() {

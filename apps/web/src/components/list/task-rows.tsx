@@ -5,6 +5,7 @@ import { useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import type { TaskCard, TaskGroup } from "@audit/domain/tasks/schema"
 import { useTaskText } from "./task-labels.ts"
+import { taskHref } from "../../lib/entity-links.ts"
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -177,8 +178,7 @@ function TaskRow({
 
   return (
     <Link
-      to="/p/$key/t/$number"
-      params={{ key: task.projectKey, number: taskNumber(task.key) }}
+      to={taskHref(task.projectKey, taskNumber(task.key))}
       tabIndex={tabIndex}
       onFocus={onFocus}
       onKeyDown={onKeyDown}

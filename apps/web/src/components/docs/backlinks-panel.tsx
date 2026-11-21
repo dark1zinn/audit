@@ -2,6 +2,7 @@ import { Trans } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import type { EntityId } from "@audit/domain/ids"
+import { docHref } from "../../lib/entity-links.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { backlinksQuery } from "./queries.ts"
 
@@ -36,18 +37,9 @@ export const BacklinksPanel = ({ entityId, projectKey }: BacklinksPanelProps) =>
                 <li key={`${item.sourceId}-${item.kind}`} className="rounded-md border p-2 text-sm">
                   {item.sourceType !== "doc" ? (
                     <span className="font-medium">{item.sourceTitle}</span>
-                  ) : projectKey === null ? (
-                    <Link
-                      to="/docs/$docId"
-                      params={{ docId: item.sourceId }}
-                      className="font-medium text-primary underline"
-                    >
-                      {item.sourceTitle}
-                    </Link>
                   ) : (
                     <Link
-                      to="/p/$key/docs/$docId"
-                      params={{ key: projectKey, docId: item.sourceId }}
+                      to={docHref(item.sourceId, projectKey)}
                       className="font-medium text-primary underline"
                     >
                       {item.sourceTitle}

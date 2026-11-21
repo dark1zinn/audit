@@ -9,6 +9,7 @@ import { groupByItem, relativeTime, snippetOf, targetOf, type InboxGroup } from 
 import { membersQuery } from "../../lib/queries.ts"
 import { useInboxActions } from "./actions.ts"
 import { KindIcon, useKindText } from "./kind.tsx"
+import { channelHref, docHref, messageHref, taskHref } from "../../lib/entity-links.ts"
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -43,22 +44,16 @@ export function InboxList({
     if (target === null) return
     switch (target.to) {
       case "task":
-        void navigate({
-          to: "/p/$key/t/$number",
-          params: { key: target.projectKey, number: target.number },
-        })
+        void navigate({ to: taskHref(target.projectKey, target.number) })
         return
       case "doc":
-        void navigate({ to: "/docs/$docId", params: { docId: target.docId } })
+        void navigate({ to: docHref(target.docId, null) })
         return
       case "channel":
-        void navigate({ to: "/c/$channelId", params: { channelId: target.channelId } })
+        void navigate({ to: channelHref(target.channelId) })
         return
       case "thread":
-        void navigate({
-          to: "/c/$channelId/t/$threadId",
-          params: { channelId: target.channelId, threadId: target.threadId },
-        })
+        void navigate({ to: messageHref(target.channelId, target.threadId) })
         return
       case "calendar":
         void navigate({ to: "/calendar" })

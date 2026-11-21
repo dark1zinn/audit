@@ -1,5 +1,7 @@
 import { Fragment, type ReactNode } from "react"
 import type { RichDoc } from "@audit/domain/tasks/schema"
+import type { EntityId } from "@audit/domain/ids"
+import { EntityChip } from "../mentions/entity-chip.tsx"
 import { attr, childrenOf, isJsonNode, stringAttr, type JsonNode } from "@audit/editor/json"
 
 const formatSize = (bytes: number) => {
@@ -42,9 +44,12 @@ const renderInline = (nodes: ReadonlyArray<JsonNode>, keyPrefix: string): ReactN
     if (node.type === "hardBreak") return <br key={key} />
     if (node.type === "mention") {
       return (
-        <span key={key} className="rounded bg-primary/10 px-1 font-medium text-primary">
-          @{stringAttr(node, "label", stringAttr(node, "id"))}
-        </span>
+        <EntityChip
+          key={key}
+          id={stringAttr(node, "id") as EntityId}
+          type={stringAttr(node, "type")}
+          label={stringAttr(node, "label", stringAttr(node, "id"))}
+        />
       )
     }
     return <Fragment key={key}>{renderInline(childrenOf(node), key)}</Fragment>
