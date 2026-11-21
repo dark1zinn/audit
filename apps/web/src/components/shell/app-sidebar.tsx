@@ -195,6 +195,7 @@ function ProjectsNav() {
                 <SidebarMenuButton
                   asChild
                   tooltip={project.name}
+                  className="pe-8"
                   isActive={pathname.startsWith(`/p/${project.key}/`)}
                 >
                   <Link to="/p/$key/board" params={{ key: project.key }}>
