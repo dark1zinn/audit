@@ -214,10 +214,12 @@ export const EntityContextMenu = ({ target, children }: EntityContextMenuProps) 
 export interface EntityActionsButtonProps {
   readonly target: EntityTarget
   readonly label: string
+  /** Button size; compact rows (sidebar) use `icon-sm` so the trigger fits inside the row. */
+  readonly size?: "icon" | "icon-sm"
 }
 
 /** Visible "…" menu with the same actions as the context menu, for touch and keyboard users. */
-export const EntityActionsButton = ({ target, label }: EntityActionsButtonProps) => {
+export const EntityActionsButton = ({ target, label, size = "icon" }: EntityActionsButtonProps) => {
   const [open, setOpen] = useState(false)
   const groups = useEntityActions(target, open)
   const confirm = useConfirmRequest()
@@ -230,7 +232,7 @@ export const EntityActionsButton = ({ target, label }: EntityActionsButtonProps)
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label={label}>
+          <Button variant="ghost" size={size} aria-label={label}>
             <MoreHorizontal aria-hidden />
           </Button>
         </DropdownMenuTrigger>

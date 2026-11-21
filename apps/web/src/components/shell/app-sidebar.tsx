@@ -195,7 +195,7 @@ function ProjectsNav() {
                 <SidebarMenuButton
                   asChild
                   tooltip={project.name}
-                  className="pe-8"
+                  className="pe-8 max-md:pe-12"
                   isActive={pathname.startsWith(`/p/${project.key}/`)}
                 >
                   <Link to="/p/$key/board" params={{ key: project.key }}>
@@ -206,10 +206,11 @@ function ProjectsNav() {
                   </Link>
                 </SidebarMenuButton>
               </EntityContextMenu>
-              <div className="absolute end-1 top-1.5 opacity-0 transition-opacity group-hover/menu-item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100 group-data-[collapsible=icon]:hidden">
+              <div className="absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-hover/menu-item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100 group-data-[collapsible=icon]:hidden">
                 <EntityActionsButton
                   target={{ kind: "project", project }}
                   label={t`Actions for ${project.name}`}
+                  size="icon-sm"
                 />
               </div>
             </SidebarMenuItem>
