@@ -5,7 +5,7 @@ import { CalendarCheck, Copy, ExternalLink, Trash2 } from "lucide-react"
 import type { EventOccurrence, EventScope, ResponseStatus } from "@audit/domain/calendar/schema"
 import { callApi } from "../../lib/api.ts"
 import { keys } from "../../lib/queries.ts"
-import type { ActionGroup, EntityTarget } from "./types.ts"
+import type { ActionGroup, EntityAction, EntityTarget } from "./types.ts"
 import { absoluteHref, useCopyText, useRunAction } from "./shared.ts"
 
 type EventTarget = Extract<EntityTarget, { kind: "event" }>
@@ -60,7 +60,54 @@ export const useEventActions = (target: EventTarget | null): ReadonlyArray<Actio
   const copy = useCopyText()
   const events = useEventMutations()
   if (target === null) return []
-  const href = eventHref(target.event.eventId)
+  const { event } = target
+  const href = eventHref(event.eventId)
+  const confirm = {
+    title: t`Delete “${event.title}”?`,
+    description: t`The event is removed from the calendar for everyone.`,
+    confirmLabel: t`Delete`,
+  }
+
+  // One-off events delete directly; recurring ones ask which occurrences the delete covers.
+  const deleteItem: EntityAction =
+    event.rrule === null
+      ? {
+          id: "delete",
+          label: t`Delete`,
+          icon: Trash2,
+          variant: "destructive",
+          confirm,
+          run: () => events.remove(event, "all"),
+        }
+      : {
+          id: "delete",
+          label: t`Delete`,
+          icon: Trash2,
+          variant: "destructive",
+          children: [
+            {
+              id: "delete-this",
+              label: t`This event`,
+              variant: "destructive",
+              confirm,
+              run: () => events.remove(event, "this"),
+            },
+            {
+              id: "delete-following",
+              label: t`This and following events`,
+              variant: "destructive",
+              confirm,
+              run: () => events.remove(event, "following"),
+            },
+            {
+              id: "delete-all",
+              label: t`All events in the series`,
+              variant: "destructive",
+              confirm,
+              run: () => events.remove(event, "all"),
+            },
+          ],
+        }
 
   return [
     [
@@ -73,17 +120,17 @@ export const useEventActions = (target: EventTarget | null): ReadonlyArray<Actio
           {
             id: "rsvp-accepted",
             label: t`Going`,
-            run: () => events.rsvp(target.event, "accepted"),
+            run: () => events.rsvp(event, "accepted"),
           },
           {
             id: "rsvp-tentative",
             label: t`Maybe`,
-            run: () => events.rsvp(target.event, "tentative"),
+            run: () => events.rsvp(event, "tentative"),
           },
           {
             id: "rsvp-declined",
             label: t`Not going`,
-            run: () => events.rsvp(target.event, "declined"),
+            run: () => events.rsvp(event, "declined"),
           },
         ],
       },
@@ -96,19 +143,6 @@ export const useEventActions = (target: EventTarget | null): ReadonlyArray<Actio
         run: () => copy(absoluteHref(href), t`Link copied`),
       },
     ],
-    [
-      {
-        id: "delete",
-        label: t`Delete`,
-        icon: Trash2,
-        variant: "destructive",
-        confirm: {
-          title: t`Delete “${target.event.title}”?`,
-          description: t`The event is removed from the calendar for everyone.`,
-          confirmLabel: t`Delete`,
-        },
-        run: () => events.remove(target.event, "all"),
-      },
-    ],
+    [deleteItem],
   ]
 }
