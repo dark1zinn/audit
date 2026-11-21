@@ -63,8 +63,8 @@ export function BoardColumns({ board }: { readonly board: Board }) {
       <h3 className="text-sm font-medium">
         <Trans>Columns</Trans>
       </h3>
-      <Table>
-        <TableHeader>
+      <Table className="max-sm:block">
+        <TableHeader className="max-sm:hidden">
           <TableRow>
             <TableHead>
               <Trans>Column</Trans>
@@ -85,7 +85,7 @@ export function BoardColumns({ board }: { readonly board: Board }) {
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="max-sm:block">
           {board.columns.map((column, index) => (
             <ColumnRow
               key={`${column.id}:${column.name}:${column.category}:${column.wipLimit}:${column.taskCount}`}
@@ -202,18 +202,22 @@ function ColumnRow({
 
   return (
     <>
-      <TableRow>
-        <TableCell>
+      <TableRow className="max-sm:block max-sm:border-b max-sm:py-2">
+        <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3 max-sm:pt-1">
           <Input
+            className="max-sm:h-11"
             aria-label={t`Column name`}
             maxLength={120}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
+          <span className="block text-xs text-muted-foreground sm:hidden">
+            {t`${column.taskCount} tasks`}
+          </span>
         </TableCell>
-        <TableCell>
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:py-1">
           <Select value={category} onValueChange={(value) => setCategory(value as ColumnCategory)}>
-            <SelectTrigger aria-label={t`Category`} className={fieldWidth.xs}>
+            <SelectTrigger aria-label={t`Category`} className={`${fieldWidth.xs} max-sm:h-11`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -225,24 +229,25 @@ function ColumnRow({
             </SelectContent>
           </Select>
         </TableCell>
-        <TableCell>
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:py-1">
           <Input
             aria-label={t`WIP limit`}
             type="number"
             min={1}
             max={999}
-            className={fieldWidth["2xs"]}
+            className={`${fieldWidth["2xs"]} max-sm:h-11`}
             placeholder={t`None`}
             value={wipLimit}
             onChange={(event) => setWipLimit(event.target.value)}
           />
         </TableCell>
-        <TableCell>{column.taskCount}</TableCell>
-        <TableCell>
+        <TableCell className="hidden sm:table-cell">{column.taskCount}</TableCell>
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:py-1">
           <div className="flex flex-wrap justify-end gap-2">
             <Button
               variant="ghost"
               size="sm"
+              className="max-sm:h-11"
               disabled={busy || index === 0}
               aria-label={t`Move ${column.name} up`}
               onClick={() => move.mutate(columns[index - 2]?.id ?? null)}
@@ -252,6 +257,7 @@ function ColumnRow({
             <Button
               variant="ghost"
               size="sm"
+              className="max-sm:h-11"
               disabled={busy || index === columns.length - 1}
               aria-label={t`Move ${column.name} down`}
               onClick={() => {
@@ -261,7 +267,13 @@ function ColumnRow({
             >
               <Trans>Down</Trans>
             </Button>
-            <Button variant="outline" size="sm" disabled={busy} onClick={() => update.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="max-sm:h-11"
+              disabled={busy}
+              onClick={() => update.mutate()}
+            >
               <Trans>Save</Trans>
             </Button>
             {column.taskCount > 0 && (
@@ -269,7 +281,10 @@ function ColumnRow({
                 value={moveTasksTo ?? ""}
                 onValueChange={(value) => setMoveTasksTo(value as ColumnId)}
               >
-                <SelectTrigger aria-label={t`Move tasks to`} className={fieldWidth.xs}>
+                <SelectTrigger
+                  aria-label={t`Move tasks to`}
+                  className={`${fieldWidth.xs} max-sm:h-11`}
+                >
                   <SelectValue placeholder={t`Move tasks to`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -284,6 +299,7 @@ function ColumnRow({
             <Button
               variant="destructive"
               size="sm"
+              className="max-sm:h-11"
               disabled={busy || cannotDelete}
               onClick={() => remove.mutate()}
             >

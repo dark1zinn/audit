@@ -69,8 +69,8 @@ export function LabelsSection({ projectId }: { readonly projectId: ProjectId }) 
         {labels.isPending && <LoadingRows />}
         {labels.isError && <ErrorMessage error={labels.error} />}
         {labels.data !== undefined && (
-          <Table>
-            <TableHeader>
+          <Table className="max-sm:block">
+            <TableHeader className="max-sm:hidden">
               <TableRow>
                 <TableHead>
                   <Trans>Name</Trans>
@@ -85,7 +85,7 @@ export function LabelsSection({ projectId }: { readonly projectId: ProjectId }) 
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="max-sm:block">
               {labels.data.map((label) => (
                 <LabelRow key={`${label.id}:${label.name}:${label.color}`} label={label} />
               ))}
@@ -154,30 +154,43 @@ function LabelRow({ label }: { readonly label: ProjectLabel }) {
 
   return (
     <>
-      <TableRow>
-        <TableCell>
+      <TableRow className="max-sm:block max-sm:border-b max-sm:py-2">
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:pt-1">
           <Input
+            className="max-sm:h-11"
             aria-label={t`Label name`}
             maxLength={60}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
         </TableCell>
-        <TableCell>
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:py-1">
           <Input
             type="color"
             aria-label={t`Label color`}
-            className="h-9 w-16 cursor-pointer p-1"
+            className="h-9 w-16 cursor-pointer p-1 max-sm:h-11"
             value={color}
             onChange={(event) => setColor(event.target.value)}
           />
         </TableCell>
-        <TableCell>
+        <TableCell className="max-sm:block max-sm:px-3 max-sm:py-1">
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" disabled={busy} onClick={() => update.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="max-sm:h-11"
+              disabled={busy}
+              onClick={() => update.mutate()}
+            >
               <Trans>Save</Trans>
             </Button>
-            <Button variant="destructive" size="sm" disabled={busy} onClick={() => remove.mutate()}>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="max-sm:h-11"
+              disabled={busy}
+              onClick={() => remove.mutate()}
+            >
               <Trans>Delete</Trans>
             </Button>
           </div>
