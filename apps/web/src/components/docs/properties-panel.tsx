@@ -172,10 +172,10 @@ export const PropertiesPanel = ({ doc, projectKey, canWrite, isManager }: Proper
                   min={1}
                   max={3650}
                   value={days}
-                  className="w-28 min-w-0"
+                  className="w-24 min-w-0"
                   onChange={(event) => setDays(event.target.value)}
                 />
-                <Button type="button" size="sm" disabled={save.isPending} onClick={saveReview}>
+                <Button type="button" disabled={save.isPending} onClick={saveReview}>
                   <Trans>Save</Trans>
                 </Button>
               </div>

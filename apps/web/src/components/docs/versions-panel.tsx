@@ -74,6 +74,7 @@ export const VersionsPanel = ({ docId, canWrite }: VersionsPanelProps) => {
     <div className="space-y-4 pt-3">
       {error !== null && <ErrorMessage error={error} />}
       {canWrite && (
+        <>
         <form
           className="flex gap-2"
           onSubmit={(event) => {
@@ -92,8 +93,20 @@ export const VersionsPanel = ({ docId, canWrite }: VersionsPanelProps) => {
             <Trans>Save version</Trans>
           </Button>
         </form>
+        {label.trim() === "" && (
+          <p className="text-xs text-muted-foreground">
+            <Trans>Enter a name to enable Save version.</Trans>
+          </p>
+        )}
+        </>
       )}
-      {list.length === 0 && <EmptyState size="sm" icon={History} title={t`No versions yet.`} />}
+      {list.length === 0 && (
+        <EmptyState
+          icon={History}
+          title={t`No versions yet`}
+          description={t`Save a named version to keep a snapshot of this doc.`}
+        />
+      )}
       <ul className="space-y-2">
         {list.map((version) => (
           <li key={version.id}>
