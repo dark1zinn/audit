@@ -32,7 +32,7 @@ import {
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
-import { formValue, TextField } from "../components/form.tsx"
+import { fieldWidth, formValue, TextField } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { invitesQuery, keys } from "../lib/queries.ts"
 
@@ -127,7 +127,7 @@ function InvitesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form className="grid gap-4 sm:grid-cols-2" onSubmit={onCreate}>
-              <TextField name="email" type="email" label={t`Email (optional)`} />
+              <TextField name="email" type="email" width="md" label={t`Email (optional)`} />
               <div className="space-y-2">
                 <Label htmlFor="role">
                   <Trans>Role</Trans>
@@ -136,7 +136,7 @@ function InvitesPage() {
                   value={role}
                   onValueChange={(value) => setRole(value as "member" | "guest")}
                 >
-                  <SelectTrigger id="role" className="w-full">
+                  <SelectTrigger id="role" className={fieldWidth.sm}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,7 +153,7 @@ function InvitesPage() {
                   value={String(expiresInHours)}
                   onValueChange={(value) => setExpiresInHours(Number(value))}
                 >
-                  <SelectTrigger id="expires" className="w-full">
+                  <SelectTrigger id="expires" className={fieldWidth.sm}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,13 +174,14 @@ function InvitesPage() {
               <TextField
                 name="maxUses"
                 type="number"
+                width="xs"
                 label={t`Maximum uses`}
                 defaultValue={1}
                 min={1}
                 max={1000}
               />
               <div className="sm:col-span-2">
-                <TextField name="note" label={t`Note (optional)`} maxLength={500} />
+                <TextField name="note" width="lg" label={t`Note (optional)`} maxLength={500} />
               </div>
               {create.error !== null && (
                 <div className="sm:col-span-2">
