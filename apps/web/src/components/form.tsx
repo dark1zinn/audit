@@ -40,7 +40,14 @@ export function TextField({
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
-      <Input id={name} name={name} className={className === undefined ? fieldWidth[width] : `${fieldWidth[width]} ${className}`} {...props} />
+      <Input
+        id={name}
+        name={name}
+        className={
+          className === undefined ? fieldWidth[width] : `${fieldWidth[width]} ${className}`
+        }
+        {...props}
+      />
       {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
