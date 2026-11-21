@@ -76,7 +76,7 @@ export const CommentHighlight = Extension.create<{
               if (from === null || to === null || from >= to) continue
               decorations.push(
                 Decoration.inline(from, to, {
-                  class: "bg-amber-200/60 rounded-sm",
+                  class: "bg-amber-200/60 dark:bg-amber-500/25 rounded-sm",
                   "data-comment-id": anchor.id,
                 }),
               )

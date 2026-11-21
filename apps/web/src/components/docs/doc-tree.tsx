@@ -1,5 +1,11 @@
 import { useState } from "react"
 import { Link } from "@tanstack/react-router"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { Input } from "@audit/ui/components/ui/input.tsx"
+import { callApi } from "../../lib/api.ts"
+import { openTab } from "./doc-tabs.ts"
+import { invalidateDoc } from "./queries.ts"
 import { useLingui } from "@lingui/react/macro"
 import { DndContext, useDraggable, useDroppable, type DragEndEvent } from "@dnd-kit/core"
 import { ChevronDown, ChevronRight } from "lucide-react"
@@ -17,10 +23,12 @@ interface DocTreeProps {
   readonly projectKey?: string | undefined
   /** Route for a doc, so the tree works in both the space and project areas. */
   readonly hrefFor: (docId: DocId) => string
+  /** Opens a doc beside the current one (Shift+Enter, or the row's action menu). */
+  readonly onOpenSide?: ((docId: DocId) => void) | undefined
 }
 
 /** Lists docs as an indented tree. Drag to reorder or nest; each row has a menu with the same actions. */
-export const DocTree = ({ docs, activeDocId, projectKey, hrefFor }: DocTreeProps) => {
+export const DocTree = ({ docs, activeDocId, projectKey, hrefFor, onOpenSide }: DocTreeProps) => {
   const { t } = useLingui()
   const move = useMoveDoc()
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set())
@@ -69,6 +77,9 @@ export const DocTree = ({ docs, activeDocId, projectKey, hrefFor }: DocTreeProps
               active={node.doc.id === activeDocId}
               href={hrefFor(node.doc.id as DocId)}
               projectKey={projectKey}
+              onOpenSide={
+                onOpenSide === undefined ? undefined : () => onOpenSide(node.doc.id as DocId)
+              }
               onToggle={() =>
                 setCollapsed((current) => {
                   const next = new Set(current)
@@ -92,15 +103,55 @@ interface TreeRowProps {
   readonly href: string
   readonly projectKey: string | undefined
   readonly onToggle: () => void
+  readonly onOpenSide: (() => void) | undefined
 }
 
-const TreeRow = ({ node, expanded, active, href, projectKey, onToggle }: TreeRowProps) => {
+const TreeRow = ({
+  node,
+  expanded,
+  active,
+  href,
+  projectKey,
+  onToggle,
+  onOpenSide,
+}: TreeRowProps) => {
   const { t } = useLingui()
+  const queryClient = useQueryClient()
   const { doc } = node
+  const docId = doc.id as DocId
+  const [renaming, setRenaming] = useState(false)
+  const [title, setTitle] = useState(doc.title)
   const drag = useDraggable({ id: doc.id })
   const drop = useDroppable({ id: doc.id })
   const hasChildren = node.children.length > 0
-  const target: EntityTarget = { kind: "doc", doc, projectKey }
+  const rename = useMutation({
+    mutationFn: (next: string) =>
+      callApi((api) =>
+        api.docs.rename({ params: { docId }, payload: { title: next, version: doc.version } }),
+      ),
+    onSuccess: () => {
+      setRenaming(false)
+      void invalidateDoc(queryClient, docId)
+    },
+    onError: () => toast.error(t`Could not rename the doc`),
+  })
+  const startRename = () => {
+    setTitle(doc.title)
+    setRenaming(true)
+  }
+  const commitRename = () => {
+    const next = title.trim()
+    if (next === "" || next === doc.title) return setRenaming(false)
+    rename.mutate(next)
+  }
+  const target: EntityTarget = {
+    kind: "doc",
+    doc,
+    projectKey,
+    onRename: startRename,
+    onOpenSide,
+    onOpenTab: () => openTab({ id: docId, projectKey: projectKey ?? null }),
+  }
   return (
     <li
       role="treeitem"
@@ -137,17 +188,48 @@ const TreeRow = ({ node, expanded, active, href, projectKey, onToggle }: TreeRow
           ) : (
             <span className="inline-block w-4" aria-hidden="true" />
           )}
-          <Link
-            to={href}
-            className="focus-visible:ring-ring min-w-0 flex-1 truncate rounded px-1 py-1 text-sm focus-visible:ring-2 focus-visible:outline-none"
-            {...drag.listeners}
-            {...drag.attributes}
-            aria-roledescription={t`draggable document`}
-          >
-            {doc.icon !== null && <span aria-hidden="true">{doc.icon} </span>}
-            {doc.title || t`Untitled`}
-          </Link>
-          <EntityActionsButton target={target} label={t`Move ${doc.title || t`Untitled`}`} />
+          {renaming ? (
+            <Input
+              ref={(element) => element?.focus()}
+              aria-label={t`Rename document`}
+              value={title}
+              maxLength={200}
+              disabled={rename.isPending}
+              className="h-7 min-w-0 flex-1 text-sm"
+              onChange={(event) => setTitle(event.target.value)}
+              onBlur={() => setRenaming(false)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault()
+                  commitRename()
+                } else if (event.key === "Escape") {
+                  event.preventDefault()
+                  setRenaming(false)
+                }
+              }}
+            />
+          ) : (
+            <Link
+              to={href}
+              className="focus-visible:ring-ring min-w-0 flex-1 truncate rounded px-1 py-1 text-sm focus-visible:ring-2 focus-visible:outline-none"
+              {...drag.listeners}
+              {...drag.attributes}
+              aria-roledescription={t`draggable document`}
+              onKeyDown={(event) => {
+                if (event.key === "F2") {
+                  event.preventDefault()
+                  startRename()
+                } else if (event.key === "Enter" && event.shiftKey && onOpenSide !== undefined) {
+                  event.preventDefault()
+                  onOpenSide()
+                }
+              }}
+            >
+              {doc.icon !== null && <span aria-hidden="true">{doc.icon} </span>}
+              {doc.title || t`Untitled`}
+            </Link>
+          )}
+          <EntityActionsButton target={target} label={t`Actions for ${doc.title || t`Untitled`}`} />
         </div>
       </EntityContextMenu>
     </li>
