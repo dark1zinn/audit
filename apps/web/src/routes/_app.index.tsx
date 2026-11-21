@@ -123,7 +123,7 @@ function InboxSection() {
           {unread.map((notification) => (
             <li key={notification.id}>
               <LinkRow to="/inbox" target={{ kind: "notification", notification }}>
-                <Item size="sm">
+                <Item size="sm" className="px-0">
                   <ItemContent>
                     <ItemTitle>{kindText(notification.kind)}</ItemTitle>
                     <ItemDescription>{notification.createdAt.toLocaleDateString()}</ItemDescription>
@@ -157,7 +157,7 @@ function MyTasksSection() {
                 to={taskHref(task.projectKey, taskNumber(task))}
                 target={{ kind: "task", task }}
               >
-                <Item size="sm">
+                <Item size="sm" className="px-0">
                   <ItemContent>
                     <ItemTitle>{task.title}</ItemTitle>
                     <ItemDescription>{task.key}</ItemDescription>
@@ -195,7 +195,7 @@ function RecentDocsSection() {
           {docs.map((doc) => (
             <li key={doc.id}>
               <LinkRow to={docHref(doc.id, null)} target={{ kind: "doc", doc }}>
-                <Item size="sm">
+                <Item size="sm" className="px-0">
                   <ItemContent>
                     <ItemTitle>{doc.title}</ItemTitle>
                     <ItemDescription>
@@ -242,7 +242,7 @@ function UpcomingSection() {
           {upcoming.map((event: EventOccurrence) => (
             <li key={`${event.eventId}-${event.occurrenceStart.getTime()}`}>
               <LinkRow to={`/calendar?event=${event.eventId}`} target={{ kind: "event", event }}>
-                <Item size="sm">
+                <Item size="sm" className="px-0">
                   <ItemContent>
                     <ItemTitle>{event.title}</ItemTitle>
                     <ItemDescription>{format.format(event.startsAt)}</ItemDescription>
