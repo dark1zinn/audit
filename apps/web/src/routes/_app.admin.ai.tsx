@@ -267,9 +267,9 @@ function SettingsForm({
             <legend className="text-sm font-medium">
               <Trans>Allowed roles</Trans>
             </legend>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-4 max-md:gap-y-0">
               {ROLES.map((role) => (
-                <div key={role} className="flex items-center gap-2">
+                <div key={role} className="flex items-center gap-2 max-md:min-h-11">
                   <Checkbox
                     id={`role-${role}`}
                     checked={draft.allowedRoles.includes(role)}
@@ -282,7 +282,10 @@ function SettingsForm({
                       }))
                     }
                   />
-                  <Label htmlFor={`role-${role}`} className="font-normal">
+                  <Label
+                    htmlFor={`role-${role}`}
+                    className="font-normal max-md:flex-1 max-md:self-stretch"
+                  >
                     {labels.role[role]}
                   </Label>
                 </div>
