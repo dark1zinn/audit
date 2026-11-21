@@ -22,7 +22,7 @@ export function AppHeader() {
       <Button
         variant="outline"
         size="sm"
-        className="size-11 shrink-0 md:size-auto md:w-72 md:justify-between md:px-2.5"
+        className="size-11 shrink-0 md:h-7 md:w-72 md:justify-start md:gap-2 md:px-2.5"
         aria-label={`${t`Search or jump to…`} ${shortcut}`}
         onClick={() => openCommandPalette()}
       >
@@ -30,7 +30,7 @@ export function AppHeader() {
         <span className="hidden min-w-0 truncate text-muted-foreground md:inline">
           {t`Search or jump to…`}
         </span>
-        <Kbd className="hidden md:inline-flex" aria-hidden="true">
+        <Kbd className="hidden ms-auto md:inline-flex" aria-hidden="true">
           {shortcut}
         </Kbd>
       </Button>
