@@ -13,6 +13,9 @@ import {
   Command,
 } from "@audit/ui/components/ui/command.tsx"
 import { useTheme, type ThemeMode } from "@audit/ui/theme.tsx"
+import { useSidebar } from "@audit/ui/components/ui/sidebar.tsx"
+import { isWorkspaceAdmin } from "@audit/domain/roles"
+import { modKey } from "../../lib/platform.ts"
 import { useMe } from "../use-me.ts"
 import { LOCALE_NAMES, LOCALES, useChangeLocale } from "../../lib/locale.ts"
 import { projectsQuery } from "../../lib/queries.ts"
@@ -76,6 +79,19 @@ export function CommandPalette() {
   }
   const emptyQuery = query.trim() === ""
 
+  const admin = isWorkspaceAdmin(me.role)
+  const { toggleSidebar } = useSidebar()
+  const navItems: ReadonlyArray<{ to: string; label: string; admin?: boolean }> = [
+    { to: "/", label: t`Home` },
+    { to: "/inbox", label: t`Inbox` },
+    { to: "/my-tasks", label: t`My tasks` },
+    { to: "/chat", label: t`Chat` },
+    { to: "/docs", label: t`Docs` },
+    { to: "/calendar", label: t`Calendar` },
+    { to: "/projects", label: t`Projects` },
+    { to: "/settings/profile", label: t`Settings` },
+    { to: "/admin", label: t`Admin console`, admin: true },
+  ]
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange} title={t`Command palette`}>
       <Command shouldFilter={false}>
@@ -96,6 +112,19 @@ export function CommandPalette() {
                 <span className="truncate">{hit.title}</span>
               </CommandItem>
             ))}
+          </CommandGroup>
+          <CommandGroup heading={t`Navigate`}>
+            {navItems
+              .filter((item) => item.admin !== true || admin)
+              .map((item) => (
+                <CommandItem
+                  key={item.to}
+                  value={`nav-${item.to}`}
+                  onSelect={() => choose(() => void navigate({ to: item.to }))}
+                >
+                  {item.label}
+                </CommandItem>
+              ))}
           </CommandGroup>
           <CommandGroup heading={t`Actions`}>
             <CommandItem
@@ -129,6 +158,14 @@ export function CommandPalette() {
               {t`New event`}
             </CommandItem>
             <CommandItem
+              value="action-new-project"
+              onSelect={() =>
+                choose(() => void navigate({ to: "/projects", search: { new: "1" } }))
+              }
+            >
+              {t`New project`}
+            </CommandItem>
+            <CommandItem
               value="action-my-tasks"
               onSelect={() => choose(() => void navigate({ to: "/my-tasks" }))}
             >
@@ -139,6 +176,13 @@ export function CommandPalette() {
               onSelect={() => choose(() => void navigate({ to: "/inbox" }))}
             >
               {t`Inbox`}
+            </CommandItem>
+            <CommandItem
+              value="action-toggle-sidebar"
+              onSelect={() => choose(() => toggleSidebar())}
+            >
+              {t`Toggle sidebar`}
+              <CommandShortcut>{modKey()}+\</CommandShortcut>
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading={t`Switch theme`}>

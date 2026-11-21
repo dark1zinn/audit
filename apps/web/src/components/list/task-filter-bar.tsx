@@ -77,7 +77,7 @@ export function TaskFilterBar({
         type="search"
         aria-label={t`Search tasks`}
         placeholder={t`Search tasks`}
-        className="w-56"
+        className="min-w-56 max-w-full"
         value={draft}
         onChange={(event) => setDraft(event.currentTarget.value)}
       />

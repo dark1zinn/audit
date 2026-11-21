@@ -1,12 +1,13 @@
 import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { MessageSquare } from "lucide-react"
 import type { DocComment } from "@audit/domain/docs/schema"
 import type { CommentId, DocId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Textarea } from "@audit/ui/components/ui/textarea.tsx"
 import { callApi } from "../../lib/api.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { commentsQuery } from "./queries.ts"
 
 /** A selection the user wants to comment on, encoded as Yjs anchors plus the quoted text. */
@@ -147,9 +148,7 @@ export const CommentsPanel = ({
         </form>
       )}
       {topLevel.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          <Trans>No comments yet.</Trans>
-        </p>
+        <EmptyState size="sm" icon={MessageSquare} title={t`No comments yet.`} />
       )}
       <ul className="space-y-3">
         {topLevel.map((comment) => {

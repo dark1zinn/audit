@@ -140,7 +140,7 @@ const DocPaneBody = ({
   return (
     <div className="space-y-4">
       <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 items-start gap-2">
           {doc.icon !== null && doc.icon !== undefined && (
             <span aria-hidden="true" className="text-2xl">
               {doc.icon}
@@ -152,7 +152,7 @@ const DocPaneBody = ({
               aria-label={t`Document title`}
               value={title}
               maxLength={200}
-              className="h-auto min-w-0 flex-1 basis-48 border-none px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0 md:text-2xl"
+              className="h-auto min-w-0 flex-1 border-none px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0 md:text-2xl"
               onChange={(event) => setTitle(event.target.value)}
               onBlur={() => {
                 const next = title.trim()
@@ -168,98 +168,98 @@ const DocPaneBody = ({
               }}
             />
           ) : (
-            <h1 className="min-w-0 flex-1 truncate text-xl font-semibold tracking-tight md:text-2xl">
+            <h1 className="line-clamp-2 min-w-0 flex-1 break-words text-xl font-semibold tracking-tight md:text-2xl">
               {doc.title}
             </h1>
           )}
-          <div className="ms-auto flex flex-wrap items-center gap-1 print:hidden">
-            {canWrite && (
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                size="sm"
-                value={editing ? "edit" : "read"}
-                aria-label={t`Editing mode`}
-                onValueChange={(value) => {
-                  if (value !== "") onReadingChange(value === "read")
-                }}
-              >
-                <ToggleGroupItem value="edit" aria-label={t`Edit`}>
-                  <Pencil aria-hidden="true" />
-                  <span>
-                    <Trans>Edit</Trans>
-                  </span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="read" aria-label={t`Read`}>
-                  <BookOpen aria-hidden="true" />
-                  <span>
-                    <Trans>Read</Trans>
-                  </span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-            )}
-            {primary && onToggleFocus !== undefined && (
+        </div>
+        <div className="flex flex-wrap items-center gap-1 print:hidden">
+          {canWrite && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={editing ? "edit" : "read"}
+              aria-label={t`Editing mode`}
+              onValueChange={(value) => {
+                if (value !== "") onReadingChange(value === "read")
+              }}
+            >
+              <ToggleGroupItem value="edit" aria-label={t`Edit`}>
+                <Pencil aria-hidden="true" />
+                <span>
+                  <Trans>Edit</Trans>
+                </span>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="read" aria-label={t`Read`}>
+                <BookOpen aria-hidden="true" />
+                <span>
+                  <Trans>Read</Trans>
+                </span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
+          {primary && onToggleFocus !== undefined && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={focused === true ? t`Exit focus mode` : t`Focus mode`}
+              title={focused === true ? t`Exit focus mode` : t`Focus mode`}
+              onClick={onToggleFocus}
+            >
+              {focused === true ? (
+                <Minimize2 aria-hidden="true" />
+              ) : (
+                <Maximize2 aria-hidden="true" />
+              )}
+            </Button>
+          )}
+          {onSplit !== undefined && (
+            <>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={focused === true ? t`Exit focus mode` : t`Focus mode`}
-                title={focused === true ? t`Exit focus mode` : t`Focus mode`}
-                onClick={onToggleFocus}
+                aria-label={t`Swap panes`}
+                title={t`Swap panes`}
+                onClick={onSplit.onSwap}
               >
-                {focused === true ? (
-                  <Minimize2 aria-hidden="true" />
-                ) : (
-                  <Maximize2 aria-hidden="true" />
-                )}
+                <ArrowLeftRight aria-hidden="true" />
               </Button>
-            )}
-            {onSplit !== undefined && (
-              <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t`Swap panes`}
-                  title={t`Swap panes`}
-                  onClick={onSplit.onSwap}
-                >
-                  <ArrowLeftRight aria-hidden="true" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t`Close split`}
-                  title={t`Close split`}
-                  onClick={onSplit.onClose}
-                >
-                  <X aria-hidden="true" />
-                </Button>
-              </>
-            )}
-            <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
-            <EntityActionsButton
-              label={t`Actions for ${doc.title}`}
-              target={{
-                kind: "doc",
-                doc,
-                projectKey: projectKey ?? undefined,
-                onRename: () => titleRef.current?.focus(),
-                onOpenTab: () => openTab({ id: docId, projectKey }),
-                onOpenSide,
-                onNewSubDoc,
-                onOpenProperties: () =>
-                  document.getElementById("doc-properties")?.scrollIntoView({ block: "start" }),
-              }}
-            />
-          </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={t`Close split`}
+                title={t`Close split`}
+                onClick={onSplit.onClose}
+              >
+                <X aria-hidden="true" />
+              </Button>
+            </>
+          )}
+          <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
+          <EntityActionsButton
+            label={t`Actions for ${doc.title}`}
+            target={{
+              kind: "doc",
+              doc,
+              projectKey: projectKey ?? undefined,
+              onRename: () => titleRef.current?.focus(),
+              onOpenTab: () => openTab({ id: docId, projectKey }),
+              onOpenSide,
+              onNewSubDoc,
+              onOpenProperties: () =>
+                document.getElementById("doc-properties")?.scrollIntoView({ block: "start" }),
+            }}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
-          <a href={`/api/docs/${docId}/export/md`} download className="text-primary underline">
+          <a href={`/api/docs/${docId}/export/md`} download className="text-link underline">
             <Trans>Export Markdown</Trans>
           </a>
-          <a href={`/api/docs/${docId}/export/html`} download className="text-primary underline">
+          <a href={`/api/docs/${docId}/export/html`} download className="text-link underline">
             <Trans>Export HTML</Trans>
           </a>
           {presence.length > 0 && (

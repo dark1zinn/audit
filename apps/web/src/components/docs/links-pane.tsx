@@ -1,12 +1,13 @@
 import { type ReactNode, useMemo } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
+import { ArrowUpRight, Link2 } from "lucide-react"
 import { Schema } from "effect"
 import type { Editor } from "@tiptap/react"
 import { EntityId } from "@audit/domain/ids"
 import { type Mention, extractMentions } from "@audit/editor/mentions"
 import { EntityChip } from "../mentions/entity-chip.tsx"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { backlinksQuery } from "./queries.ts"
 import { useEditorDoc } from "./outline-pane.tsx"
 
@@ -44,9 +45,7 @@ export const LinksPane = ({
         ) : backlinks.isError ? (
           <ErrorMessage error={backlinks.error} />
         ) : linked.length === 0 ? (
-          <p className="text-muted-foreground">
-            <Trans>Nothing links here yet.</Trans>
-          </p>
+          <EmptyState size="sm" icon={Link2} title={t`Nothing links here yet.`} />
         ) : (
           <ul className="flex flex-col items-start gap-2">
             {linked.map((item) => (
@@ -63,9 +62,7 @@ export const LinksPane = ({
           <Trans>Outgoing links</Trans>
         </SectionTitle>
         {outgoing.length === 0 ? (
-          <p className="text-muted-foreground">
-            <Trans>No outgoing links.</Trans>
-          </p>
+          <EmptyState size="sm" icon={ArrowUpRight} title={t`No outgoing links.`} />
         ) : (
           <ul className="flex flex-col items-start gap-2">
             {outgoing.map((mention, index) => (

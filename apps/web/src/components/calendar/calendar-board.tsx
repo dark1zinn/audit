@@ -144,8 +144,9 @@ function CalendarBoardInner({
     calendarApp?.events.set([...events])
   }, [calendarApp, events])
 
+  const { t } = useLingui()
   // Schedule-X sets aria-label on role-less day grids and on the view picker, where it conflicts with axe rules; strip them.
-  // Re-applied on each DOM change because the library re-creates the grid on view changes.
+  // Its date picker input has no accessible name, so label it. Re-applied on each DOM change because the library re-creates the grid on view changes.
   const boardRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const root = boardRef.current
@@ -156,12 +157,15 @@ function CalendarBoardInner({
       )) {
         el.removeAttribute("aria-label")
       }
+      for (const input of root.querySelectorAll(".sx__date-input:not([aria-label])")) {
+        input.setAttribute("aria-label", t`Choose date`)
+      }
     }
     strip()
     const observer = new MutationObserver(strip)
     observer.observe(root, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [])
+  }, [t])
 
   return (
     <EventTargetContext.Provider value={eventTargetFor}>

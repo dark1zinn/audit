@@ -58,7 +58,7 @@ export function FiltersBar({ query, labels, members, onPatch, onReset }: Filters
         onChange={(event) => setText(event.target.value)}
         placeholder={t`Search tasks`}
         aria-label={t`Search tasks`}
-        className="w-56"
+        className="min-w-56 max-w-full"
       />
       <Select
         value={query.assigneeId ?? ANY}

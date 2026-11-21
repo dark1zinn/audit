@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Archive, ArchiveRestore, MailOpen, Mail, ExternalLink } from "lucide-react"
 import type { NotificationId } from "@audit/domain/ids"
 import { callApi } from "../../lib/api.ts"
@@ -30,15 +31,19 @@ export const useNotificationActions = (
         label: read ? t`Mark as unread` : t`Mark as read`,
         icon: read ? Mail : MailOpen,
         run: () =>
-          run.mutate(() =>
-            Promise.all(
-              items.map((item) => {
-                const notificationId = item.id as NotificationId
-                return read
-                  ? callApi((api) => api.notifications.unread({ params: { notificationId } }))
-                  : callApi((api) => api.notifications.read({ params: { notificationId } }))
-              }),
-            ),
+          run.mutate(
+            () =>
+              Promise.all(
+                items.map((item) => {
+                  const notificationId = item.id as NotificationId
+                  return read
+                    ? callApi((api) => api.notifications.unread({ params: { notificationId } }))
+                    : callApi((api) => api.notifications.read({ params: { notificationId } }))
+                }),
+              ),
+            {
+              onSuccess: () => toast.success(read ? t`Marked as unread` : t`Marked as read`),
+            },
           ),
       },
       {
@@ -46,15 +51,20 @@ export const useNotificationActions = (
         label: archived ? t`Unarchive` : t`Archive`,
         icon: archived ? ArchiveRestore : Archive,
         run: () =>
-          run.mutate(() =>
-            Promise.all(
-              items.map((item) => {
-                const notificationId = item.id as NotificationId
-                return archived
-                  ? callApi((api) => api.notifications.unarchive({ params: { notificationId } }))
-                  : callApi((api) => api.notifications.archive({ params: { notificationId } }))
-              }),
-            ),
+          run.mutate(
+            () =>
+              Promise.all(
+                items.map((item) => {
+                  const notificationId = item.id as NotificationId
+                  return archived
+                    ? callApi((api) => api.notifications.unarchive({ params: { notificationId } }))
+                    : callApi((api) => api.notifications.archive({ params: { notificationId } }))
+                }),
+              ),
+            {
+              onSuccess: () =>
+                toast.success(archived ? t`Notification unarchived` : t`Notification archived`),
+            },
           ),
       },
     ],

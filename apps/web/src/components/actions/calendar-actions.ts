@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { FileUp, RefreshCw, Settings, Trash2 } from "lucide-react"
 import type { CalendarSummary } from "@audit/domain/calendar/schema"
 import { callApi } from "../../lib/api.ts"
@@ -11,6 +12,7 @@ type CalendarTarget = Extract<EntityTarget, { kind: "calendar" }>
 
 /** Calendar writes. The calendar menu and the sidebar controls (colour, feed link) share these. */
 export const useCalendarMutations = () => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const run = useRunAction(async () => {
     await queryClient.invalidateQueries({ queryKey: keys.calendars })
@@ -30,15 +32,23 @@ export const useCalendarMutations = () => {
       ),
     /** Issues a new feed link; `onUrl` receives it for callers that display it. */
     regenerateFeed: (onUrl?: (url: string) => void) =>
-      run.mutate(async () => {
-        const result = await callApi((api) => api.calendar.regenerateIcalFeed())
-        onUrl?.(result.url)
-      }),
+      run.mutate(
+        async () => {
+          const result = await callApi((api) => api.calendar.regenerateIcalFeed())
+          onUrl?.(result.url)
+        },
+        { onSuccess: () => toast.success(t`Feed link regenerated`) },
+      ),
     remove: (calendar: CalendarSummary, onDeleted?: () => void) =>
       run.mutate(
         () =>
           callApi((api) => api.calendar.deleteCalendar({ params: { calendarId: calendar.id } })),
-        { onSuccess: () => onDeleted?.() },
+        {
+          onSuccess: () => {
+            toast.success(t`Calendar deleted`)
+            onDeleted?.()
+          },
+        },
       ),
   }
 }

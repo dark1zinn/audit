@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { GitBranch } from "lucide-react"
 import type { ProjectId, TaskId } from "@audit/domain/ids"
 import type { Relation, TaskDetail } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { callApi } from "../../lib/api.ts"
-import { ErrorMessage } from "../feedback.tsx"
+import { EmptyState, ErrorMessage } from "../feedback.tsx"
 import { taskListQuery } from "../../lib/queries.ts"
 import { invalidateTask } from "./queries.ts"
 
@@ -70,7 +71,7 @@ export function Relations({ task, projectId, canEdit }: RelationsProps) {
         {t`Relations`}
       </h2>
       {task.relations.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t`No relations yet.`}</p>
+        <EmptyState size="sm" icon={GitBranch} title={t`No relations yet.`} />
       )}
       {task.relations.length > 0 && (
         <ul className="divide-y rounded-md border">

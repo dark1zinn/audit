@@ -79,7 +79,7 @@ export function EntityChip({ id, type, label }: EntityChipProps) {
   )
   if (href === undefined) {
     return (
-      <span className="inline-flex max-w-full items-center gap-1 rounded bg-primary/10 px-1.5 font-medium text-primary">
+      <span className="inline-flex max-w-full items-center gap-1 rounded bg-primary/10 px-1.5 font-medium text-link">
         {content}
       </span>
     )
@@ -92,7 +92,7 @@ export function EntityChip({ id, type, label }: EntityChipProps) {
           <HoverCardTrigger asChild>
             <Link
               to={href}
-              className="inline-flex max-w-full items-center gap-1 rounded bg-primary/10 px-1.5 font-medium text-primary underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="inline-flex max-w-full items-center gap-1 rounded bg-primary/10 px-1.5 font-medium text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {content}
             </Link>

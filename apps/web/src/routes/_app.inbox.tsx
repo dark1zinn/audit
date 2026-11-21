@@ -2,11 +2,18 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { Inbox } from "lucide-react"
 import { t as tMacro } from "@lingui/core/macro"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { useInboxActions } from "../components/inbox/actions.ts"
 import { InboxList } from "../components/inbox/inbox-list.tsx"
-import { ErrorMessage, LoadingRows, PageBody, PageHeader } from "../components/feedback.tsx"
+import {
+  EmptyState,
+  ErrorMessage,
+  LoadingRows,
+  PageBody,
+  PageHeader,
+} from "../components/feedback.tsx"
 import { notificationsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/inbox")({
@@ -73,13 +80,10 @@ function InboxPage() {
       {inbox.isError && <ErrorMessage error={inbox.error} />}
       {inbox.data === undefined && !inbox.isError && <LoadingRows />}
       {inbox.data !== undefined && visible.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          {archived ? (
-            <Trans>No archived notifications.</Trans>
-          ) : (
-            <Trans>You are all caught up.</Trans>
-          )}
-        </p>
+        <EmptyState
+          icon={Inbox}
+          title={archived ? t`No archived notifications.` : t`You are all caught up.`}
+        />
       )}
       {inbox.data !== undefined && visible.length > 0 && (
         <InboxList notifications={visible} archived={archived} />

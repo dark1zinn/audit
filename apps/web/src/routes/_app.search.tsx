@@ -16,7 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
-import { ErrorMessage, LoadingRows, PageBody, PageHeader } from "../components/feedback.tsx"
+import { Search } from "lucide-react"
+import {
+  EmptyState,
+  ErrorMessage,
+  LoadingRows,
+  PageBody,
+  PageHeader,
+} from "../components/feedback.tsx"
 import { membersQuery, projectsQuery } from "../lib/queries.ts"
 import { searchResultsQuery, snippetParts } from "../lib/search.ts"
 
@@ -240,7 +247,7 @@ function SearchPage() {
           {results.isPending && <LoadingRows />}
           {results.isError && <ErrorMessage error={results.error} />}
           {results.isSuccess && results.data.hits.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t`No results.`}</p>
+            <EmptyState icon={Search} title={t`No results.`} />
           )}
           {results.isSuccess && (
             <ol className="divide-y rounded-md border">

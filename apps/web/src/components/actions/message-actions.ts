@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import {
   Bookmark,
   BookmarkX,
@@ -34,8 +35,15 @@ export const useMessageActions = (target: MessageTarget | null): ReadonlyArray<A
   const own = me.data?.userId === message.author.id
   const deleted = message.deletedAt !== null
 
-  const toggle = (on: boolean, enable: () => Promise<unknown>, disable: () => Promise<unknown>) =>
-    run.mutate(() => (on ? disable() : enable()))
+  const toggle = (
+    on: boolean,
+    enable: () => Promise<unknown>,
+    disable: () => Promise<unknown>,
+    done: { readonly enabled: string; readonly disabled: string },
+  ) =>
+    run.mutate(() => (on ? disable() : enable()), {
+      onSuccess: () => toast.success(on ? done.disabled : done.enabled),
+    })
 
   return [
     [
@@ -60,6 +68,7 @@ export const useMessageActions = (target: MessageTarget | null): ReadonlyArray<A
             message.saved,
             () => callApi((api) => api.chat.save({ params: { messageId } })),
             () => callApi((api) => api.chat.unsave({ params: { messageId } })),
+            { enabled: t`Saved`, disabled: t`Removed from saved` },
           ),
       },
       ...(target.canPin
@@ -74,6 +83,7 @@ export const useMessageActions = (target: MessageTarget | null): ReadonlyArray<A
                   message.pinned,
                   () => callApi((api) => api.chat.pin({ params: { messageId } })),
                   () => callApi((api) => api.chat.unpin({ params: { messageId } })),
+                  { enabled: t`Pinned`, disabled: t`Unpinned` },
                 ),
             },
           ]
@@ -120,8 +130,9 @@ export const useMessageActions = (target: MessageTarget | null): ReadonlyArray<A
                 confirmLabel: t`Delete`,
               },
               run: () =>
-                run.mutate(() =>
-                  callApi((api) => api.chat.deleteMessage({ params: { messageId } })),
+                run.mutate(
+                  () => callApi((api) => api.chat.deleteMessage({ params: { messageId } })),
+                  { onSuccess: () => toast.success(t`Message deleted`) },
                 ),
             },
           ],

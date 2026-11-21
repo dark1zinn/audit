@@ -68,7 +68,7 @@ function SecurityPage() {
             <p>
               <Trans>Minimum password length: {MIN_PASSWORD_LENGTH}</Trans>
             </p>
-            <Link to="/admin/workspace" className="text-primary underline">
+            <Link to="/admin/workspace" className="text-link underline">
               <Trans>Open workspace settings</Trans>
             </Link>
           </CardContent>

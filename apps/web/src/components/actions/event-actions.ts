@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { CalendarCheck, Copy, ExternalLink, Trash2 } from "lucide-react"
 import type { EventOccurrence, EventScope, ResponseStatus } from "@audit/domain/calendar/schema"
 import { callApi } from "../../lib/api.ts"
@@ -13,6 +14,7 @@ const eventHref = (eventId: string) => `/calendar?event=${eventId}`
 
 /** Event writes. The event menu and the event dialog share these, so each request has one place. */
 export const useEventMutations = () => {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const run = useRunAction(async () => {
     await queryClient.invalidateQueries({ queryKey: keys.calendars })
@@ -35,13 +37,20 @@ export const useEventMutations = () => {
               },
             }),
           ),
-        { onSuccess: () => onDeleted?.() },
+        {
+          onSuccess: () => {
+            toast.success(t`Event deleted`)
+            onDeleted?.()
+          },
+        },
       ),
     rsvp: (event: EventOccurrence, response: ResponseStatus) =>
-      run.mutate(() =>
-        callApi((api) =>
-          api.calendar.rsvp({ params: { eventId: event.eventId }, payload: { response } }),
-        ),
+      run.mutate(
+        () =>
+          callApi((api) =>
+            api.calendar.rsvp({ params: { eventId: event.eventId }, payload: { response } }),
+          ),
+        { onSuccess: () => toast.success(t`RSVP updated`) },
       ),
   }
 }

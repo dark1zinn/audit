@@ -19,7 +19,8 @@ import { ConfirmDialog } from "../actions/confirm-dialog.tsx"
 import { callApi } from "../../lib/api.ts"
 import { browseQuery, channelQuery, chatKeys, pinsQuery } from "../../lib/chat.ts"
 import { membersQuery, projectsQuery, boardsQuery } from "../../lib/queries.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { Pin } from "lucide-react"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { MessageBody } from "./message-body.tsx"
 
 const MAX_GROUP_PEOPLE = 8
@@ -302,6 +303,7 @@ interface PinsDialogProps {
 
 /** Pinned messages in a channel, newest pin first. */
 export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
+  const { t } = useLingui()
   const queryClient = useQueryClient()
   const pins = useQuery({ ...pinsQuery(channelId), enabled: open })
   const [error, setError] = useState<unknown>(null)
@@ -329,9 +331,7 @@ export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
         {pins.isPending ? <LoadingRows /> : null}
         {pins.isError ? <ErrorMessage error={pins.error} /> : null}
         {pins.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Nothing is pinned yet.</Trans>
-          </p>
+          <EmptyState icon={Pin} title={t`Nothing is pinned yet.`} />
         ) : null}
         <ul className="space-y-3">
           {pins.data?.map((message) => (

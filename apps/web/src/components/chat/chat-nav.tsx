@@ -85,9 +85,11 @@ export function ChatNav({ meId }: { readonly meId: string }) {
           className={rowClass}
           activeProps={{ className: `${rowClass} bg-accent text-accent-foreground` }}
         >
-          <MessageSquare className="size-4 shrink-0" aria-hidden />
-          <span className="min-w-0 truncate">
-            <Trans>Threads</Trans>
+          <span className="flex min-w-0 items-center gap-2">
+            <MessageSquare className="size-4 shrink-0" aria-hidden />
+            <span className="min-w-0 truncate">
+              <Trans>Threads</Trans>
+            </span>
           </span>
         </Link>
         <Link
@@ -95,9 +97,11 @@ export function ChatNav({ meId }: { readonly meId: string }) {
           className={rowClass}
           activeProps={{ className: `${rowClass} bg-accent text-accent-foreground` }}
         >
-          <Bookmark className="size-4 shrink-0" aria-hidden />
-          <span className="min-w-0 truncate">
-            <Trans>Saved</Trans>
+          <span className="flex min-w-0 items-center gap-2">
+            <Bookmark className="size-4 shrink-0" aria-hidden />
+            <span className="min-w-0 truncate">
+              <Trans>Saved</Trans>
+            </span>
           </span>
         </Link>
       </div>

@@ -8,7 +8,7 @@ import {
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { ListTree, PanelRight, X } from "lucide-react"
+import { ListTree, Link2, MessageSquare, History, PanelRight, X } from "lucide-react"
 import type { Editor } from "@tiptap/core"
 import { WORKSPACE_SPACE_ID } from "@audit/domain/docs/schema"
 import type { DocNode } from "@audit/domain/docs/schema"
@@ -423,59 +423,55 @@ interface DocTabBarProps {
 const DocTabBar = ({ tabs, activeId, docs, onClose }: DocTabBarProps) => {
   const { t } = useLingui()
   return (
-    <ul
-      role="tablist"
-      aria-label={t`Open documents`}
-      className="flex min-w-0 items-end gap-1 overflow-x-auto border-b"
-    >
-      {tabs.map((tab) => {
-        const node = docs.find((doc) => doc.id === tab.id)
-        const active = tab.id === activeId
-        const title = node?.title || t`Untitled`
-        const link = (
-          <Link
-            role="tab"
-            aria-selected={active}
-            to={docHref(tab.id, tab.projectKey)}
-            className="focus-visible:ring-ring min-w-0 flex-1 truncate px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:outline-none"
-          >
-            {title}
-          </Link>
-        )
-        return (
-          <li
-            key={tab.id}
-            role="presentation"
-            onAuxClick={(event) => {
-              if (event.button !== 1) return
-              event.preventDefault()
-              onClose(tab.id)
-            }}
-            className={`group flex max-w-56 min-w-0 shrink-0 items-center border-b-2 ${
-              active ? "border-primary bg-accent/60" : "border-transparent hover:bg-accent/40"
-            }`}
-          >
-            {node === undefined ? (
-              link
-            ) : (
-              <EntityContextMenu
-                target={{ kind: "doc", doc: node, projectKey: tab.projectKey ?? undefined }}
-              >
-                {link}
-              </EntityContextMenu>
-            )}
-            <button
-              type="button"
-              aria-label={t`Close ${title}`}
-              onClick={() => onClose(tab.id)}
-              className="focus-visible:ring-ring me-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-100 focus-visible:ring-2 focus-visible:outline-none md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 pointer-coarse:size-11 pointer-coarse:opacity-100"
+    <nav aria-label={t`Open documents`}>
+      <ul className="flex min-w-0 items-end gap-1 overflow-x-auto border-b">
+        {tabs.map((tab) => {
+          const node = docs.find((doc) => doc.id === tab.id)
+          const active = tab.id === activeId
+          const title = node?.title || t`Untitled`
+          const link = (
+            <Link
+              aria-current={active ? "page" : undefined}
+              to={docHref(tab.id, tab.projectKey)}
+              className="focus-visible:ring-ring min-w-0 flex-1 truncate px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:outline-none"
             >
-              <X aria-hidden="true" className="size-3.5" />
-            </button>
-          </li>
-        )
-      })}
-    </ul>
+              {title}
+            </Link>
+          )
+          return (
+            <li
+              key={tab.id}
+              onAuxClick={(event) => {
+                if (event.button !== 1) return
+                event.preventDefault()
+                onClose(tab.id)
+              }}
+              className={`group flex max-w-56 min-w-0 shrink-0 items-center border-b-2 ${
+                active ? "border-primary bg-accent/60" : "border-transparent hover:bg-accent/40"
+              }`}
+            >
+              {node === undefined ? (
+                link
+              ) : (
+                <EntityContextMenu
+                  target={{ kind: "doc", doc: node, projectKey: tab.projectKey ?? undefined }}
+                >
+                  {link}
+                </EntityContextMenu>
+              )}
+              <button
+                type="button"
+                aria-label={t`Close ${title}`}
+                onClick={() => onClose(tab.id)}
+                className="focus-visible:ring-ring me-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-100 focus-visible:ring-2 focus-visible:outline-none md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 pointer-coarse:size-11 pointer-coarse:opacity-100"
+              >
+                <X aria-hidden="true" className="size-3.5" />
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
   )
 }
 
@@ -508,19 +504,51 @@ const DocRightPane = ({
   const canWrite = role === "manager" || role === "editor"
   const canComment = canWrite || role === "commenter"
   return (
-    <Tabs value={tab} onValueChange={onTabChange} className="min-w-0">
+    <Tabs value={tab} onValueChange={onTabChange} className="@container min-w-0">
       <TabsList className="w-full justify-start overflow-x-auto" aria-label={t`Document panel`}>
-        <TabsTrigger value="outline">
-          <Trans>Outline</Trans>
+        <TabsTrigger
+          value="outline"
+          aria-label={t`Outline`}
+          title={t`Outline`}
+          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
+        >
+          <ListTree aria-hidden="true" className="size-4" />
+          <span className="hidden @[20rem]:inline">
+            <Trans>Outline</Trans>
+          </span>
         </TabsTrigger>
-        <TabsTrigger value="links">
-          <Trans>Links</Trans>
+        <TabsTrigger
+          value="links"
+          aria-label={t`Links`}
+          title={t`Links`}
+          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
+        >
+          <Link2 aria-hidden="true" className="size-4" />
+          <span className="hidden @[20rem]:inline">
+            <Trans>Links</Trans>
+          </span>
         </TabsTrigger>
-        <TabsTrigger value="comments">
-          <Trans>Comments</Trans>
+        <TabsTrigger
+          value="comments"
+          aria-label={t`Comments`}
+          title={t`Comments`}
+          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
+        >
+          <MessageSquare aria-hidden="true" className="size-4" />
+          <span className="hidden @[20rem]:inline">
+            <Trans>Comments</Trans>
+          </span>
         </TabsTrigger>
-        <TabsTrigger value="versions">
-          <Trans>Versions</Trans>
+        <TabsTrigger
+          value="versions"
+          aria-label={t`Versions`}
+          title={t`Versions`}
+          className="min-w-0 flex-none px-2 @[20rem]:flex-1"
+        >
+          <History aria-hidden="true" className="size-4" />
+          <span className="hidden @[20rem]:inline">
+            <Trans>Versions</Trans>
+          </span>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="outline">

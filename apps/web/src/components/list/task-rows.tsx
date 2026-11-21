@@ -3,10 +3,12 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { Link } from "@tanstack/react-router"
 import { useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
+import { ListFilter } from "lucide-react"
 import type { TaskCard, TaskGroup } from "@audit/domain/tasks/schema"
 import { useTaskText } from "./task-labels.ts"
 import { taskHref } from "../../lib/entity-links.ts"
 import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import { EmptyState } from "../feedback.tsx"
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -48,6 +50,7 @@ export function VirtualTaskList({
   readonly label: string
 }) {
   "use no memo"
+  const { t } = useLingui()
   const scrollRef = useRef<HTMLDivElement>(null)
   const rows = useMemo(() => buildRows(groups, showHeaders), [groups, showHeaders])
   const taskIndexes = useMemo(
@@ -102,11 +105,7 @@ export function VirtualTaskList({
   }
 
   if (rows.length === 0) {
-    return (
-      <p className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-        <Trans>No tasks match these filters.</Trans>
-      </p>
-    )
+    return <EmptyState icon={ListFilter} title={t`No tasks match these filters.`} />
   }
 
   return (

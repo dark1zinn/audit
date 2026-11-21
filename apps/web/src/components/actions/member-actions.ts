@@ -77,7 +77,9 @@ export const useMemberActions = (target: MemberTarget | null): ReadonlyArray<Act
             confirmLabel: t`Reset`,
           },
           run: () =>
-            run.mutate(() => callApi((api) => api.members.resetTwoFactor({ params: { userId } }))),
+            run.mutate(() => callApi((api) => api.members.resetTwoFactor({ params: { userId } })), {
+              onSuccess: () => toast.success(t`Two-factor reset`),
+            }),
         },
         {
           id: "reset-link",
@@ -128,7 +130,9 @@ export const useMemberActions = (target: MemberTarget | null): ReadonlyArray<Act
             confirmLabel: t`Delete`,
           },
           run: () =>
-            run.mutate(() => callApi((api) => api.people.deleteMember({ params: { userId } }))),
+            run.mutate(() => callApi((api) => api.people.deleteMember({ params: { userId } })), {
+              onSuccess: () => toast.success(t`Member removed`),
+            }),
         },
       ]
     : []

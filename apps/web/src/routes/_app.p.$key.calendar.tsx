@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { t as tMacro } from "@lingui/core/macro"
 import { createFileRoute } from "@tanstack/react-router"
 import type { ProjectSummary } from "@audit/domain/projects/schema"
 import type { ListTasksQuery } from "@audit/domain/tasks/schema"
@@ -9,7 +9,7 @@ import { parseTaskSearch, withTaskSearch } from "../components/list/task-search.
 import { WithProject } from "../components/list/with-project.tsx"
 
 export const Route = createFileRoute("/_app/p/$key/calendar")({
-  staticData: { crumb: () => ({ label: t`Calendar` }) },
+  staticData: { crumb: () => ({ label: tMacro`Calendar` }) },
   validateSearch: (search: Record<string, unknown>) => ({
     ...parseTaskSearch(search),
     ...parseCalendarSearch(search),

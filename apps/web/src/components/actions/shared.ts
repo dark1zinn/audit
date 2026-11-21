@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "@tanstack/react-router"
+import { errorKind } from "../../lib/errors.ts"
 import { toast } from "sonner"
 
 /** Runs one action's request and refreshes caches on success. */
@@ -11,8 +12,14 @@ export const useRunAction = (invalidate: () => Promise<unknown>) => {
     onSuccess: async () => {
       await invalidate()
     },
-    onError: () => {
-      toast.error(t`Something went wrong`)
+    onError: (error: unknown) => {
+      toast.error(
+        errorKind(error) === "forbidden"
+          ? t`You don't have permission to do that.`
+          : errorKind(error) === "conflict"
+            ? t`This changed elsewhere. Reload and try again.`
+            : t`Something went wrong`,
+      )
     },
   })
 }

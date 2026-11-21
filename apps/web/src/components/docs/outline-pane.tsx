@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import { Trans, useLingui } from "@lingui/react/macro"
+import { useLingui } from "@lingui/react/macro"
+import { ListTree } from "lucide-react"
+import { EmptyState } from "../feedback.tsx"
 import type { JSONContent } from "@tiptap/core"
 import type { Editor } from "@tiptap/react"
 import { type OutlineHeading, headingsFromDoc } from "./outline.ts"
@@ -80,11 +82,7 @@ export const OutlinePane = ({ editor }: { readonly editor: Editor | null }) => {
   }, [editor, headings])
 
   if (headings.length === 0) {
-    return (
-      <p className="pt-3 text-sm text-muted-foreground">
-        <Trans>No headings yet</Trans>
-      </p>
-    )
+    return <EmptyState size="sm" icon={ListTree} title={t`No headings yet`} />
   }
 
   return (

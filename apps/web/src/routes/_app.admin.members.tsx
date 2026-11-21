@@ -32,7 +32,8 @@ import {
 } from "@audit/ui/components/ui/table.tsx"
 import { EntityActionsButton, EntityContextMenu } from "../components/actions/entity-menu.tsx"
 import { useChangeMemberRole } from "../components/actions/member-actions.ts"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { Hash } from "lucide-react"
+import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
 import { membersQuery, keys } from "../lib/queries.ts"
 
@@ -334,9 +335,7 @@ function ChannelPicker({
         {access.isPending && <LoadingRows rows={2} />}
         {access.isError && <ErrorMessage error={access.error} />}
         {access.data !== undefined && channels.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            <Trans>No private channels or direct messages.</Trans>
-          </p>
+          <EmptyState icon={Hash} title={t`No private channels or direct messages.`} />
         )}
         {channels.length > 0 && (
           <ul className="grid gap-1">

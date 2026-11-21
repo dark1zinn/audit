@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { CircleCheck, Copy, ExternalLink, Trash2 } from "lucide-react"
 import type { Priority } from "@audit/domain/tasks/schema"
 import type { BoardId, TaskId } from "@audit/domain/ids"
@@ -127,12 +128,17 @@ export const useTaskActions = (
         pending: detail.isPending && enabled,
         disabled: detail.isPending && enabled,
         run: () =>
-          run.mutate(() =>
-            callApi((api) =>
-              watching === true
-                ? api.tasks.unwatch({ params: { taskId: task.id } })
-                : api.tasks.watch({ params: { taskId: task.id } }),
-            ),
+          run.mutate(
+            () =>
+              callApi((api) =>
+                watching === true
+                  ? api.tasks.unwatch({ params: { taskId: task.id } })
+                  : api.tasks.watch({ params: { taskId: task.id } }),
+              ),
+            {
+              onSuccess: () =>
+                toast.success(watching === true ? t`Stopped watching` : t`Watching task`),
+            },
           ),
       },
     ],

@@ -65,10 +65,19 @@
   overflow-y: auto;
 }
 
-/* Default focus indicator for elements without their own focus style. */
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+/* The today column header uses the primary colour as text, which fails contrast on dark surfaces. */
+.sx__calendar-wrapper .sx__week-grid__date--is-today > .sx__week-grid__day-name {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+/* Default focus indicator for elements without their own focus style. Layered so utilities
+   (for example outline-hidden on the palette input) can override it. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
 /* Respect the OS "reduce motion" setting: keep state changes, drop the animation and smooth scroll. */

@@ -28,15 +28,18 @@ import { ProjectCreateDialog } from "../components/project-create-dialog.tsx"
 import { projectQuery, projectsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/projects/")({
+  validateSearch: (search: Record<string, unknown>): { new?: "1" } =>
+    search.new === "1" ? { new: "1" } : {},
   staticData: { crumb: () => ({ label: tMacro`Projects` }) },
   component: ProjectsPage,
 })
 
 function ProjectsPage() {
   const { t } = useLingui()
+  const { new: newRequest } = Route.useSearch()
   const projects = useQuery(projectsQuery)
   const [showArchived, setShowArchived] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(newRequest === "1")
 
   if (projects.isPending) return <LoadingRows />
   if (projects.isError) return <ErrorMessage error={projects.error} />

@@ -1,18 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useNavigate } from "@tanstack/react-router"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { PanelLeft } from "lucide-react"
+import { CalendarDays, PanelLeft } from "lucide-react"
 import { toast } from "sonner"
 import type { ProjectId } from "@audit/domain/ids"
 import type { CalendarSummary } from "@audit/domain/calendar/schema"
 import type { ListTasksQuery } from "@audit/domain/tasks/schema"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@audit/ui/components/ui/button.tsx"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@audit/ui/components/ui/collapsible.tsx"
 import { useCalendarPrefs } from "../../lib/calendar-prefs.ts"
 import {
   dueToDisplay,
@@ -29,7 +24,7 @@ import {
   calendarsQuery,
   projectsQuery,
 } from "../../lib/queries.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { taskNumber } from "../list/task-rows.tsx"
 import { taskHref } from "../../lib/entity-links.ts"
 import { filterOf, parseTaskSearch } from "../list/task-search.ts"
@@ -277,14 +272,8 @@ export function CalendarWorkspace({
 
   return (
     <div className="flex min-w-0 flex-col gap-4 md:flex-row md:gap-6">
-      <Collapsible open={listOpen} onOpenChange={toggleList} className="min-w-0 md:shrink-0">
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm" className="min-h-11 md:min-h-8">
-            <PanelLeft aria-hidden="true" />
-            <Trans>Calendars</Trans>
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-3 md:w-64">
+      {listOpen && (
+        <aside id="calendar-list" className="min-w-0 md:w-64 md:shrink-0">
           <CalendarList
             calendars={calendars}
             hidden={prefs.hidden}
@@ -301,10 +290,23 @@ export function CalendarWorkspace({
             onEdit={(calendar) => setCalendarTarget({ kind: "edit", calendar })}
             onImport={setImporting}
           />
-        </CollapsibleContent>
-      </Collapsible>
+        </aside>
+      )}
 
-      <div className="isolate grid min-w-0 flex-1 gap-3">
+      <div className="isolate grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] gap-3">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-expanded={listOpen}
+            aria-controls="calendar-list"
+            onClick={() => toggleList(!listOpen)}
+            className="min-h-11 md:min-h-8"
+          >
+            <PanelLeft aria-hidden="true" />
+            <Trans>Calendars</Trans>
+          </Button>
+        </div>
         {calendarsResult.isError && <ErrorMessage error={calendarsResult.error} />}
         {events.isError && <ErrorMessage error={events.error} />}
         {wideEvents.isError && eventParam !== undefined && (
@@ -312,9 +314,11 @@ export function CalendarWorkspace({
         )}
         {events.isPending && range !== null && <LoadingRows rows={1} />}
         {calendars.length === 0 && calendarsResult.isSuccess && (
-          <p className="text-sm text-muted-foreground">
-            <Trans>No calendars yet. Create one to start adding events.</Trans>
-          </p>
+          <EmptyState
+            icon={CalendarDays}
+            title={t`No calendars yet`}
+            description={t`Create one to start adding events.`}
+          />
         )}
         <CalendarBoard
           timezone={timezone}

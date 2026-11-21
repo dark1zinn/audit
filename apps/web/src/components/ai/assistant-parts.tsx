@@ -78,7 +78,7 @@ export function CitationChips({ output }: { readonly output: unknown }) {
           ) : (
             <a
               href={citation.href}
-              className="inline-flex rounded-full border px-2 py-0.5 text-xs text-primary underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="inline-flex rounded-full border px-2 py-0.5 text-xs text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {citation.title}
             </a>

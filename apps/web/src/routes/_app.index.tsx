@@ -13,14 +13,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@audit/ui/components/ui/card.tsx"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@audit/ui/components/ui/empty.tsx"
-import { Inbox } from "lucide-react"
+import { CalendarDays, FileText, Inbox, ListChecks } from "lucide-react"
 import { Item, ItemContent, ItemDescription, ItemTitle } from "@audit/ui/components/ui/item.tsx"
 import { EntityContextMenu } from "../components/actions/entity-menu.tsx"
 import type { EntityTarget } from "../components/actions/types.ts"
 import { useKindText } from "../components/inbox/kind.tsx"
 import { spaceTreeQuery } from "../components/docs/queries.ts"
-import { ErrorMessage, LoadingRows, PageBody, PageHeader } from "../components/feedback.tsx"
+import {
+  EmptyState,
+  ErrorMessage,
+  LoadingRows,
+  PageBody,
+  PageHeader,
+} from "../components/feedback.tsx"
 import { docHref, taskHref } from "../lib/entity-links.ts"
 import { calendarEventsQuery, myTasksQuery, notificationsQuery } from "../lib/queries.ts"
 
@@ -107,13 +112,11 @@ function InboxSection() {
       {inbox.isPending && <LoadingRows rows={3} />}
       {inbox.isError && <ErrorMessage error={inbox.error} />}
       {inbox.isSuccess && unread.length === 0 && (
-        <Empty>
-          <EmptyMedia variant="icon">
-            <Inbox aria-hidden="true" />
-          </EmptyMedia>
-          <EmptyTitle>{t`You're all caught up`}</EmptyTitle>
-          <EmptyDescription>{t`New mentions and assignments will show up here.`}</EmptyDescription>
-        </Empty>
+        <EmptyState
+          icon={Inbox}
+          title={t`You're all caught up`}
+          description={t`New mentions and assignments will show up here.`}
+        />
       )}
       {inbox.isSuccess && unread.length > 0 && (
         <ul className="space-y-1">
@@ -144,9 +147,7 @@ function MyTasksSection() {
       {mine.isPending && <LoadingRows rows={3} />}
       {mine.isError && <ErrorMessage error={mine.error} />}
       {mine.isSuccess && tasks.length === 0 && (
-        <Empty>
-          <EmptyTitle>{t`No open tasks`}</EmptyTitle>
-        </Empty>
+        <EmptyState icon={ListChecks} title={t`No open tasks`} />
       )}
       {mine.isSuccess && tasks.length > 0 && (
         <ul className="space-y-1">
@@ -187,9 +188,7 @@ function RecentDocsSection() {
       {space.isPending && <LoadingRows rows={3} />}
       {space.isError && <ErrorMessage error={space.error} />}
       {space.isSuccess && docs.length === 0 && (
-        <Empty>
-          <EmptyTitle>{t`No docs yet`}</EmptyTitle>
-        </Empty>
+        <EmptyState icon={FileText} title={t`No docs yet`} />
       )}
       {space.isSuccess && docs.length > 0 && (
         <ul className="space-y-1">
@@ -236,9 +235,7 @@ function UpcomingSection() {
       {events.isPending && <LoadingRows rows={3} />}
       {events.isError && <ErrorMessage error={events.error} />}
       {events.isSuccess && upcoming.length === 0 && (
-        <Empty>
-          <EmptyTitle>{t`Nothing in the next 7 days`}</EmptyTitle>
-        </Empty>
+        <EmptyState icon={CalendarDays} title={t`Nothing in the next 7 days`} />
       )}
       {events.isSuccess && upcoming.length > 0 && (
         <ul className="space-y-1">

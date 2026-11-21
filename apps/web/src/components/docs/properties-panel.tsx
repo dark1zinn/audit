@@ -241,7 +241,7 @@ export const PropertiesPanel = ({ doc, projectKey, canWrite, isManager }: Proper
                   <Link
                     to="/p/$key/settings"
                     params={{ key: projectKey }}
-                    className="text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    className="text-link underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                   >
                     <Trans>Manage access</Trans>
                   </Link>

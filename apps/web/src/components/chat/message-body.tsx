@@ -25,7 +25,7 @@ const wrapMarks = (node: JsonNode, content: ReactNode): ReactNode =>
         const href = stringAttr(mark, "href")
         if (!/^(https?:|mailto:)/i.test(href)) return inner
         return (
-          <a href={href} target="_blank" rel="noreferrer" className="text-primary underline">
+          <a href={href} target="_blank" rel="noreferrer" className="text-link underline">
             {inner}
           </a>
         )

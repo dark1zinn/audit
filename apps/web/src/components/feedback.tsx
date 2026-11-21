@@ -1,6 +1,15 @@
 import { useLingui } from "@lingui/react/macro"
 import { Skeleton } from "@audit/ui/components/ui/skeleton.tsx"
 import type { ReactNode } from "react"
+import type { LucideIcon } from "lucide-react"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@audit/ui/components/ui/empty.tsx"
 import { errorKind } from "../lib/errors.ts"
 
 /** Maps a failed API or auth call to a translated, user-facing message. */
@@ -93,5 +102,46 @@ export function LoadingRows({ rows = 3 }: { readonly rows?: number }) {
         <Skeleton key={index} className="h-10 w-full" />
       ))}
     </div>
+  )
+}
+
+/**
+ * Shared empty state. `default` is a page or section block with icon, title, optional description
+ * and primary action. `sm` is a compact inline hint for panels: a muted one-liner with an icon.
+ */
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+  size = "default",
+}: {
+  readonly icon?: LucideIcon
+  readonly title: string
+  readonly description?: string
+  readonly action?: ReactNode
+  readonly size?: "default" | "sm"
+}) {
+  if (size === "sm") {
+    return (
+      <p className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+        {Icon !== undefined && <Icon aria-hidden="true" className="size-4 shrink-0" />}
+        <span>{title}</span>
+      </p>
+    )
+  }
+  return (
+    <Empty className="border">
+      <EmptyHeader>
+        {Icon !== undefined && (
+          <EmptyMedia variant="icon">
+            <Icon aria-hidden="true" />
+          </EmptyMedia>
+        )}
+        <EmptyTitle>{title}</EmptyTitle>
+        {description !== undefined && <EmptyDescription>{description}</EmptyDescription>}
+      </EmptyHeader>
+      {action !== undefined && <EmptyContent>{action}</EmptyContent>}
+    </Empty>
   )
 }
