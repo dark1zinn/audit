@@ -69,9 +69,7 @@
 .sx__calendar-wrapper .sx__date-grid {
   max-height: 12rem;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 55%, transparent) transparent;
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
 }
 
 .sx__calendar-wrapper .sx__date-grid[data-overflowing] {
