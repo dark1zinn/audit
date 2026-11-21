@@ -74,8 +74,8 @@ function ProjectsTable({ projects }: { readonly projects: ReadonlyArray<ProjectS
   }
 
   return (
-    <Table>
-      <TableHeader>
+    <Table className="max-sm:block">
+      <TableHeader className="max-sm:hidden">
         <TableRow>
           <TableHead>
             <Trans>Key</Trans>
@@ -96,11 +96,13 @@ function ProjectsTable({ projects }: { readonly projects: ReadonlyArray<ProjectS
           </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="max-sm:block">
         {projects.map((project) => (
-          <TableRow key={project.id}>
-            <TableCell className="font-mono">{project.key}</TableCell>
-            <TableCell>
+          <TableRow key={project.id} className="max-sm:block max-sm:border-b max-sm:py-2">
+            <TableCell className="font-mono max-sm:block max-sm:px-3 max-sm:pt-1">
+              {project.key}
+            </TableCell>
+            <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3">
               <span className="flex flex-wrap items-center gap-2">
                 {project.name}
                 {project.metadataOnly && (
@@ -109,20 +111,26 @@ function ProjectsTable({ projects }: { readonly projects: ReadonlyArray<ProjectS
                   </Badge>
                 )}
               </span>
+              <div className="text-xs text-muted-foreground sm:hidden">
+                {statusLabel(project.status)} ·{" "}
+                {project.visibility === "workspace" ? t`Workspace` : t`Restricted`}
+              </div>
             </TableCell>
-            <TableCell>{statusLabel(project.status)}</TableCell>
-            <TableCell>
+            <TableCell className="hidden sm:table-cell">{statusLabel(project.status)}</TableCell>
+            <TableCell className="hidden sm:table-cell">
               {project.visibility === "workspace" ? (
                 <Trans>Workspace</Trans>
               ) : (
                 <Trans>Restricted</Trans>
               )}
             </TableCell>
-            <TableCell className="text-end">
-              <EntityActionsButton
-                target={{ kind: "project", project }}
-                label={t`Actions for project ${project.key}`}
-              />
+            <TableCell className="text-end max-sm:block max-sm:px-3 max-sm:py-1">
+              <div className="max-sm:[&_button]:size-11">
+                <EntityActionsButton
+                  target={{ kind: "project", project }}
+                  label={t`Actions for project ${project.key}`}
+                />
+              </div>
             </TableCell>
           </TableRow>
         ))}

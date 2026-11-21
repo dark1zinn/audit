@@ -115,22 +115,22 @@ function AuditPage() {
         {trail.isError && <ErrorMessage error={trail.error} />}
         {trail.data !== undefined && (
           <div className="overflow-x-auto rounded-md border">
-            <Table>
-              <TableHeader>
+            <Table className="max-sm:block">
+              <TableHeader className="max-sm:hidden">
                 <TableRow>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Seq</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>When</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Actor</Trans>
                   </TableHead>
                   <TableHead>
                     <Trans>Action</Trans>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="hidden xl:table-cell">
                     <Trans>Entity</Trans>
                   </TableHead>
                   <TableHead>
@@ -138,27 +138,34 @@ function AuditPage() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="max-sm:block">
                 {events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-mono text-xs">{event.seq}</TableCell>
-                    <TableCell className="whitespace-nowrap text-xs">
+                  <TableRow key={event.id} className="max-sm:block max-sm:border-b max-sm:py-2">
+                    <TableCell className="hidden font-mono text-xs xl:table-cell">
+                      {event.seq}
+                    </TableCell>
+                    <TableCell className="hidden text-xs whitespace-nowrap xl:table-cell">
                       {event.at.toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="hidden text-sm xl:table-cell">
                       {event.actorName}
                       <span className="block text-xs text-muted-foreground">{event.actorType}</span>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{event.action}</TableCell>
-                    <TableCell className="text-xs">
+                    <TableCell className="font-mono text-xs max-sm:block max-sm:break-all max-sm:px-3 max-sm:pt-1">
+                      {event.action}
+                      <span className="block font-sans text-muted-foreground xl:hidden">
+                        {event.actorName} · {event.at.toLocaleString()} · {event.entityType}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden text-xs xl:table-cell">
                       {event.entityType}
                       <span className="block font-mono text-muted-foreground">
                         {event.entityId}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="max-sm:block max-sm:px-3 max-sm:pb-2 md:max-w-[14rem]">
                       {event.diff !== null && (
-                        <pre className="max-w-xs overflow-x-auto text-xs">
+                        <pre className="max-w-full overflow-x-auto text-xs md:max-w-[14rem]">
                           {JSON.stringify(event.diff, null, 2)}
                         </pre>
                       )}
