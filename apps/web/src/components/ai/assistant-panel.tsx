@@ -251,7 +251,7 @@ function AssistantBody() {
   return (
     <>
       <SheetHeader className="flex-row items-center gap-2 border-b p-4 pe-12">
-        <SheetTitle className="mr-auto text-base">
+        <SheetTitle className="mr-auto min-w-0 truncate text-base">
           <Trans>Assistant</Trans>
         </SheetTitle>
         <Button
