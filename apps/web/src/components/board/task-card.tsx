@@ -12,6 +12,7 @@ import { Checkbox } from "@audit/ui/components/ui/checkbox.tsx"
 import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
 import type { MoveColumn } from "../actions/types.ts"
 import { cardDomId } from "./board-model.ts"
+import { labelTextColor } from "./label-contrast.ts"
 import { usePriorityLabels } from "./hooks.ts"
 
 export const initials = (name: string) =>
@@ -81,7 +82,7 @@ export function TaskCardBody({
           )}
           {columns === undefined ? null : (
             <span
-              className="relative z-10 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100"
+              className="relative z-10 opacity-50 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100"
               role="presentation"
               onClick={(event) => event.stopPropagation()}
               onKeyDown={(event) => event.stopPropagation()}
@@ -110,8 +111,8 @@ export function TaskCardBody({
             return (
               <span
                 key={label.id}
-                className="rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
-                style={{ backgroundColor: label.color }}
+                className="rounded px-1.5 py-0.5 text-[11px] font-medium"
+                style={{ backgroundColor: label.color, color: labelTextColor(label.color) }}
               >
                 {label.name}
               </span>
