@@ -125,6 +125,12 @@ function MembersPage() {
                       <TableCell>
                         <div className="font-medium">{member.displayName}</div>
                         <div className="text-xs text-muted-foreground">{member.email}</div>
+                        <Badge
+                          variant={member.twoFactorEnabled ? "default" : "outline"}
+                          className="mt-1 xl:hidden"
+                        >
+                          {member.twoFactorEnabled ? t`2FA on` : t`2FA off`}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {owner ? (
