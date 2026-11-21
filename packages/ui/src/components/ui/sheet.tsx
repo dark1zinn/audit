@@ -21,6 +21,9 @@ function SheetPortal({ ...props }: React.ComponentProps<typeof SheetPrimitive.Po
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
+/** Whether the enclosing SheetContent renders its close button (reserves a header gutter). */
+const SheetCloseGutterContext = React.createContext(false)
+
 function SheetOverlay({
   className,
   ...props
@@ -59,7 +62,9 @@ function SheetContent({
         )}
         {...props}
       >
-        {children}
+        <SheetCloseGutterContext.Provider value={showCloseButton}>
+          {children}
+        </SheetCloseGutterContext.Provider>
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">
@@ -73,11 +78,16 @@ function SheetContent({
   )
 }
 
+/**
+ * Header of a sheet. When the sheet shows its close button, the header reserves
+ * the end gutter so header actions never sit under the X.
+ */
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+  const closable = React.useContext(SheetCloseGutterContext)
   return (
     <div
       data-slot="sheet-header"
-      className={cn("flex flex-col gap-0.5 p-4", className)}
+      className={cn("flex flex-col gap-0.5 p-4", closable && "pe-12", className)}
       {...props}
     />
   )

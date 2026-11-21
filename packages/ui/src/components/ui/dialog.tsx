@@ -22,6 +22,9 @@ function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.C
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+/** Whether the enclosing DialogContent renders its close button (reserves a header gutter). */
+const DialogCloseGutterContext = React.createContext(false)
+
 function DialogOverlay({
   className,
   ...props
@@ -57,7 +60,9 @@ function DialogContent({
         )}
         {...props}
       >
-        {children}
+        <DialogCloseGutterContext.Provider value={showCloseButton}>
+          {children}
+        </DialogCloseGutterContext.Provider>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button variant="ghost" className="absolute top-2 right-2" size="icon-sm">
@@ -73,9 +78,18 @@ function DialogContent({
   )
 }
 
+/**
+ * Header row of a dialog. When the dialog shows its close button, the header
+ * reserves the end gutter so header actions never sit under the X.
+ */
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+  const closable = React.useContext(DialogCloseGutterContext)
   return (
-    <div data-slot="dialog-header" className={cn("flex flex-col gap-2", className)} {...props} />
+    <div
+      data-slot="dialog-header"
+      className={cn("flex flex-col gap-2", closable && "pe-10", className)}
+      {...props}
+    />
   )
 }
 
