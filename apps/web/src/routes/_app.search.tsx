@@ -155,7 +155,7 @@ function SearchPage() {
             <Input id="search-q" name="q" defaultValue={params.q ?? ""} autoComplete="off" />
           </div>
           <fieldset className="space-y-2">
-            <legend className="mb-1 font-medium">{t`Types`}</legend>
+            <legend className="mb-1.5 font-medium">{t`Types`}</legend>
             {SEARCH_TYPES.map((type) => (
               <div key={type} className="flex items-center gap-2">
                 <Checkbox
@@ -208,7 +208,7 @@ function SearchPage() {
             </Select>
           </div>
           <fieldset className="space-y-2">
-            <legend className="mb-1 font-medium">{t`Updated`}</legend>
+            <legend className="mb-1.5 font-medium">{t`Updated`}</legend>
             <div className="space-y-1">
               <Label htmlFor="search-from">{t`From`}</Label>
               <Input
