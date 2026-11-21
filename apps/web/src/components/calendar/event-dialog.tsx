@@ -505,7 +505,7 @@ function EventForm({
               value={form.timezone}
               onValueChange={(value) => setForm({ ...form, timezone: value })}
             >
-              <SelectTrigger id="event-timezone" className="w-full">
+              <SelectTrigger id="event-timezone" className="w-full sm:w-64">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
