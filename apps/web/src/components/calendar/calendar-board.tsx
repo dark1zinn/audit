@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Temporal } from "temporal-polyfill"
 import { useLingui } from "@lingui/react/macro"
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react"
@@ -93,6 +93,10 @@ function CalendarBoardInner({
 }: BoardProps & { readonly locale: string }) {
   const { resolvedTheme } = useTheme()
   const selected = selectedDateFrom(initialDate)
+  // Seven week columns do not fit below lg: open on Day there. Read once so a resize never flips the view.
+  const [defaultView] = useState<"day" | "week">(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches ? "week" : "day",
+  )
 
   // Schedule-X keeps the callbacks it was created with: route them through a ref.
   const handlers = useRef({ onRangeChange, onEventClick, onSlotClick })
@@ -114,7 +118,7 @@ function CalendarBoardInner({
     calendars: calendarConfig,
     isDark: resolvedTheme === "dark",
     views: [createViewMonthGrid(), createViewWeek(), createViewDay(), createViewMonthAgenda()],
-    defaultView: "week",
+    defaultView,
     events: [],
     ...(selected === undefined ? {} : { selectedDate: selected }),
     callbacks: {

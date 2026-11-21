@@ -59,10 +59,62 @@
   color: var(--foreground);
 }
 
-/* The all-day strip can hold many task due dates: cap its height and scroll it, so the time grid stays visible. */
+/* Seven week columns need room: below that width the board scrolls sideways (wrapper in calendar-board) instead of squeezing the Sunday column out of view. */
+.sx__calendar-wrapper .sx__week-grid {
+  min-width: 44rem;
+}
+
+/* The all-day strip can hold many task due dates: cap its height and scroll it, so the time grid
+   stays visible. The chips inside keep one line and truncate, so they never grow a row. */
 .sx__calendar-wrapper .sx__date-grid {
-  max-height: 9rem;
+  max-height: 12rem;
   overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sx__calendar-wrapper .sx__date-grid-event,
+.sx__calendar-wrapper .sx__month-grid-event {
+  min-height: 1.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Toolbar controls share one height: 2rem with a mouse, 2.75rem (44px) for touch targets. */
+.sx__calendar-wrapper .sx__today-button,
+.sx__calendar-wrapper .sx__view-selection-selected-item,
+.sx__calendar-wrapper .sx__chevron-wrapper,
+.sx__calendar-wrapper .sx__date-input-wrapper {
+  height: 2rem;
+  min-height: 2rem;
+}
+
+.sx__calendar-wrapper .sx__date-input {
+  width: 10rem;
+  height: 2rem;
+}
+
+/* The theme aligns the header to flex-start, so the controls sit at different heights. Centre them. */
+.sx__calendar-wrapper .sx__calendar-header {
+  align-items: center;
+}
+
+.sx__calendar-wrapper .sx__today-button,
+.sx__calendar-wrapper .sx__view-selection-selected-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (pointer: coarse) {
+  .sx__calendar-wrapper .sx__today-button,
+  .sx__calendar-wrapper .sx__view-selection-selected-item,
+  .sx__calendar-wrapper .sx__chevron-wrapper,
+  .sx__calendar-wrapper .sx__date-input-wrapper,
+  .sx__calendar-wrapper .sx__date-input {
+    height: 2.75rem;
+    min-height: 2.75rem;
+  }
 }
 
 /* The today column header uses the primary colour as text, which fails contrast on dark surfaces. */
