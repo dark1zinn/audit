@@ -43,6 +43,8 @@ export const Route = createFileRoute("/_app/admin/invites")({
 
 const EXPIRY_OPTIONS = [24, 72, 168, 720] as const
 
+const INVITE_PAGE_SIZE = 10
+
 function InvitesPage() {
   const { t } = useLingui()
   const queryClient = useQueryClient()
@@ -50,6 +52,7 @@ function InvitesPage() {
   const [created, setCreated] = useState<string | null>(null)
   const [role, setRole] = useState<"member" | "guest">("member")
   const [expiresInHours, setExpiresInHours] = useState<number>(72)
+  const [showAllInvites, setShowAllInvites] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const create = useMutation({
@@ -107,6 +110,8 @@ function InvitesPage() {
     }
   }
 
+  const allInvites = invites.data ?? []
+  const visibleInvites = showAllInvites ? allInvites : allInvites.slice(0, INVITE_PAGE_SIZE)
   return (
     <>
       <PageHeader title={t`Invites`} description={t`Invite people with a one-time link.`} />
@@ -232,7 +237,7 @@ function InvitesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {invites.data.map((invite: Invite) => (
+                {visibleInvites.map((invite: Invite) => (
                   <TableRow key={invite.id}>
                     <TableCell>
                       <div className="font-medium">{invite.email ?? t`Anyone with the link`}</div>
@@ -264,6 +269,13 @@ function InvitesPage() {
                 ))}
               </TableBody>
             </Table>
+            {allInvites.length > INVITE_PAGE_SIZE && (
+              <div className="border-t p-2 text-center">
+                <Button variant="ghost" size="sm" onClick={() => setShowAllInvites(!showAllInvites)}>
+                  {showAllInvites ? t`Show fewer` : t`Show all ${allInvites.length}`}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
