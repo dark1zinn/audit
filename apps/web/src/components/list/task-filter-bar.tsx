@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
+import { fieldWidth } from "../form.tsx"
 import type { ProjectId } from "@audit/domain/ids"
 import type { ListTasksQuery } from "@audit/domain/tasks/schema"
 import { labelsQuery, membersQuery } from "../../lib/queries.ts"
@@ -77,7 +78,7 @@ export function TaskFilterBar({
         type="search"
         aria-label={t`Search tasks`}
         placeholder={t`Search tasks`}
-        className="min-w-56 max-w-full"
+        className={fieldWidth.sm}
         value={draft}
         onChange={(event) => setDraft(event.currentTarget.value)}
       />
@@ -85,7 +86,7 @@ export function TaskFilterBar({
         value={query.priority ?? ALL}
         onValueChange={(value) => onChange({ priority: value === ALL ? undefined : value })}
       >
-        <SelectTrigger aria-label={t`Priority`}>
+        <SelectTrigger aria-label={t`Priority`} className={fieldWidth.xs}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -101,7 +102,7 @@ export function TaskFilterBar({
         value={query.category ?? ALL}
         onValueChange={(value) => onChange({ category: value === ALL ? undefined : value })}
       >
-        <SelectTrigger aria-label={t`Status`}>
+        <SelectTrigger aria-label={t`Status`} className={fieldWidth.xs}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -141,7 +142,7 @@ export function TaskFilterBar({
             value={query.sort ?? "position"}
             onValueChange={(value) => onChange({ sort: value })}
           >
-            <SelectTrigger aria-label={t`Sort by`}>
+            <SelectTrigger aria-label={t`Sort by`} className={fieldWidth.sm}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -169,7 +170,7 @@ export function TaskFilterBar({
           value={query.groupBy ?? "none"}
           onValueChange={(value) => onChange({ groupBy: value === "none" ? undefined : value })}
         >
-          <SelectTrigger aria-label={t`Group by`}>
+          <SelectTrigger aria-label={t`Group by`} className={fieldWidth.xs}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -210,7 +211,7 @@ function ProjectFilters({
         value={labelId ?? ALL}
         onValueChange={(value) => onChange({ labelId: value === ALL ? undefined : value })}
       >
-        <SelectTrigger aria-label={t`Label`}>
+        <SelectTrigger aria-label={t`Label`} className={fieldWidth.sm}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -226,7 +227,7 @@ function ProjectFilters({
         value={assigneeId ?? ALL}
         onValueChange={(value) => onChange({ assigneeId: value === ALL ? undefined : value })}
       >
-        <SelectTrigger aria-label={t`Assignee`}>
+        <SelectTrigger aria-label={t`Assignee`} className={fieldWidth.sm}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -260,7 +261,7 @@ function DueDateInput({
       <Input
         id={id}
         type="date"
-        className="w-40"
+        className={fieldWidth.xs}
         value={value ?? ""}
         onChange={(event) => onChange(event.currentTarget.value || undefined)}
       />
