@@ -176,7 +176,7 @@ export function BoardView({
         },
       }}
     >
-      <div className="flex items-start gap-3 overflow-x-auto pb-2">
+      <div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto pb-2">
         {view.columns.map((column) => (
           <BoardColumn
             key={column.id}

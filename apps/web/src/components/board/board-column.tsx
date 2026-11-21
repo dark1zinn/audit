@@ -46,7 +46,7 @@ export function BoardColumn({
   return (
     <section
       aria-label={column.name}
-      className="bg-muted/40 flex w-72 shrink-0 flex-col gap-2 rounded-xl p-2"
+      className="bg-muted/40 flex min-h-0 w-72 shrink-0 flex-col gap-2 rounded-xl p-2"
     >
       <header className="flex items-center gap-2 px-1">
         <h2 className="truncate text-sm font-semibold">{column.name}</h2>
@@ -63,8 +63,8 @@ export function BoardColumn({
         ref={setNodeRef}
         className={
           isOver
-            ? "ring-ring flex min-h-16 flex-col gap-2 rounded-lg ring-2"
-            : "flex min-h-16 flex-col gap-2 rounded-lg"
+            ? "ring-ring -m-1 flex min-h-16 flex-1 flex-col gap-2 overflow-y-auto rounded-lg p-1 ring-2"
+            : "-m-1 flex min-h-16 flex-1 flex-col gap-2 overflow-y-auto rounded-lg p-1"
         }
       >
         <SortableContext
@@ -104,6 +104,7 @@ function QuickAdd({ columnId, columnName, onAdd }: QuickAddProps) {
 
   return (
     <form
+      className="shrink-0"
       onSubmit={(event) => {
         event.preventDefault()
         const form = event.currentTarget
