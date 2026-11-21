@@ -25,15 +25,18 @@ import { useTaskUpdate } from "./use-task-update.ts"
 import { BacklinksPanel } from "../docs/backlinks-panel.tsx"
 import { useRecordRecent } from "../../lib/search.ts"
 import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { MoveColumn } from "../actions/types.ts"
 
 interface TaskPanelProps {
   readonly projectId: ProjectId
   readonly taskId: TaskId
   /** Seed from the number lookup so the page renders without a second round trip. */
   readonly initial?: TaskDetail
+  /** Board columns for the "Move to" action; omitted until the board has loaded. */
+  readonly columns?: ReadonlyArray<MoveColumn> | undefined
 }
 
-export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
+export function TaskPanel({ projectId, taskId, initial, columns }: TaskPanelProps) {
   const task = useQuery({
     ...taskDetailQuery(taskId),
     ...(initial?.id === taskId ? { initialData: initial } : {}),
@@ -44,15 +47,17 @@ export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
 
   if (task.isError) return <ErrorMessage error={task.error} />
   if (task.data === undefined) return <LoadingRows />
-  return <TaskView projectId={projectId} task={task.data} />
+  return <TaskView projectId={projectId} task={task.data} columns={columns} />
 }
 
 function TaskView({
   projectId,
   task,
+  columns,
 }: {
   readonly projectId: ProjectId
   readonly task: TaskDetail
+  readonly columns: ReadonlyArray<MoveColumn> | undefined
 }) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
@@ -79,7 +84,7 @@ function TaskView({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="min-w-0 space-y-8">
         <header className="space-y-3">
-          <EntityContextMenu target={{ kind: "task", task }}>
+          <EntityContextMenu target={{ kind: "task", task, columns }}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <p className="text-sm text-muted-foreground">{task.key}</p>
               <div className="flex items-center gap-2">
@@ -105,7 +110,10 @@ function TaskView({
                 >
                   {task.watching ? t`Watching` : t`Watch`}
                 </Button>
-                <EntityActionsButton target={{ kind: "task", task }} label={t`Actions for ${task.key}`} />
+                <EntityActionsButton
+                  target={{ kind: "task", task, columns }}
+                  label={t`Actions for ${task.key}`}
+                />
               </div>
             </div>
           </EntityContextMenu>
