@@ -13,6 +13,8 @@ export interface ActionConfirm {
   readonly title: string
   readonly description: string
   readonly confirmLabel: string
+  /** When set, the user must type this exact text (e.g. a project key) before confirming. */
+  readonly typeToConfirm?: string | undefined
 }
 
 export interface EntityAction {
