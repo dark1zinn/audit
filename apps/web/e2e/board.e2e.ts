@@ -22,10 +22,11 @@ test("a card dragged to another column stays there after reload", async ({ page 
   await page.getByRole("textbox", { name: "Add a task to To do", exact: true }).press("Enter")
 
   const card = todo.getByRole("button", { name: title, exact: true })
+  // `has` locators resolve inside each candidate card, so anchor the title match at the page.
   const handle = todo
     .locator("[id^='board-card-']")
-    .filter({ has: card })
-    .getByRole("button", { name: /^Drag / })
+    .filter({ has: page.getByRole("button", { name: title, exact: true }) })
+    .getByRole("button", { name: /^Drag [A-Z]+-\d+$/ })
   await expect(card).toBeVisible()
 
   // Pointer drag: dnd-kit's pointer sensor needs movement past its activation distance.
