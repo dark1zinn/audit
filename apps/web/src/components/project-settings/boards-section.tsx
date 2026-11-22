@@ -54,7 +54,13 @@ export function BoardsSection({ projectId }: { readonly projectId: ProjectId }) 
           <BoardSettings key={`${board.id}:${board.version}`} board={board} />
         ))}
         <form className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end" onSubmit={onCreate}>
-          <TextField name="board-name" label={t`New board name`} required maxLength={120} />
+          <TextField
+            name="board-name"
+            width="md"
+            label={t`New board name`}
+            required
+            maxLength={120}
+          />
           <Button type="submit" disabled={create.isPending}>
             <Trans>Create board</Trans>
           </Button>
@@ -112,6 +118,7 @@ function BoardSettings({ board }: { readonly board: Board }) {
       >
         <TextField
           name={renameField}
+          width="md"
           label={t`Board name`}
           defaultValue={board.name}
           required

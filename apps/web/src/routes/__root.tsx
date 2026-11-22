@@ -1,17 +1,23 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { createRootRouteWithContext, Link, Outlet } from "@tanstack/react-router"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
+import { Button } from "@audit/ui/components/ui/button.tsx"
+import { AuthLayout } from "../components/auth-layout.tsx"
 
+/** Unknown URL outside `_app`. Signed-in users never reach this: `_app.$` renders inside the shell. */
 function NotFound() {
+  const { t } = useLingui()
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-2xl font-semibold">
-        <Trans>Page not found</Trans>
-      </h1>
-      <Link to="/" className="text-sm underline underline-offset-4">
-        <Trans>Go home</Trans>
-      </Link>
-    </div>
+    <AuthLayout
+      title={t`Page not found`}
+      description={t`The page you were looking for does not exist or was moved.`}
+    >
+      <Button asChild className="w-full">
+        <Link to="/">
+          <Trans>Go home</Trans>
+        </Link>
+      </Button>
+    </AuthLayout>
   )
 }
 

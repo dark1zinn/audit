@@ -5,7 +5,7 @@ import { Plus, Send, Settings, Square, Trash2 } from "lucide-react"
 import type { AiChatStreamMessage } from "@audit/domain/ai/schema"
 import type { AiConversationId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
-import { Sheet, SheetContent, SheetTitle } from "@audit/ui/components/ui/sheet.tsx"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@audit/ui/components/ui/sheet.tsx"
 import { Textarea } from "@audit/ui/components/ui/textarea.tsx"
 import { callApi } from "../../lib/api.ts"
 import {
@@ -250,34 +250,36 @@ function AssistantBody() {
 
   return (
     <>
-      <div className="flex items-center gap-2 border-b p-4">
-        <SheetTitle className="mr-auto text-base">
+      <SheetHeader className="gap-2 border-b p-4 pe-12 sm:flex-row sm:items-center">
+        <SheetTitle>
           <Trans>Assistant</Trans>
         </SheetTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t`Assistant settings`}
-          onClick={() => setSettingsOpen(true)}
-        >
-          <Settings aria-hidden="true" className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t`Delete conversation`}
-          disabled={selected === null || live !== null || remove.isPending}
-          onClick={() => {
-            if (selected !== null) remove.mutate(selected)
-          }}
-        >
-          <Trash2 aria-hidden="true" className="size-4" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => choose(null)}>
-          <Plus aria-hidden="true" className="size-4" />
-          <Trans>New</Trans>
-        </Button>
-      </div>
+        <div className="flex w-full items-center gap-1 sm:w-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Assistant settings`}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings aria-hidden="true" className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Delete conversation`}
+            disabled={selected === null || live !== null || remove.isPending}
+            onClick={() => {
+              if (selected !== null) remove.mutate(selected)
+            }}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </Button>
+          <Button variant="outline" size="sm" className="ms-auto" onClick={() => choose(null)}>
+            <Plus aria-hidden="true" className="size-4" />
+            <Trans>New</Trans>
+          </Button>
+        </div>
+      </SheetHeader>
 
       <div className="space-y-2 border-b p-4">
         <label htmlFor="ai-conversation" className="text-sm font-medium">

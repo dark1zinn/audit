@@ -1,6 +1,6 @@
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import type { CalendarSummary } from "@audit/domain/calendar/schema"
 import type { ProjectId, TeamId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { callApi } from "../../lib/api.ts"
-import { formValue, TextField } from "../form.tsx"
+import { fieldWidth, formValue, TextField } from "../form.tsx"
 import { ErrorMessage } from "../feedback.tsx"
 import { teamsQuery } from "../../lib/queries.ts"
 import { ConfirmDialog } from "./confirm-dialogs.tsx"
@@ -147,7 +147,7 @@ function CalendarForm({
               <span>{t`Owner`}</span>
             </Label>
             <Select value={teamId} onValueChange={setTeamId}>
-              <SelectTrigger id="calendar-team" className="w-full">
+              <SelectTrigger id="calendar-team" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -163,7 +163,7 @@ function CalendarForm({
         )}
         {save.error !== null && <ErrorMessage error={save.error} />}
       </form>
-      <DialogFooter className="flex-wrap sm:justify-between">
+      <DialogFooter className="flex-row flex-wrap items-center justify-between">
         <div>
           {calendar !== null && (
             <Button
@@ -214,6 +214,7 @@ export function ImportDialog({
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const [file, setFile] = useState<File | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
   const [imported, setImported] = useState<number | null>(null)
 
   const importFile = useMutation({
@@ -257,15 +258,36 @@ export function ImportDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
-          <Label htmlFor="ics-file">
-            <span>{t`iCalendar file`}</span>
-          </Label>
-          <Input
-            id="ics-file"
-            type="file"
-            accept=".ics,text/calendar"
-            onChange={(event) => setFile(event.currentTarget.files?.[0] ?? null)}
-          />
+          <span id="ics-file-label" className="text-sm font-medium">
+            {t`iCalendar file`}
+          </span>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              aria-labelledby="ics-file-label ics-file-name"
+              onClick={() => fileInput.current?.click()}
+            >
+              {t`Choose .ics file`}
+            </Button>
+            <span
+              id="ics-file-name"
+              className="min-w-0 truncate text-sm text-muted-foreground"
+              title={file?.name}
+            >
+              {file?.name ?? t`No file chosen`}
+            </span>
+            <input
+              id="ics-file"
+              ref={fileInput}
+              type="file"
+              accept=".ics,text/calendar"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="sr-only"
+              onChange={(event) => setFile(event.currentTarget.files?.[0] ?? null)}
+            />
+          </div>
           {imported !== null && (
             <output className="text-sm">
               <Plural value={imported} one="# event imported." other="# events imported." />

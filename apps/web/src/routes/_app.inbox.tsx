@@ -83,6 +83,7 @@ function InboxPage() {
         <EmptyState
           icon={Inbox}
           title={archived ? t`No archived notifications.` : t`You are all caught up.`}
+          {...(archived ? {} : { description: t`New mentions and assignments will show up here.` })}
         />
       )}
       {inbox.data !== undefined && visible.length > 0 && (

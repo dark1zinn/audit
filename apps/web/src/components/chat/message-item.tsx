@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { MessageSquare } from "lucide-react"
+import { Check, MessageSquare } from "lucide-react"
 import type { Message } from "@audit/domain/chat/schema"
 import type { ChannelId, MessageId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
@@ -14,6 +14,7 @@ import { messageChangeKeys } from "../../lib/chat.ts"
 import { ErrorMessage } from "../feedback.tsx"
 import { Composer } from "./composer.tsx"
 import { MessageBody } from "./message-body.tsx"
+import { formatMessageTime } from "./format-time.ts"
 
 export const REACTION_EMOJIS = ["👍", "❤️", "🎉", "👀", "😂", "🙏"] as const
 
@@ -23,6 +24,7 @@ interface MessageItemProps {
   readonly meId: string
   readonly canPin: boolean
   readonly onOpenThread?: (messageId: MessageId) => void
+  readonly threadActive?: boolean
   readonly onCreateTask?: (message: Message) => void
 }
 
@@ -33,9 +35,10 @@ export function MessageItem({
   meId,
   canPin,
   onOpenThread,
+  threadActive = false,
   onCreateTask,
 }: MessageItemProps) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<unknown>(null)
@@ -83,11 +86,18 @@ export function MessageItem({
     onEdit: isMine ? () => setEditing(true) : undefined,
   }
   const article = (
-    <article className="group relative px-4 py-2 hover:bg-muted/40" aria-label={t`Message`}>
+    <article
+      className={`group relative px-4 py-2 ${threadActive ? "bg-accent" : "hover:bg-muted/40"}`}
+      aria-label={t`Message`}
+    >
       <header className="flex items-baseline gap-2 text-sm">
         <span className="font-semibold">{message.author.name}</span>
-        <time className="text-xs text-muted-foreground" dateTime={String(message.createdAt)}>
-          {new Date(message.createdAt).toLocaleString()}
+        <time
+          className="text-xs text-muted-foreground"
+          dateTime={String(message.createdAt)}
+          title={formatMessageTime(message.createdAt, i18n.locale, "full")}
+        >
+          {formatMessageTime(message.createdAt, i18n.locale, "short")}
         </time>
         {message.editedAt === null ? null : (
           <span className="text-xs text-muted-foreground">
@@ -99,6 +109,21 @@ export function MessageItem({
             <Trans>Pinned</Trans>
           </Badge>
         ) : null}
+        <div className="-my-1 ms-auto flex items-center gap-0.5 rounded-md border bg-background p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100">
+          {onOpenThread === undefined ? null : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onOpenThread(message.id)}
+            >
+              <MessageSquare className="size-3.5" />
+              <Trans>Reply</Trans>
+            </Button>
+          )}
+          <EntityActionsButton target={actionTarget} label={t`Message actions`} />
+        </div>
       </header>
 
       {editing ? (
@@ -107,6 +132,7 @@ export function MessageItem({
             channelId={channelId}
             placeholder={t`Edit message`}
             submitLabel={t`Save`}
+            submitIcon={Check}
             initial={message.body as RichDoc}
             onCancel={() => setEditing(false)}
             onSubmit={async (body) => {
@@ -144,13 +170,13 @@ export function MessageItem({
             key={emoji}
             type="button"
             aria-label={t`React with ${emoji}`}
-            className="hidden rounded px-1 text-sm hover:bg-accent group-hover:inline-block focus:inline-block"
+            className="hidden rounded px-1 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:inline-block group-focus-within:inline-block"
             onClick={() => reactionToggle(emoji, false)}
           >
             {emoji}
           </button>
         ))}
-        {onOpenThread === undefined ? null : (
+        {onOpenThread === undefined || message.replyCount === 0 ? null : (
           <Button
             type="button"
             variant="ghost"
@@ -159,17 +185,9 @@ export function MessageItem({
             onClick={() => onOpenThread(message.id)}
           >
             <MessageSquare className="size-3.5" />
-            {message.replyCount > 0 ? (
-              <Trans>{message.replyCount} replies</Trans>
-            ) : (
-              <Trans>Reply</Trans>
-            )}
+            <Trans>{message.replyCount} replies</Trans>
           </Button>
         )}
-      </div>
-
-      <div className="absolute right-2 top-1 hidden group-hover:block group-focus-within:block pointer-coarse:block">
-        <EntityActionsButton target={actionTarget} label={t`Message actions`} />
       </div>
 
       {error === null ? null : <ErrorMessage error={error} />}

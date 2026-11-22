@@ -369,7 +369,8 @@ const connectOnce = (
     const client = yield* RpcClient.make(RealtimeRpcs)
     const handle: LiveHandle = {
       updatePresence: (scope, focusEntityId, typing) => {
-        void Effect.runPromise(
+        // Fire-and-forget: runFork, not runPromise, so an interrupted socket can't surface as an unhandled rejection.
+        Effect.runFork(
           client["presence.update"]({
             scope,
             focusEntityId,

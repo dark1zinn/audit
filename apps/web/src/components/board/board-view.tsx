@@ -13,7 +13,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core"
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { Member } from "@audit/domain/identity/schema"
 import type { Label } from "@audit/domain/projects/schema"
 import type {
@@ -161,6 +161,25 @@ export function BoardView({
     name: column.name,
   }))
 
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [moreEnd, setMoreEnd] = useState(false)
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (el === null) return
+    const measure = () => setMoreEnd(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+    measure()
+    el.addEventListener("scroll", measure, { passive: true })
+    const resizes = new ResizeObserver(measure)
+    resizes.observe(el)
+    const columns = new MutationObserver(measure)
+    columns.observe(el, { childList: true })
+    return () => {
+      el.removeEventListener("scroll", measure)
+      resizes.disconnect()
+      columns.disconnect()
+    }
+  }, [])
+
   return (
     <DndContext
       sensors={sensors}
@@ -176,7 +195,14 @@ export function BoardView({
         },
       }}
     >
-      <div className="flex items-start gap-3 overflow-x-auto pb-2">
+      <div
+        ref={scrollerRef}
+        className={
+          moreEnd
+            ? "flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto pb-2 [mask-image:linear-gradient(to_left,transparent,black_2.5rem)] motion-reduce:[mask-image:none]"
+            : "flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto pb-2"
+        }
+      >
         {view.columns.map((column) => (
           <BoardColumn
             key={column.id}

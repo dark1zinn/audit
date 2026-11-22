@@ -19,6 +19,7 @@ import type { AnchorRange } from "./comments-anchor.ts"
 import { DocEditor } from "./collab-editor.tsx"
 import { DocAiMenu } from "./doc-ai-menu.tsx"
 import { openTab } from "./doc-tabs.ts"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@audit/ui/components/ui/tooltip.tsx"
 import { PropertiesPanel } from "./properties-panel.tsx"
 import { commentsQuery, docQuery, invalidateDoc } from "./queries.ts"
 
@@ -152,7 +153,7 @@ const DocPaneBody = ({
               aria-label={t`Document title`}
               value={title}
               maxLength={200}
-              className="h-auto min-w-0 flex-1 border-none px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0 md:text-2xl"
+              className="h-auto min-w-0 flex-1 truncate border-none bg-transparent px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0 dark:bg-transparent md:text-2xl"
               onChange={(event) => setTitle(event.target.value)}
               onBlur={() => {
                 const next = title.trim()
@@ -172,13 +173,29 @@ const DocPaneBody = ({
               {doc.title}
             </h1>
           )}
+          <EntityActionsButton
+            label={t`Actions for ${doc.title}`}
+            target={{
+              kind: "doc",
+              doc,
+              projectKey: projectKey ?? undefined,
+              onRename: () => titleRef.current?.focus(),
+              onOpenTab: () => openTab({ id: docId, projectKey }),
+              onOpenSide,
+              onNewSubDoc,
+              onOpenProperties: () => {
+                const panel = document.getElementById("doc-properties")
+                panel?.scrollIntoView({ block: "start" })
+                panel?.querySelector<HTMLElement>("button, input, select, [role=combobox]")?.focus()
+              },
+            }}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-1 print:hidden">
           {canWrite && (
             <ToggleGroup
               type="single"
               variant="outline"
-              size="sm"
               value={editing ? "edit" : "read"}
               aria-label={t`Editing mode`}
               onValueChange={(value) => {
@@ -217,49 +234,51 @@ const DocPaneBody = ({
           )}
           {onSplit !== undefined && (
             <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={t`Swap panes`}
-                title={t`Swap panes`}
-                onClick={onSplit.onSwap}
-              >
-                <ArrowLeftRight aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={t`Close split`}
-                title={t`Close split`}
-                onClick={onSplit.onClose}
-              >
-                <X aria-hidden="true" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t`Swap panes`}
+                    onClick={onSplit.onSwap}
+                  >
+                    <ArrowLeftRight aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t`Swap panes`}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t`Close split`}
+                    onClick={onSplit.onClose}
+                  >
+                    <X aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t`Close split`}</TooltipContent>
+              </Tooltip>
             </>
           )}
           <DocAiMenu docId={docId} title={doc.title} canWrite={canWrite} editorRef={editorRef} />
-          <EntityActionsButton
-            label={t`Actions for ${doc.title}`}
-            target={{
-              kind: "doc",
-              doc,
-              projectKey: projectKey ?? undefined,
-              onRename: () => titleRef.current?.focus(),
-              onOpenTab: () => openTab({ id: docId, projectKey }),
-              onOpenSide,
-              onNewSubDoc,
-              onOpenProperties: () =>
-                document.getElementById("doc-properties")?.scrollIntoView({ block: "start" }),
-            }}
-          />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
-          <a href={`/api/docs/${docId}/export/md`} download className="text-link underline">
+          <a
+            href={`/api/docs/${docId}/export/md`}
+            download
+            className="inline-flex min-h-11 items-center text-link underline md:min-h-6"
+          >
             <Trans>Export Markdown</Trans>
           </a>
-          <a href={`/api/docs/${docId}/export/html`} download className="text-link underline">
+          <a
+            href={`/api/docs/${docId}/export/html`}
+            download
+            className="inline-flex min-h-11 items-center text-link underline md:min-h-6"
+          >
             <Trans>Export HTML</Trans>
           </a>
           {presence.length > 0 && (

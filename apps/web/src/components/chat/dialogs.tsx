@@ -8,8 +8,16 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { Label } from "@audit/ui/components/ui/label.tsx"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@audit/ui/components/ui/select.tsx"
+import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -21,6 +29,7 @@ import { browseQuery, channelQuery, chatKeys, pinsQuery } from "../../lib/chat.t
 import { membersQuery, projectsQuery, boardsQuery } from "../../lib/queries.ts"
 import { Pin } from "lucide-react"
 import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { MessageBody } from "./message-body.tsx"
 
 const MAX_GROUP_PEOPLE = 8
@@ -42,12 +51,18 @@ interface ChannelSettingsDialogProps {
 }
 
 /** Channel settings: name and topic, notifications, members, archive and leave. */
-export function ChannelSettingsDialog({
-  open,
-  onOpenChange,
-  channelId,
-  meId,
-}: ChannelSettingsDialogProps) {
+export function ChannelSettingsDialog(props: ChannelSettingsDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+        <ChannelSettingsForm {...props} />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/** Form state lives inside DialogContent, so each open starts from the saved values. */
+function ChannelSettingsForm({ open, channelId, meId }: ChannelSettingsDialogProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const header = useQuery({ ...channelQuery(channelId), enabled: open })
@@ -81,7 +96,6 @@ export function ChannelSettingsDialog({
     onError: (caught) => setError(caught),
   })
 
-  if (!open) return null
   const data = header.data
   const manager = data?.myRole === "manager"
   const channel = data?.channel
@@ -90,207 +104,213 @@ export function ChannelSettingsDialog({
   const addable = (members.data ?? []).filter((member) => !memberIds.has(member.userId))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            <Trans>Channel settings</Trans>
-          </DialogTitle>
-          <DialogDescription>
-            {isDm ? <Trans>Direct messages cannot be renamed.</Trans> : null}
-          </DialogDescription>
-        </DialogHeader>
-        {header.isPending ? <LoadingRows /> : null}
-        {header.isError ? <ErrorMessage error={header.error} /> : null}
-        {channel === undefined ? null : (
-          <div className="space-y-5">
-            {isDm ? null : (
-              <form
-                className="space-y-3"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  act.mutate(() =>
-                    callApi((api) =>
-                      api.chat.updateChannel({
-                        params: { channelId },
-                        payload: {
-                          name: name ?? channel.name,
-                          topic: topic ?? channel.topic,
-                          version: channel.version,
-                        },
-                      }),
-                    ),
-                  )
-                }}
-              >
-                <div className="space-y-1">
-                  <Label htmlFor="chat-channel-name">
-                    <Trans>Name</Trans>
-                  </Label>
-                  <Input
-                    id="chat-channel-name"
-                    value={name ?? channel.name}
-                    disabled={!manager}
-                    maxLength={80}
-                    onChange={(event) => setName(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="chat-channel-topic">
-                    <Trans>Topic</Trans>
-                  </Label>
-                  <Input
-                    id="chat-channel-topic"
-                    value={topic ?? channel.topic ?? ""}
-                    disabled={!manager}
-                    maxLength={250}
-                    onChange={(event) => setTopic(event.target.value)}
-                  />
-                </div>
-                {manager ? (
-                  <Button type="submit" size="sm" disabled={act.isPending}>
-                    <Trans>Save</Trans>
-                  </Button>
-                ) : null}
-              </form>
-            )}
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trans>Channel settings</Trans>
+        </DialogTitle>
+        <DialogDescription>
+          {isDm ? <Trans>Direct messages cannot be renamed.</Trans> : null}
+        </DialogDescription>
+      </DialogHeader>
+      {header.isPending ? <LoadingRows /> : null}
+      {header.isError ? <ErrorMessage error={header.error} /> : null}
+      {channel === undefined ? null : (
+        <div className="space-y-5">
+          {isDm ? null : (
+            <form
+              id="chat-channel-form"
+              className="space-y-3"
+              onSubmit={(event) => {
+                event.preventDefault()
+                act.mutate(() =>
+                  callApi((api) =>
+                    api.chat.updateChannel({
+                      params: { channelId },
+                      payload: {
+                        name: name ?? channel.name,
+                        topic: topic ?? channel.topic,
+                        version: channel.version,
+                      },
+                    }),
+                  ),
+                )
+              }}
+            >
+              <div className="space-y-1">
+                <Label htmlFor="chat-channel-name">
+                  <Trans>Name</Trans>
+                </Label>
+                <Input
+                  id="chat-channel-name"
+                  className={fieldWidth.md}
+                  value={name ?? channel.name}
+                  disabled={!manager}
+                  maxLength={80}
+                  onChange={(event) => setName(event.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="chat-channel-topic">
+                  <Trans>Topic</Trans>
+                </Label>
+                <Input
+                  id="chat-channel-topic"
+                  className={fieldWidth.lg}
+                  value={topic ?? channel.topic ?? ""}
+                  disabled={!manager}
+                  maxLength={250}
+                  onChange={(event) => setTopic(event.target.value)}
+                />
+              </div>
+            </form>
+          )}
 
-            <section className="space-y-2">
-              <Label htmlFor="chat-notify">
-                <Trans>Notifications</Trans>
-              </Label>
-              <select
-                id="chat-notify"
-                className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-                value={channel.notifyLevel ?? "all"}
-                onChange={(event) => requestAction(`notify-${event.target.value}`)}
-              >
-                <option value="all">{t`All messages`}</option>
-                <option value="mentions">{t`Mentions only`}</option>
-                <option value="none">{t`Nothing`}</option>
-              </select>
-            </section>
+          <section className="space-y-2">
+            <Label htmlFor="chat-notify">
+              <Trans>Notifications</Trans>
+            </Label>
+            <Select
+              value={channel.notifyLevel ?? "all"}
+              onValueChange={(value) => requestAction(`notify-${value}`)}
+            >
+              <SelectTrigger id="chat-notify" className={fieldWidth.sm}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t`All messages`}</SelectItem>
+                <SelectItem value="mentions">{t`Mentions only`}</SelectItem>
+                <SelectItem value="none">{t`Nothing`}</SelectItem>
+              </SelectContent>
+            </Select>
+          </section>
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold">
-                <Trans>Members</Trans>
-              </h3>
-              <ul className="space-y-1 text-sm">
-                {data?.members.map((member) => (
-                  <li key={member.userId} className="flex items-center justify-between gap-2">
-                    <span>
-                      {member.name}
-                      {member.role === "manager" ? (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          <Trans>Manager</Trans>
-                        </span>
-                      ) : null}
-                    </span>
-                    {manager && member.userId !== meId && !isDm ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={act.isPending}
-                        onClick={() =>
-                          act.mutate(() =>
-                            callApi((api) =>
-                              api.chat.removeMember({
-                                params: { channelId },
-                                payload: { userIds: [member.userId] },
-                              }),
-                            ),
-                          )
-                        }
-                      >
-                        <Trans>Remove</Trans>
-                      </Button>
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold">
+              <Trans>Members</Trans>
+            </h3>
+            <ul className="space-y-1 text-sm">
+              {data?.members.map((member) => (
+                <li key={member.userId} className="flex items-center justify-between gap-2">
+                  <span>
+                    {member.name}
+                    {member.role === "manager" ? (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        <Trans>Manager</Trans>
+                      </span>
                     ) : null}
-                  </li>
-                ))}
-              </ul>
-              {manager && !isDm ? (
-                <div className="flex gap-2">
-                  <select
-                    aria-label={t`Add member`}
-                    className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm"
-                    value={addId}
-                    onChange={(event) => setAddId(event.target.value)}
-                  >
-                    <option value="">{t`Choose a person`}</option>
-                    {addable.map((member) => (
-                      <option key={member.userId} value={member.userId}>
-                        {member.displayName}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    size="sm"
-                    disabled={addId === "" || act.isPending}
-                    onClick={() => {
-                      const userId = addId
-                      setAddId("")
-                      act.mutate(() =>
-                        callApi((api) =>
-                          api.chat.addMembers({
-                            params: { channelId },
-                            payload: { userIds: [userId as UserId] },
-                          }),
-                        ),
-                      )
-                    }}
-                  >
-                    <Trans>Add</Trans>
-                  </Button>
-                </div>
-              ) : null}
-            </section>
+                  </span>
+                  {manager && member.userId !== meId && !isDm ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={act.isPending}
+                      onClick={() =>
+                        act.mutate(() =>
+                          callApi((api) =>
+                            api.chat.removeMember({
+                              params: { channelId },
+                              payload: { userIds: [member.userId] },
+                            }),
+                          ),
+                        )
+                      }
+                    >
+                      <Trans>Remove</Trans>
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            {manager && !isDm ? (
+              <div className="flex gap-2">
+                <select
+                  aria-label={t`Add member`}
+                  className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm sm:max-w-sm"
+                  value={addId}
+                  onChange={(event) => setAddId(event.target.value)}
+                >
+                  <option value="">{t`Choose a person`}</option>
+                  {addable.map((member) => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.displayName}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  disabled={addId === "" || act.isPending}
+                  onClick={() => {
+                    const userId = addId
+                    setAddId("")
+                    act.mutate(() =>
+                      callApi((api) =>
+                        api.chat.addMembers({
+                          params: { channelId },
+                          payload: { userIds: [userId as UserId] },
+                        }),
+                      ),
+                    )
+                  }}
+                >
+                  <Trans>Add</Trans>
+                </Button>
+              </div>
+            ) : null}
+          </section>
 
-            <section className="flex flex-wrap gap-2">
-              {manager && !isDm ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={act.isPending}
-                  onClick={() => requestAction("archive")}
-                >
-                  {channel.archivedAt === null ? (
-                    <Trans>Archive channel</Trans>
-                  ) : (
-                    <Trans>Unarchive channel</Trans>
-                  )}
-                </Button>
-              ) : null}
-              {isDm ? null : (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  disabled={act.isPending}
-                  onClick={() => requestAction("leave")}
-                >
-                  <Trans>Leave channel</Trans>
-                </Button>
-              )}
-            </section>
-          </div>
-        )}
-        {error === null ? null : <ErrorMessage error={error} />}
-        {confirming?.confirm === undefined ? null : (
-          <ConfirmDialog
-            open
-            title={confirming.confirm.title}
-            description={confirming.confirm.description}
-            confirmLabel={confirming.confirm.confirmLabel}
-            onOpenChange={(next) => {
-              if (!next) setPendingAction(null)
-            }}
-            onConfirm={() => {
-              confirming.run?.()
-              setPendingAction(null)
-            }}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+          <section className="flex flex-wrap gap-2">
+            {manager && !isDm ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={act.isPending}
+                onClick={() => requestAction("archive")}
+              >
+                {channel.archivedAt === null ? (
+                  <Trans>Archive channel</Trans>
+                ) : (
+                  <Trans>Unarchive channel</Trans>
+                )}
+              </Button>
+            ) : null}
+            {isDm ? null : (
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={act.isPending}
+                onClick={() => requestAction("leave")}
+              >
+                <Trans>Leave channel</Trans>
+              </Button>
+            )}
+          </section>
+        </div>
+      )}
+      {manager && !isDm && channel !== undefined ? (
+        <DialogFooter>
+          <Button type="submit" form="chat-channel-form" size="sm" disabled={act.isPending}>
+            <Trans>Save</Trans>
+          </Button>
+        </DialogFooter>
+      ) : null}
+      {error === null ? null : <ErrorMessage error={error} />}
+      {confirming?.confirm === undefined ? null : (
+        <ConfirmDialog
+          open
+          title={confirming.confirm.title}
+          description={confirming.confirm.description}
+          confirmLabel={confirming.confirm.confirmLabel}
+          onOpenChange={(next) => {
+            if (!next) setPendingAction(null)
+          }}
+          onConfirm={() => {
+            confirming.run?.()
+            setPendingAction(null)
+          }}
+        />
+      )}
+    </>
   )
 }
 
@@ -302,7 +322,17 @@ interface PinsDialogProps {
 }
 
 /** Pinned messages in a channel, newest pin first. */
-export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
+export function PinsDialog(props: PinsDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+        <PinsForm {...props} />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function PinsForm({ open, channelId }: PinsDialogProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const pins = useQuery({ ...pinsQuery(channelId), enabled: open })
@@ -318,41 +348,39 @@ export function PinsDialog({ open, onOpenChange, channelId }: PinsDialogProps) {
     onError: (caught) => setError(caught),
   })
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            <Trans>Pinned messages</Trans>
-          </DialogTitle>
-          <DialogDescription>
-            <Trans>Pinned messages stay easy to find for everyone in this channel.</Trans>
-          </DialogDescription>
-        </DialogHeader>
-        {pins.isPending ? <LoadingRows /> : null}
-        {pins.isError ? <ErrorMessage error={pins.error} /> : null}
-        {pins.data?.length === 0 ? (
-          <EmptyState icon={Pin} title={t`Nothing is pinned yet.`} />
-        ) : null}
-        <ul className="space-y-3">
-          {pins.data?.map((message) => (
-            <li key={message.id} className="rounded-md border p-3">
-              <p className="text-xs text-muted-foreground">{message.author.name}</p>
-              <MessageBody body={message.body} />
-              <Button
-                size="sm"
-                variant="ghost"
-                className="mt-2"
-                disabled={unpin.isPending}
-                onClick={() => unpin.mutate(message.id)}
-              >
-                <Trans>Unpin</Trans>
-              </Button>
-            </li>
-          ))}
-        </ul>
-        {error === null ? null : <ErrorMessage error={error} />}
-      </DialogContent>
-    </Dialog>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trans>Pinned messages</Trans>
+        </DialogTitle>
+        <DialogDescription>
+          <Trans>Pinned messages stay easy to find for everyone in this channel.</Trans>
+        </DialogDescription>
+      </DialogHeader>
+      {pins.isPending ? <LoadingRows /> : null}
+      {pins.isError ? <ErrorMessage error={pins.error} /> : null}
+      {pins.data?.length === 0 ? (
+        <EmptyState icon={Pin} title={t`No pinned messages yet.`} />
+      ) : null}
+      <ul className="space-y-3">
+        {pins.data?.map((message) => (
+          <li key={message.id} className="rounded-md border p-3">
+            <p className="text-xs text-muted-foreground">{message.author.name}</p>
+            <MessageBody body={message.body} />
+            <Button
+              size="sm"
+              variant="ghost"
+              className="mt-2"
+              disabled={unpin.isPending}
+              onClick={() => unpin.mutate(message.id)}
+            >
+              <Trans>Unpin</Trans>
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {error === null ? null : <ErrorMessage error={error} />}
+    </>
   )
 }
 
@@ -496,7 +524,17 @@ interface CreateChannelDialogProps {
 }
 
 /** Creates a public or private channel and opens it. */
-export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogProps) {
+export function CreateChannelDialog(props: CreateChannelDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <CreateChannelForm {...props} />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function CreateChannelForm({ onOpenChange }: CreateChannelDialogProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -523,68 +561,68 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
     onError: (caught) => setError(caught),
   })
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            <Trans>New channel</Trans>
-          </DialogTitle>
-          <DialogDescription>
-            <Trans>Public channels can be found and joined by anyone in the workspace.</Trans>
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          className="space-y-3"
-          onSubmit={(event) => {
-            event.preventDefault()
-            create.mutate()
-          }}
-        >
-          <div className="space-y-1">
-            <Label htmlFor="new-channel-name">
-              <Trans>Name</Trans>
-            </Label>
-            <Input
-              id="new-channel-name"
-              required
-              maxLength={80}
-              value={name}
-              placeholder={t`general`}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-channel-topic">
-              <Trans>Topic</Trans>
-            </Label>
-            <Input
-              id="new-channel-topic"
-              maxLength={250}
-              value={topic}
-              onChange={(event) => setTopic(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-channel-kind">
-              <Trans>Visibility</Trans>
-            </Label>
-            <select
-              id="new-channel-kind"
-              className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-              value={kind}
-              onChange={(event) => setKind(event.target.value as "public" | "private")}
-            >
-              <option value="public">{t`Public`}</option>
-              <option value="private">{t`Private`}</option>
-            </select>
-          </div>
-          <Button type="submit" disabled={name.trim() === "" || create.isPending}>
-            <Trans>Create channel</Trans>
-          </Button>
-          {error === null ? null : <ErrorMessage error={error} />}
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trans>New channel</Trans>
+        </DialogTitle>
+        <DialogDescription>
+          <Trans>Public channels can be found and joined by anyone in the workspace.</Trans>
+        </DialogDescription>
+      </DialogHeader>
+      <form
+        className="space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault()
+          create.mutate()
+        }}
+      >
+        <div className="space-y-1">
+          <Label htmlFor="new-channel-name">
+            <Trans>Name</Trans>
+          </Label>
+          <Input
+            id="new-channel-name"
+            className={fieldWidth.md}
+            required
+            maxLength={80}
+            value={name}
+            placeholder={t`general`}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="new-channel-topic">
+            <Trans>Topic</Trans>
+          </Label>
+          <Input
+            id="new-channel-topic"
+            className={fieldWidth.lg}
+            maxLength={250}
+            value={topic}
+            onChange={(event) => setTopic(event.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="new-channel-kind">
+            <Trans>Visibility</Trans>
+          </Label>
+          <Select value={kind} onValueChange={(value) => setKind(value as "public" | "private")}>
+            <SelectTrigger id="new-channel-kind" className={fieldWidth.sm}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="public">{t`Public`}</SelectItem>
+              <SelectItem value="private">{t`Private`}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button type="submit" disabled={name.trim() === "" || create.isPending}>
+          <Trans>Create channel</Trans>
+        </Button>
+        {error === null ? null : <ErrorMessage error={error} />}
+      </form>
+    </>
   )
 }
 
@@ -594,7 +632,17 @@ interface BrowseChannelsDialogProps {
 }
 
 /** Public channels in the workspace, with join. */
-export function BrowseChannelsDialog({ open, onOpenChange }: BrowseChannelsDialogProps) {
+export function BrowseChannelsDialog(props: BrowseChannelsDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+        <BrowseChannelsForm {...props} />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function BrowseChannelsForm({ open, onOpenChange }: BrowseChannelsDialogProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -611,54 +659,52 @@ export function BrowseChannelsDialog({ open, onOpenChange }: BrowseChannelsDialo
     onError: (caught) => setError(caught),
   })
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            <Trans>Browse channels</Trans>
-          </DialogTitle>
-          <DialogDescription>
-            <Trans>Join a public channel to see its messages.</Trans>
-          </DialogDescription>
-        </DialogHeader>
-        {browse.isPending ? <LoadingRows /> : null}
-        {browse.isError ? <ErrorMessage error={browse.error} /> : null}
-        <ul className="divide-y">
-          {browse.data?.map((channel) => (
-            <li key={channel.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-medium">#{channel.name}</p>
-                {channel.topic === null || channel.topic === "" ? null : (
-                  <p className="truncate text-xs text-muted-foreground">{channel.topic}</p>
-                )}
-              </div>
-              {channel.isMember ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    onOpenChange(false)
-                    void navigate({ to: "/c/$channelId", params: { channelId: channel.id } })
-                  }}
-                >
-                  <Trans>Open</Trans>
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  disabled={join.isPending}
-                  aria-label={t`Join #${channel.name}`}
-                  onClick={() => join.mutate(channel.id)}
-                >
-                  <Trans>Join</Trans>
-                </Button>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trans>Browse channels</Trans>
+        </DialogTitle>
+        <DialogDescription>
+          <Trans>Join a public channel to see its messages.</Trans>
+        </DialogDescription>
+      </DialogHeader>
+      {browse.isPending ? <LoadingRows /> : null}
+      {browse.isError ? <ErrorMessage error={browse.error} /> : null}
+      <ul className="divide-y">
+        {browse.data?.map((channel) => (
+          <li key={channel.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+            <div className="min-w-0">
+              <p className="truncate font-medium">#{channel.name}</p>
+              {channel.topic === null || channel.topic === "" ? null : (
+                <p className="truncate text-xs text-muted-foreground">{channel.topic}</p>
               )}
-            </li>
-          ))}
-        </ul>
-        {error === null ? null : <ErrorMessage error={error} />}
-      </DialogContent>
-    </Dialog>
+            </div>
+            {channel.isMember ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  onOpenChange(false)
+                  void navigate({ to: "/c/$channelId", params: { channelId: channel.id } })
+                }}
+              >
+                <Trans>Open</Trans>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={join.isPending}
+                aria-label={t`Join #${channel.name}`}
+                onClick={() => join.mutate(channel.id)}
+              >
+                <Trans>Join</Trans>
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {error === null ? null : <ErrorMessage error={error} />}
+    </>
   )
 }
 
@@ -669,7 +715,17 @@ interface NewDmDialogProps {
 }
 
 /** Starts a direct message, or a group DM with up to eight people including you. */
-export function NewDmDialog({ open, onOpenChange, meId }: NewDmDialogProps) {
+export function NewDmDialog(props: NewDmDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+        <NewDmForm {...props} />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function NewDmForm({ open, onOpenChange, meId }: NewDmDialogProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const people = useQuery({ ...membersQuery, enabled: open })
@@ -696,38 +752,36 @@ export function NewDmDialog({ open, onOpenChange, meId }: NewDmDialogProps) {
           : [...current, userId],
     )
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            <Trans>New message</Trans>
-          </DialogTitle>
-          <DialogDescription>
-            <Trans>
-              Pick one person for a direct message, or up to seven for a group (eight with you).
-            </Trans>
-          </DialogDescription>
-        </DialogHeader>
-        {people.isPending ? <LoadingRows /> : null}
-        <ul className="space-y-1">
-          {others.map((person) => (
-            <li key={person.userId}>
-              <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent">
-                <input
-                  type="checkbox"
-                  checked={picked.includes(person.userId)}
-                  onChange={() => toggle(person.userId)}
-                />
-                {person.displayName}
-              </label>
-            </li>
-          ))}
-        </ul>
-        <Button disabled={picked.length === 0 || open_.isPending} onClick={() => open_.mutate()}>
-          <Trans>Start conversation</Trans>
-        </Button>
-        {error === null ? null : <ErrorMessage error={error} />}
-      </DialogContent>
-    </Dialog>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          <Trans>New message</Trans>
+        </DialogTitle>
+        <DialogDescription>
+          <Trans>
+            Pick one person for a direct message, or up to seven for a group (eight with you).
+          </Trans>
+        </DialogDescription>
+      </DialogHeader>
+      {people.isPending ? <LoadingRows /> : null}
+      <ul className="space-y-1">
+        {others.map((person) => (
+          <li key={person.userId}>
+            <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent">
+              <input
+                type="checkbox"
+                checked={picked.includes(person.userId)}
+                onChange={() => toggle(person.userId)}
+              />
+              {person.displayName}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <Button disabled={picked.length === 0 || open_.isPending} onClick={() => open_.mutate()}>
+        <Trans>Start conversation</Trans>
+      </Button>
+      {error === null ? null : <ErrorMessage error={error} />}
+    </>
   )
 }

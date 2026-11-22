@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useLingui } from "@lingui/react/macro"
 import {
   AlertDialog,
@@ -16,6 +17,9 @@ export interface ConfirmDialogProps {
   readonly description: string
   readonly confirmLabel: string
   readonly pending?: boolean
+  readonly confirmDisabled?: boolean
+  /** Extra content rendered between the description and the footer. */
+  readonly children?: ReactNode
   readonly onOpenChange: (open: boolean) => void
   readonly onConfirm: () => void
 }
@@ -27,6 +31,8 @@ export const ConfirmDialog = ({
   description,
   confirmLabel,
   pending = false,
+  confirmDisabled = false,
+  children,
   onOpenChange,
   onConfirm,
 }: ConfirmDialogProps) => {
@@ -38,11 +44,12 @@ export const ConfirmDialog = ({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         <AlertDialogFooter>
           <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
           <AlertDialogAction
-            variant="destructive"
-            disabled={pending}
+            variant="destructive-solid"
+            disabled={pending || confirmDisabled}
             onClick={(event) => {
               event.preventDefault()
               onConfirm()

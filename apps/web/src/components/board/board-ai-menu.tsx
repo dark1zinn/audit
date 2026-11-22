@@ -7,36 +7,58 @@ import { ProposalCard } from "../ai/assistant-parts.tsx"
 import { useAiAction } from "../ai/ai-text-dialog.tsx"
 import { ErrorMessage } from "../feedback.tsx"
 
-interface TriageResult {
+export interface TriageResult {
   readonly text: string
   readonly proposals: ReadonlyArray<AiProposalId>
 }
 
-/** Backlog triage. Suggested changes arrive as proposals and are applied only after approval. */
-export function BoardAiMenu({ boardId }: { readonly boardId: BoardId }) {
-  const { t } = useLingui()
+export interface TriageState {
+  readonly pending: boolean
+  readonly error: unknown
+  readonly isError: boolean
+  readonly result: TriageResult | null
+  readonly run: () => void
+  readonly dismiss: () => void
+}
+
+/** Backlog triage state, shared by the toolbar button and the result panel. */
+export function useTriage(boardId: BoardId): TriageState {
   const action = useAiAction()
   const [result, setResult] = useState<TriageResult | null>(null)
+  return {
+    pending: action.isPending,
+    error: action.error,
+    isError: action.isError,
+    result,
+    run: () =>
+      action.mutate(
+        { surface: "board", action: "triage", boardId },
+        {
+          onSuccess: (data) => setResult({ text: data.text ?? "", proposals: data.proposals }),
+        },
+      ),
+    dismiss: () => setResult(null),
+  }
+}
 
+/** Toolbar trigger. Suggested changes arrive as proposals and are applied only after approval. */
+export function TriageButton({ triage }: { readonly triage: TriageState }) {
+  return (
+    <Button variant="outline" size="sm" disabled={triage.pending} onClick={triage.run}>
+      <Sparkles aria-hidden="true" className="size-4" />
+      <Trans>Triage backlog</Trans>
+    </Button>
+  )
+}
+
+/** Result panel, rendered in its own row below the toolbar. Renders nothing when idle. */
+export function TriageResultPanel({ triage }: { readonly triage: TriageState }) {
+  const { t } = useLingui()
+  const { result } = triage
+  if (!triage.isError && result === null) return null
   return (
     <div className="space-y-3">
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={action.isPending}
-        onClick={() =>
-          action.mutate(
-            { surface: "board", action: "triage", boardId },
-            {
-              onSuccess: (data) => setResult({ text: data.text ?? "", proposals: data.proposals }),
-            },
-          )
-        }
-      >
-        <Sparkles aria-hidden="true" className="size-4" />
-        <Trans>Triage backlog</Trans>
-      </Button>
-      {action.isError ? <ErrorMessage error={action.error} /> : null}
+      {triage.isError ? <ErrorMessage error={triage.error} /> : null}
       {result === null ? null : (
         <section aria-label={t`Backlog triage`} className="space-y-3 rounded-lg border p-4">
           {result.text === "" ? null : <p className="text-sm whitespace-pre-wrap">{result.text}</p>}
@@ -49,7 +71,7 @@ export function BoardAiMenu({ boardId }: { readonly boardId: BoardId }) {
               <ProposalCard key={proposalId} proposalId={proposalId} />
             ))
           )}
-          <Button variant="ghost" size="sm" onClick={() => setResult(null)}>
+          <Button variant="ghost" size="sm" onClick={triage.dismiss}>
             <Trans>Dismiss</Trans>
           </Button>
         </section>

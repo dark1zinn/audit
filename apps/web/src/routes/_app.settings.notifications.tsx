@@ -134,16 +134,23 @@ function DeliveryCard({ settings }: { readonly settings: NotificationSettings })
                     update.isPending
                   return (
                     <TableCell key={channel.id} className="text-center">
-                      <Checkbox
-                        className="mx-auto"
-                        aria-label={label}
-                        aria-describedby={channel.id === "email" ? "email-disabled" : undefined}
-                        checked={channel.id === "in_app" || prefEnabled(settings, kind, channel.id)}
-                        disabled={disabled}
-                        onCheckedChange={(enabled) =>
-                          update.mutate({ kind, channel: channel.id, enabled: enabled === true })
-                        }
-                      />
+                      <label
+                        htmlFor={`notify-${kind}-${channel.id}`}
+                        className="mx-auto flex size-11 cursor-pointer items-center justify-center sm:size-6"
+                      >
+                        <Checkbox
+                          id={`notify-${kind}-${channel.id}`}
+                          aria-label={label}
+                          aria-describedby={channel.id === "email" ? "email-disabled" : undefined}
+                          checked={
+                            channel.id === "in_app" || prefEnabled(settings, kind, channel.id)
+                          }
+                          disabled={disabled}
+                          onCheckedChange={(enabled) =>
+                            update.mutate({ kind, channel: channel.id, enabled: enabled === true })
+                          }
+                        />
+                      </label>
                     </TableCell>
                   )
                 })}
@@ -202,12 +209,14 @@ function QuietHoursCard({ settings }: { readonly settings: NotificationSettings 
         <form className="grid gap-4 sm:grid-cols-3" onSubmit={onSubmit}>
           <TextField
             name="quietStart"
+            width="xs"
             type="time"
             label={t`Start`}
             defaultValue={settings.quietStart ?? ""}
           />
           <TextField
             name="quietEnd"
+            width="xs"
             type="time"
             label={t`End`}
             defaultValue={settings.quietEnd ?? ""}

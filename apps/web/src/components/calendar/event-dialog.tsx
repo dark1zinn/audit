@@ -50,6 +50,7 @@ import {
 import { membersQuery, teamsQuery } from "../../lib/queries.ts"
 import { EntityActionsButton } from "../actions/entity-menu.tsx"
 import { ErrorMessage } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { useEventMutations } from "../actions/event-actions.ts"
 import { RichEditor } from "../task-panel/rich-editor.tsx"
 import { ConfirmDialog, ScopeDialog } from "./confirm-dialogs.tsx"
@@ -505,7 +506,7 @@ function EventForm({
               value={form.timezone}
               onValueChange={(value) => setForm({ ...form, timezone: value })}
             >
-              <SelectTrigger id="event-timezone" className="w-full">
+              <SelectTrigger id="event-timezone" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

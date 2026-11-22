@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys, workspaceQuery } from "../lib/queries.ts"
 import { uploadBrandingLogo } from "../lib/upload.ts"
@@ -93,6 +94,7 @@ function LogoForm({ logoFileId }: { readonly logoFileId: string | undefined }) {
         </Label>
         <Input
           id="brandLogo"
+          className={fieldWidth.md}
           type="file"
           accept="image/*"
           disabled={upload.isPending}
@@ -159,6 +161,7 @@ function BrandingForm({
             </Label>
             <Input
               id="brandName"
+              className={fieldWidth.md}
               value={name}
               maxLength={80}
               onChange={(event) => setName(event.currentTarget.value)}
@@ -181,7 +184,7 @@ function BrandingForm({
               <Trans>Default theme</Trans>
             </Label>
             <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-              <SelectTrigger id="brandTheme" className="w-full">
+              <SelectTrigger id="brandTheme" className={fieldWidth.sm}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

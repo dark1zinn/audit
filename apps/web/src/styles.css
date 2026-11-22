@@ -59,16 +59,94 @@
   color: var(--foreground);
 }
 
-/* The all-day strip can hold many task due dates: cap its height and scroll it, so the time grid stays visible. */
+/* Seven week columns need room: below that width the board scrolls sideways (wrapper in calendar-board) instead of squeezing the Sunday column out of view. */
+.sx__calendar-wrapper .sx__week-grid {
+  min-width: 44rem;
+}
+
+/* The all-day strip can hold many task due dates: cap its height and scroll it, so the time grid
+   stays visible. The chips inside keep one line and truncate, so they never grow a row. */
 .sx__calendar-wrapper .sx__date-grid {
-  max-height: 9rem;
+  max-height: 12rem;
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sx__calendar-wrapper .sx__date-grid[data-overflowing] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+}
+
+.sx__calendar-wrapper .sx__date-grid-event,
+.sx__calendar-wrapper .sx__month-grid-event {
+  min-height: 1.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Toolbar controls share one height: 2rem with a mouse, 2.75rem (44px) for touch targets. */
+.sx__calendar-wrapper .sx__today-button,
+.sx__calendar-wrapper .sx__view-selection-selected-item,
+.sx__calendar-wrapper .sx__chevron-wrapper,
+.sx__calendar-wrapper .sx__date-input-wrapper {
+  height: 2rem;
+  min-height: 2rem;
+}
+
+.sx__calendar-wrapper .sx__date-input {
+  width: 10rem;
+  height: 2rem;
+}
+
+/* The theme aligns the header to flex-start, so the controls sit at different heights. Centre them. */
+.sx__calendar-wrapper .sx__calendar-header {
+  align-items: center;
+}
+
+.sx__calendar-wrapper .sx__today-button,
+.sx__calendar-wrapper .sx__view-selection-selected-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The prev/next wrapper is a block as tall as the range heading, so its chevrons sat at its top edge. */
+.sx__calendar-wrapper .sx__forward-backward-navigation {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  height: 2rem;
+}
+
+@media (pointer: coarse) {
+  .sx__calendar-wrapper .sx__today-button,
+  .sx__calendar-wrapper .sx__view-selection-selected-item,
+  .sx__calendar-wrapper .sx__chevron-wrapper,
+  .sx__calendar-wrapper .sx__date-input-wrapper,
+  .sx__calendar-wrapper .sx__date-input {
+    height: 2.75rem;
+    min-height: 2.75rem;
+  }
 }
 
 /* The today column header uses the primary colour as text, which fails contrast on dark surfaces. */
 .sx__calendar-wrapper .sx__week-grid__date--is-today > .sx__week-grid__day-name {
   color: var(--foreground);
   font-weight: 600;
+}
+
+/* Schedule-X sets outline: none on its controls, which beats the layered default below. Restore a
+   visible keyboard focus ring inside the calendar regardless of stylesheet order. */
+.sx__calendar-wrapper :is(button, input, select, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Schedule-X hides its "View"/"Date" legends in dark mode only. Show them in both themes so the toolbar
+   keeps its visible labels and looks the same in light and dark. */
+.sx__calendar-wrapper.is-dark .sx__view-selection-label,
+.sx__calendar-wrapper.is-dark .sx__date-input-label {
+  display: block;
 }
 
 /* Default focus indicator for elements without their own focus style. Layered so utilities

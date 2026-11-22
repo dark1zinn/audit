@@ -16,6 +16,7 @@ import {
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { Label } from "@audit/ui/components/ui/label.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { adminEmailQuery } from "../lib/queries.ts"
 
@@ -88,6 +89,7 @@ function EmailPage() {
                   </Label>
                   <Input
                     id="testRecipient"
+                    className={fieldWidth.md}
                     type="email"
                     value={to}
                     disabled={!status.data.enabled}

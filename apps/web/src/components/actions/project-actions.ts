@@ -77,6 +77,7 @@ export const useProjectActions = (target: ProjectTarget | null): ReadonlyArray<A
             title: t`Delete “${project.name}”?`,
             description: t`The project and its tasks and docs are removed.`,
             confirmLabel: t`Delete`,
+            typeToConfirm: key,
           },
           run: () =>
             run.mutate(

@@ -2,7 +2,7 @@ import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState, type FormEvent } from "react"
+import { useMemo, useState, type FormEvent } from "react"
 import { toast } from "sonner"
 import type { Locale } from "@audit/domain/identity/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -20,9 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
+import { ToggleGroup, ToggleGroupItem } from "@audit/ui/components/ui/toggle-group.tsx"
 import { useTheme, type Density, type ThemeMode } from "@audit/ui/theme.tsx"
 import { ErrorMessage, PageHeader } from "../components/feedback.tsx"
-import { formValue, TextField } from "../components/form.tsx"
+import { fieldWidth, formValue, TextField } from "../components/form.tsx"
 import { useMe } from "../components/use-me.ts"
 import { callApi } from "../lib/api.ts"
 import { keys } from "../lib/queries.ts"
@@ -47,6 +48,11 @@ function ProfilePage() {
   const queryClient = useQueryClient()
   const { theme, setTheme, density, setDensity } = useTheme()
   const [locale, setLocale] = useState<LocaleChoice>(me.locale ?? WORKSPACE_LOCALE)
+  const [timezone, setTimezone] = useState(me.timezone)
+  const timezones = useMemo(() => {
+    const zones = Intl.supportedValuesOf("timeZone")
+    return zones.includes(me.timezone) ? zones : [me.timezone, ...zones]
+  }, [me.timezone])
 
   const save = useMutation({
     mutationFn: (payload: {
@@ -68,7 +74,7 @@ function ProfilePage() {
     save.mutate({
       displayName: formValue(form, "displayName").trim(),
       title: title === "" ? null : title,
-      timezone: formValue(form, "timezone").trim(),
+      timezone,
       locale: locale === WORKSPACE_LOCALE ? null : locale,
     })
   }
@@ -99,13 +105,29 @@ function ProfilePage() {
                 defaultValue={me.title ?? ""}
                 maxLength={120}
               />
-              <TextField name="timezone" label={t`Time zone`} defaultValue={me.timezone} required />
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="timezone">
+                  <Trans>Time zone</Trans>
+                </label>
+                <Select value={timezone} onValueChange={setTimezone}>
+                  <SelectTrigger id="timezone" className={fieldWidth.md}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timezones.map((zone) => (
+                      <SelectItem key={zone} value={zone}>
+                        {zone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="locale">
                   <Trans>Language</Trans>
                 </label>
                 <Select value={locale} onValueChange={(value) => setLocale(value as LocaleChoice)}>
-                  <SelectTrigger id="locale" className="w-full">
+                  <SelectTrigger id="locale" className={fieldWidth.sm}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,7 +164,15 @@ function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <fieldset className="flex flex-wrap gap-2" aria-label={t`Theme`}>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={theme}
+              onValueChange={(value) => {
+                if (value !== "") setTheme(value as ThemeMode)
+              }}
+              aria-label={t`Theme`}
+            >
               {(
                 [
                   ["light", t`Light`],
@@ -150,33 +180,31 @@ function ProfilePage() {
                   ["system", t`System`],
                 ] as const
               ).map(([value, label]) => (
-                <Button
-                  key={value}
-                  variant={theme === value ? "default" : "outline"}
-                  aria-pressed={theme === value}
-                  onClick={() => setTheme(value as ThemeMode)}
-                >
+                <ToggleGroupItem key={value} value={value}>
                   {label}
-                </Button>
+                </ToggleGroupItem>
               ))}
-            </fieldset>
-            <fieldset className="flex flex-wrap gap-2" aria-label={t`Density`}>
+            </ToggleGroup>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={density}
+              onValueChange={(value) => {
+                if (value !== "") setDensity(value as Density)
+              }}
+              aria-label={t`Density`}
+            >
               {(
                 [
                   ["comfortable", t`Comfortable`],
                   ["compact", t`Compact`],
                 ] as const
               ).map(([value, label]) => (
-                <Button
-                  key={value}
-                  variant={density === value ? "default" : "outline"}
-                  aria-pressed={density === value}
-                  onClick={() => setDensity(value as Density)}
-                >
+                <ToggleGroupItem key={value} value={value}>
                   {label}
-                </Button>
+                </ToggleGroupItem>
               ))}
-            </fieldset>
+            </ToggleGroup>
           </CardContent>
         </Card>
       </div>

@@ -23,7 +23,7 @@ import {
 import { Switch } from "@audit/ui/components/ui/switch.tsx"
 import { Label } from "@audit/ui/components/ui/label.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
-import { formValue, TextField } from "../components/form.tsx"
+import { fieldWidth, formValue, TextField } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { keys, workspaceQuery } from "../lib/queries.ts"
 
@@ -104,11 +104,13 @@ function WorkspaceForm({
             <TextField
               name="accentColor"
               type="color"
+              width="2xs"
               label={t`Accent color`}
               defaultValue={settings.accentColor}
             />
             <TextField
               name="name"
+              width="md"
               label={t`Workspace name`}
               defaultValue={initial.name}
               required
@@ -124,7 +126,7 @@ function WorkspaceForm({
                   setSettings({ ...settings, defaultLocale: value as Locale })
                 }
               >
-                <SelectTrigger id="defaultLocale" className="w-full">
+                <SelectTrigger id="defaultLocale" className={fieldWidth.sm}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -149,7 +151,7 @@ function WorkspaceForm({
                   })
                 }
               >
-                <SelectTrigger id="defaultTheme" className="w-full">
+                <SelectTrigger id="defaultTheme" className={fieldWidth.sm}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,7 +174,7 @@ function WorkspaceForm({
                   })
                 }
               >
-                <SelectTrigger id="twoFactorPolicy" className="w-full">
+                <SelectTrigger id="twoFactorPolicy" className={fieldWidth.sm}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,7 +184,34 @@ function WorkspaceForm({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+            <TextField
+              name="sessionDays"
+              type="number"
+              width="xs"
+              label={t`Session length (days)`}
+              defaultValue={settings.sessionDays}
+              min={1}
+              max={365}
+            />
+            <TextField
+              name="idleDays"
+              type="number"
+              width="xs"
+              label={t`Idle timeout (days)`}
+              defaultValue={settings.idleDays}
+              min={1}
+              max={90}
+            />
+            <TextField
+              name="trailRetentionDays"
+              type="number"
+              width="xs"
+              label={t`Audit log retention (days)`}
+              defaultValue={settings.trailRetentionDays}
+              min={30}
+              max={3650}
+            />
+            <div className="flex items-center justify-between gap-4 rounded-md border p-3 sm:col-span-2">
               <Label htmlFor="membersCanInvite">
                 <Trans>Members can invite others</Trans>
               </Label>
@@ -194,30 +223,6 @@ function WorkspaceForm({
                 }
               />
             </div>
-            <TextField
-              name="sessionDays"
-              type="number"
-              label={t`Session length (days)`}
-              defaultValue={settings.sessionDays}
-              min={1}
-              max={365}
-            />
-            <TextField
-              name="idleDays"
-              type="number"
-              label={t`Idle timeout (days)`}
-              defaultValue={settings.idleDays}
-              min={1}
-              max={90}
-            />
-            <TextField
-              name="trailRetentionDays"
-              type="number"
-              label={t`Audit log retention (days)`}
-              defaultValue={settings.trailRetentionDays}
-              min={30}
-              max={3650}
-            />
             {save.error !== null && (
               <div className="sm:col-span-2">
                 <ErrorMessage error={save.error} />

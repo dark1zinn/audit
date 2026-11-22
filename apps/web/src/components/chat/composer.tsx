@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react"
-import { Paperclip, Send } from "lucide-react"
+import { Paperclip, Send, type LucideIcon } from "lucide-react"
 import type { ChannelId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -30,6 +30,7 @@ interface ComposerProps {
   readonly channelId: ChannelId
   readonly placeholder: string
   readonly submitLabel: string
+  readonly submitIcon?: LucideIcon
   readonly onSubmit: (body: RichDoc) => Promise<void>
   readonly onTyping?: (typing: boolean) => void
   readonly onCancel?: () => void
@@ -41,6 +42,7 @@ export function Composer({
   channelId,
   placeholder,
   submitLabel,
+  submitIcon: SubmitIcon = Send,
   onSubmit,
   onTyping,
   onCancel,
@@ -51,6 +53,7 @@ export function Composer({
   const [busy, setBusy] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const picker = useMentionPicker()
+  const [empty, setEmpty] = useState(() => isBlankDoc(initial ?? emptyDoc))
   useEffect(() => {
     mentionOpen.current = picker.trigger !== null
   })
@@ -78,6 +81,7 @@ export function Composer({
       },
     },
     onUpdate: ({ editor: instance }) => {
+      setEmpty(isBlankDoc(instance.getJSON() as RichDoc))
       if (onTyping === undefined) return
       if (isBlankDoc(instance.getJSON() as RichDoc)) {
         typingAt.current = 0
@@ -130,7 +134,17 @@ export function Composer({
     <div className="space-y-1">
       <MentionPickerMenu picker={picker} />
       <div className="rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
-        <EditorContent editor={editor} />
+        <div className="relative">
+          <EditorContent editor={editor} />
+          {empty ? (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute start-3 top-2 text-sm text-muted-foreground"
+            >
+              {placeholder}
+            </span>
+          ) : null}
+        </div>
         <div className="flex items-center justify-between gap-2 border-t px-2 py-1">
           <div className="flex items-center gap-1">
             <input
@@ -160,7 +174,7 @@ export function Composer({
               </Button>
             )}
             <Button type="button" size="sm" disabled={busy} onClick={() => void submit()}>
-              <Send className="size-4" />
+              <SubmitIcon className="size-4" />
               {submitLabel}
             </Button>
           </div>

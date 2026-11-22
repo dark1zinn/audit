@@ -188,7 +188,7 @@ export const useDocActions = (
     [
       { id: "structure", label: t`Move`, children: structure, pending: tree.isPending && enabled },
       { id: "export", label: t`Export`, children: exportItems },
-      { id: "settings", label: t`Settings`, run: target.onOpenProperties },
+      { id: "settings", label: t`Properties`, run: target.onOpenProperties },
     ],
     [
       {

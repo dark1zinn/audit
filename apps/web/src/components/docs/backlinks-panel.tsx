@@ -21,7 +21,7 @@ export const BacklinksPanel = ({ entityId, projectKey }: BacklinksPanelProps) =>
   if (backlinks.isError) return <ErrorMessage error={backlinks.error} />
   const groups = backlinks.data
   if (groups.every((group) => group.items.length === 0)) {
-    return <EmptyState size="sm" icon={Link2} title={t`Nothing links here yet.`} />
+    return <EmptyState size="sm" icon={Link2} title={t`No backlinks yet.`} />
   }
   return (
     <div className="space-y-4 pt-3">

@@ -36,6 +36,7 @@ import {
 import { callApi } from "../../lib/api.ts"
 import { membersQuery, projectAccessQuery, teamsQuery } from "../../lib/queries.ts"
 import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { invalidateProject } from "./invalidate.ts"
 import { principalTypes, useSettingsLabels, workspaceRoles } from "./options.ts"
 
@@ -154,8 +155,8 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
         {access.isPending && <LoadingRows rows={2} />}
         {access.isError && <ErrorMessage error={access.error} />}
         {access.data !== undefined && (
-          <Table>
-            <TableHeader>
+          <Table className="max-sm:block">
+            <TableHeader className="max-sm:hidden">
               <TableRow>
                 <TableHead>
                   <Trans>Principal</Trans>
@@ -173,7 +174,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="max-sm:block">
               {access.data.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
@@ -184,14 +185,28 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
               {access.data.map((entry) => {
                 const name = principalName(entry)
                 return (
-                  <TableRow key={`${entry.principalType}:${entry.principalId}`}>
-                    <TableCell>{name}</TableCell>
-                    <TableCell>{labels.principalType[entry.principalType]}</TableCell>
-                    <TableCell>{labels.resourceRole[entry.role]}</TableCell>
-                    <TableCell className="text-right">
+                  <TableRow
+                    key={`${entry.principalType}:${entry.principalId}`}
+                    className="max-sm:block max-sm:border-b max-sm:py-2"
+                  >
+                    <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3 max-sm:pt-1">
+                      {name}
+                      <span className="block text-xs text-muted-foreground sm:hidden">
+                        {labels.principalType[entry.principalType]} ·{" "}
+                        {labels.resourceRole[entry.role]}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {labels.principalType[entry.principalType]}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {labels.resourceRole[entry.role]}
+                    </TableCell>
+                    <TableCell className="text-right max-sm:block max-sm:px-3 max-sm:py-1">
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="max-sm:h-11"
                         disabled={revoke.isPending}
                         aria-label={t`Revoke access for ${name}`}
                         onClick={() => revoke.mutate(entry)}
@@ -221,7 +236,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
                 setPrincipalId("")
               }}
             >
-              <SelectTrigger id="grant-type" className="w-40">
+              <SelectTrigger id="grant-type" className={fieldWidth.xs}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +253,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
               <Trans>Principal</Trans>
             </Label>
             <Select value={principalId} onValueChange={setPrincipalId}>
-              <SelectTrigger id="grant-principal" className="w-full">
+              <SelectTrigger id="grant-principal" className={fieldWidth.md}>
                 <SelectValue placeholder={t`Choose`} />
               </SelectTrigger>
               <SelectContent>
@@ -255,7 +270,7 @@ export function AccessSection({ project }: { readonly project: ProjectDetail }) 
               <Trans>Role</Trans>
             </Label>
             <Select value={role} onValueChange={(value) => setRole(value as ResourceRole)}>
-              <SelectTrigger id="grant-role" className="w-36">
+              <SelectTrigger id="grant-role" className={fieldWidth.xs}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

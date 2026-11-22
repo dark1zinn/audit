@@ -24,15 +24,19 @@ import { TaskFields } from "./task-fields.tsx"
 import { useTaskUpdate } from "./use-task-update.ts"
 import { BacklinksPanel } from "../docs/backlinks-panel.tsx"
 import { useRecordRecent } from "../../lib/search.ts"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { MoveColumn } from "../actions/types.ts"
 
 interface TaskPanelProps {
   readonly projectId: ProjectId
   readonly taskId: TaskId
   /** Seed from the number lookup so the page renders without a second round trip. */
   readonly initial?: TaskDetail
+  /** Board columns for the "Move to" action; omitted until the board has loaded. */
+  readonly columns?: ReadonlyArray<MoveColumn> | undefined
 }
 
-export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
+export function TaskPanel({ projectId, taskId, initial, columns }: TaskPanelProps) {
   const task = useQuery({
     ...taskDetailQuery(taskId),
     ...(initial?.id === taskId ? { initialData: initial } : {}),
@@ -43,15 +47,17 @@ export function TaskPanel({ projectId, taskId, initial }: TaskPanelProps) {
 
   if (task.isError) return <ErrorMessage error={task.error} />
   if (task.data === undefined) return <LoadingRows />
-  return <TaskView projectId={projectId} task={task.data} />
+  return <TaskView projectId={projectId} task={task.data} columns={columns} />
 }
 
 function TaskView({
   projectId,
   task,
+  columns,
 }: {
   readonly projectId: ProjectId
   readonly task: TaskDetail
+  readonly columns: ReadonlyArray<MoveColumn> | undefined
 }) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
@@ -78,33 +84,39 @@ function TaskView({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="min-w-0 space-y-8">
         <header className="space-y-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{task.key}</p>
-            <div className="flex items-center gap-2">
-              {others.length > 0 && (
-                <ul aria-label={t`Also viewing`} className="flex -space-x-2">
-                  {others.map((viewer) => (
-                    <li key={viewer.userId}>
-                      <Avatar className="size-7 ring-2 ring-background" title={viewer.name}>
-                        <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
-                      </Avatar>
-                      <span className="sr-only">{viewer.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                aria-pressed={task.watching}
-                disabled={watch.isPending}
-                onClick={() => watch.mutate(task.watching)}
-              >
-                {task.watching ? t`Watching` : t`Watch`}
-              </Button>
+          <EntityContextMenu target={{ kind: "task", task, columns }}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <p className="text-sm text-muted-foreground">{task.key}</p>
+              <div className="flex items-center gap-2">
+                {others.length > 0 && (
+                  <ul aria-label={t`Also viewing`} className="flex -space-x-2">
+                    {others.map((viewer) => (
+                      <li key={viewer.userId}>
+                        <Avatar className="size-7 ring-2 ring-background" title={viewer.name}>
+                          <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
+                        </Avatar>
+                        <span className="sr-only">{viewer.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-pressed={task.watching}
+                  disabled={watch.isPending}
+                  onClick={() => watch.mutate(task.watching)}
+                >
+                  {task.watching ? t`Watching` : t`Watch`}
+                </Button>
+                <EntityActionsButton
+                  target={{ kind: "task", task, columns }}
+                  label={t`Actions for ${task.key}`}
+                />
+              </div>
             </div>
-          </div>
+          </EntityContextMenu>
           <TitleEditor
             title={task.title}
             canEdit={canEdit}

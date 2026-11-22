@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@audit/ui/components/ui/dropdown-menu.tsx"
 import { ConfirmDialog } from "./confirm-dialog.tsx"
+import { TextField } from "../form.tsx"
 import { useEntityActions } from "./use-entity-actions.ts"
 import type { ActionGroup, EntityAction, EntityTarget } from "./types.ts"
 
@@ -135,20 +136,48 @@ interface ConfirmHostProps {
 const ConfirmHost = ({ pending, onClose }: ConfirmHostProps) => {
   const { t } = useLingui()
   const confirm = pending?.confirm
+  const required = confirm?.typeToConfirm
+  const [typed, setTyped] = useState("")
+  const [typedFor, setTypedFor] = useState<EntityAction | null>(null)
+  if (typedFor !== pending) {
+    setTypedFor(pending)
+    setTyped("")
+  }
+  const matches = required === undefined || typed === required
+  const submit = () => {
+    if (!matches || pending === null) return
+    runAction(pending)
+    onClose()
+  }
   return (
     <ConfirmDialog
       open={pending !== null}
       title={confirm?.title ?? ""}
       description={confirm?.description ?? ""}
       confirmLabel={confirm?.confirmLabel ?? t`Confirm`}
+      confirmDisabled={!matches}
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      onConfirm={() => {
-        if (pending !== null) runAction(pending)
-        onClose()
-      }}
-    />
+      onConfirm={submit}
+    >
+      {required !== undefined && (
+        <TextField
+          name="confirm-type"
+          label={t`Type ${required} to confirm`}
+          width="xs"
+          autoComplete="off"
+          value={typed}
+          onChange={(event) => setTyped(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault()
+              submit()
+            }
+          }}
+        />
+      )}
+    </ConfirmDialog>
   )
 }
 
@@ -185,10 +214,12 @@ export const EntityContextMenu = ({ target, children }: EntityContextMenuProps) 
 export interface EntityActionsButtonProps {
   readonly target: EntityTarget
   readonly label: string
+  /** Button size; compact rows (sidebar) use `icon-sm` so the trigger fits inside the row. */
+  readonly size?: "icon" | "icon-sm"
 }
 
 /** Visible "…" menu with the same actions as the context menu, for touch and keyboard users. */
-export const EntityActionsButton = ({ target, label }: EntityActionsButtonProps) => {
+export const EntityActionsButton = ({ target, label, size = "icon" }: EntityActionsButtonProps) => {
   const [open, setOpen] = useState(false)
   const groups = useEntityActions(target, open)
   const confirm = useConfirmRequest()
@@ -201,7 +232,7 @@ export const EntityActionsButton = ({ target, label }: EntityActionsButtonProps)
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label={label}>
+          <Button variant="ghost" size={size} aria-label={label}>
             <MoreHorizontal aria-hidden />
           </Button>
         </DropdownMenuTrigger>

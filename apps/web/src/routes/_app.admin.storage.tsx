@@ -65,8 +65,13 @@ function StoragePage() {
               aria-label={t`Storage used`}
               max={100}
               value={Math.round(percent)}
-              className="block h-2 w-full overflow-hidden rounded-full bg-muted accent-primary"
+              className="block h-2 w-full overflow-hidden rounded-full border border-border bg-muted accent-primary"
             />
+            {data.usedBytes === 0 && (
+              <p className="text-muted-foreground">
+                <Trans>No files uploaded yet.</Trans>
+              </p>
+            )}
             <p>
               <Trans>
                 Upload limit per file: {formatBytes(i18n.locale, data.uploadLimitBytes)}
@@ -94,13 +99,20 @@ function StoragePage() {
               <Trans>Soft-deleted files: {data.softDeletedFiles}</Trans>
             </p>
             {cleanup.error !== null && <ErrorMessage error={cleanup.error} />}
-            <Button
-              variant="outline"
-              onClick={() => cleanup.mutate()}
-              disabled={cleanup.isPending || data.orphanedFiles === 0}
-            >
-              <Trans>Remove orphaned files</Trans>
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => cleanup.mutate()}
+                disabled={cleanup.isPending || data.orphanedFiles === 0}
+              >
+                <Trans>Remove orphaned files</Trans>
+              </Button>
+              {data.orphanedFiles === 0 && (
+                <span className="text-muted-foreground">
+                  <Trans>Nothing to clean up</Trans>
+                </span>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

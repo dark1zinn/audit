@@ -34,6 +34,7 @@ import { EntityActionsButton, EntityContextMenu } from "../components/actions/en
 import { useChangeMemberRole } from "../components/actions/member-actions.ts"
 import { Hash } from "lucide-react"
 import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { callApi } from "../lib/api.ts"
 import { membersQuery, keys } from "../lib/queries.ts"
 
@@ -85,8 +86,8 @@ function MembersPage() {
       {members.isError && <ErrorMessage error={members.error} />}
       {members.data !== undefined && (
         <div className="overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
+          <Table className="max-sm:block">
+            <TableHeader className="max-sm:hidden">
               <TableRow>
                 <TableHead>
                   <Trans>Name</Trans>
@@ -94,7 +95,7 @@ function MembersPage() {
                 <TableHead>
                   <Trans>Role</Trans>
                 </TableHead>
-                <TableHead className="hidden sm:table-cell">
+                <TableHead className="hidden whitespace-nowrap xl:table-cell">
                   <Trans>Two-factor</Trans>
                 </TableHead>
                 <TableHead className="hidden sm:table-cell">
@@ -107,7 +108,7 @@ function MembersPage() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="max-sm:block">
               {members.data.map((member: Member) => {
                 const owner = member.role === "owner"
                 return (
@@ -120,12 +121,21 @@ function MembersPage() {
                       onResetLink: setResetLink,
                     }}
                   >
-                    <TableRow>
-                      <TableCell>
+                    <TableRow className="max-sm:block max-sm:border-b max-sm:py-2">
+                      <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3 max-sm:pt-1">
                         <div className="font-medium">{member.displayName}</div>
                         <div className="text-xs text-muted-foreground">{member.email}</div>
+                        <Badge
+                          variant={member.twoFactorEnabled ? "default" : "outline"}
+                          className="mt-1 xl:hidden"
+                        >
+                          {member.twoFactorEnabled ? t`2FA on` : t`2FA off`}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground sm:hidden">
+                          {member.deactivatedAt === null ? t`Active` : t`Deactivated`}
+                        </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3 max-sm:py-1">
                         {owner ? (
                           roleLabel(member.role)
                         ) : (
@@ -138,7 +148,7 @@ function MembersPage() {
                           >
                             <SelectTrigger
                               aria-label={t`Role for ${member.displayName}`}
-                              className="w-36"
+                              className={`${fieldWidth.xs} max-sm:h-11`}
                             >
                               <SelectValue />
                             </SelectTrigger>
@@ -150,7 +160,7 @@ function MembersPage() {
                           </Select>
                         )}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
+                      <TableCell className="hidden xl:table-cell">
                         <Badge variant={member.twoFactorEnabled ? "default" : "outline"}>
                           {member.twoFactorEnabled ? t`On` : t`Off`}
                         </Badge>
@@ -164,17 +174,19 @@ function MembersPage() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="sticky end-0 bg-background text-right">
+                      <TableCell className="sticky end-0 bg-background text-right max-sm:block max-sm:px-3 max-sm:py-1">
                         {!owner && (
-                          <EntityActionsButton
-                            target={{
-                              kind: "member",
-                              member,
-                              onOpenChannel: () => setChannelPickerFor(member),
-                              onResetLink: setResetLink,
-                            }}
-                            label={t`Actions for ${member.displayName}`}
-                          />
+                          <div className="max-sm:[&_button]:size-11">
+                            <EntityActionsButton
+                              target={{
+                                kind: "member",
+                                member,
+                                onOpenChannel: () => setChannelPickerFor(member),
+                                onResetLink: setResetLink,
+                              }}
+                              label={t`Actions for ${member.displayName}`}
+                            />
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>

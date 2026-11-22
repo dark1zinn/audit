@@ -2,10 +2,8 @@ import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
 import type { ProjectSummary } from "@audit/domain/projects/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
-import { Button } from "@audit/ui/components/ui/button.tsx"
 import {
   Card,
   CardContent,
@@ -14,14 +12,6 @@ import {
   CardTitle,
 } from "@audit/ui/components/ui/card.tsx"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@audit/ui/components/ui/dialog.tsx"
-import {
   Table,
   TableBody,
   TableCell,
@@ -29,9 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
-import { useProjectActions } from "../components/actions/project-actions.ts"
+import { EntityActionsButton } from "../components/actions/entity-menu.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
-import { TextField } from "../components/form.tsx"
 import { adminProjectsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/projects")({
@@ -39,17 +28,9 @@ export const Route = createFileRoute("/_app/admin/projects")({
   component: AdminProjectsPage,
 })
 
-type ProjectAction = "archive" | "unarchive" | "restore" | "delete"
-
-interface PendingAction {
-  readonly action: ProjectAction
-  readonly project: ProjectSummary
-}
-
 function AdminProjectsPage() {
   const { t } = useLingui()
   const projects = useQuery(adminProjectsQuery)
-  const [pending, setPending] = useState<PendingAction | null>(null)
 
   return (
     <>
@@ -71,29 +52,14 @@ function AdminProjectsPage() {
         <CardContent>
           {projects.isPending && <LoadingRows />}
           {projects.isError && <ErrorMessage error={projects.error} />}
-          {projects.data !== undefined && (
-            <ProjectsTable projects={projects.data} onAction={setPending} />
-          )}
+          {projects.data !== undefined && <ProjectsTable projects={projects.data} />}
         </CardContent>
       </Card>
-      {pending !== null && (
-        <ProjectActionDialog
-          key={`${pending.action}-${pending.project.id}`}
-          pending={pending}
-          onClose={() => setPending(null)}
-        />
-      )}
     </>
   )
 }
 
-function ProjectsTable({
-  projects,
-  onAction,
-}: {
-  readonly projects: ReadonlyArray<ProjectSummary>
-  readonly onAction: (pending: PendingAction) => void
-}) {
+function ProjectsTable({ projects }: { readonly projects: ReadonlyArray<ProjectSummary> }) {
   const { t } = useLingui()
 
   const statusLabel = (status: ProjectSummary["status"]) => {
@@ -107,33 +73,9 @@ function ProjectsTable({
     }
   }
 
-  const actionLabel = (action: ProjectAction) => {
-    switch (action) {
-      case "archive":
-        return t`Archive`
-      case "unarchive":
-        return t`Unarchive`
-      case "restore":
-        return t`Restore`
-      case "delete":
-        return t`Delete`
-    }
-  }
-
-  const actionsFor = (status: ProjectSummary["status"]): ProjectAction[] => {
-    switch (status) {
-      case "active":
-        return ["archive", "delete"]
-      case "archived":
-        return ["unarchive", "delete"]
-      case "deleted":
-        return ["restore"]
-    }
-  }
-
   return (
-    <Table>
-      <TableHeader>
+    <Table className="max-sm:block">
+      <TableHeader className="max-sm:hidden">
         <TableRow>
           <TableHead>
             <Trans>Key</Trans>
@@ -148,15 +90,19 @@ function ProjectsTable({
             <Trans>Visibility</Trans>
           </TableHead>
           <TableHead>
-            <Trans>Actions</Trans>
+            <span className="sr-only">
+              <Trans>Actions</Trans>
+            </span>
           </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="max-sm:block">
         {projects.map((project) => (
-          <TableRow key={project.id}>
-            <TableCell className="font-mono">{project.key}</TableCell>
-            <TableCell>
+          <TableRow key={project.id} className="max-sm:block max-sm:border-b max-sm:py-2">
+            <TableCell className="font-mono max-sm:block max-sm:px-3 max-sm:pt-1">
+              {project.key}
+            </TableCell>
+            <TableCell className="max-sm:block max-sm:whitespace-normal max-sm:px-3">
               <span className="flex flex-wrap items-center gap-2">
                 {project.name}
                 {project.metadataOnly && (
@@ -165,122 +111,30 @@ function ProjectsTable({
                   </Badge>
                 )}
               </span>
+              <div className="text-xs text-muted-foreground sm:hidden">
+                {statusLabel(project.status)} ·{" "}
+                {project.visibility === "workspace" ? t`Workspace` : t`Restricted`}
+              </div>
             </TableCell>
-            <TableCell>{statusLabel(project.status)}</TableCell>
-            <TableCell>
+            <TableCell className="hidden sm:table-cell">{statusLabel(project.status)}</TableCell>
+            <TableCell className="hidden sm:table-cell">
               {project.visibility === "workspace" ? (
                 <Trans>Workspace</Trans>
               ) : (
                 <Trans>Restricted</Trans>
               )}
             </TableCell>
-            <TableCell>
-              <div className="flex flex-wrap gap-2">
-                {actionsFor(project.status).map((action) => (
-                  <Button
-                    key={action}
-                    variant={action === "delete" ? "destructive" : "outline"}
-                    size="sm"
-                    aria-label={t`${actionLabel(action)} project ${project.key}`}
-                    onClick={() => onAction({ action, project })}
-                  >
-                    {actionLabel(action)}
-                  </Button>
-                ))}
+            <TableCell className="text-end max-sm:block max-sm:px-3 max-sm:py-1">
+              <div className="max-sm:[&_button]:size-11">
+                <EntityActionsButton
+                  target={{ kind: "project", project }}
+                  label={t`Actions for project ${project.key}`}
+                />
               </div>
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
-  )
-}
-
-/** Confirms a lifecycle action. Deleting requires typing the project key. */
-function ProjectActionDialog({
-  pending,
-  onClose,
-}: {
-  readonly pending: PendingAction
-  readonly onClose: () => void
-}) {
-  const { t } = useLingui()
-  const { action, project } = pending
-  const [typed, setTyped] = useState("")
-  const actions = useProjectActions({ kind: "project", project }).flat()
-  const actionId = action === "unarchive" ? "archive" : action
-  const run = actions.find((candidate) => candidate.id === actionId)?.run
-
-  const copy = {
-    archive: {
-      title: t`Archive project ${project.key}?`,
-      description: t`Archived projects are read-only until someone unarchives them.`,
-      confirm: t`Archive`,
-    },
-    unarchive: {
-      title: t`Unarchive project ${project.key}?`,
-      description: t`The project becomes editable again.`,
-      confirm: t`Unarchive`,
-    },
-    restore: {
-      title: t`Restore project ${project.key}?`,
-      description: t`The project and its boards and tasks become visible again.`,
-      confirm: t`Restore`,
-    },
-    delete: {
-      title: t`Delete project ${project.key}?`,
-      description: t`The project disappears from every list except this page. Type the project key to confirm.`,
-      confirm: t`Delete`,
-    },
-  }[action]
-
-  const confirmDisabled = action === "delete" && typed !== project.key
-
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{copy.title}</DialogTitle>
-          <DialogDescription>{copy.description}</DialogDescription>
-        </DialogHeader>
-        <form
-          id="project-action"
-          className="grid gap-3"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (!confirmDisabled) {
-              run?.()
-              onClose()
-            }
-          }}
-        >
-          {action === "delete" && (
-            <TextField
-              name="confirm"
-              label={t`Project key`}
-              autoComplete="off"
-              value={typed}
-              onChange={(event) => setTyped(event.currentTarget.value)}
-              hint={<span className="font-mono">{project.key}</span>}
-            />
-          )}
-        </form>
-        <DialogFooter>
-          <Button
-            type="submit"
-            form="project-action"
-            variant={action === "delete" ? "destructive" : "default"}
-            disabled={confirmDisabled}
-          >
-            {copy.confirm}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }

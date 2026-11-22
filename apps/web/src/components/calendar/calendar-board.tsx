@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Temporal } from "temporal-polyfill"
 import { useLingui } from "@lingui/react/macro"
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react"
@@ -93,6 +93,12 @@ function CalendarBoardInner({
 }: BoardProps & { readonly locale: string }) {
   const { resolvedTheme } = useTheme()
   const selected = selectedDateFrom(initialDate)
+  // Seven week columns do not fit below lg: open on Day there. Read once so a resize never flips the view.
+  const [defaultView] = useState<"day" | "week">(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+      ? "week"
+      : "day",
+  )
 
   // Schedule-X keeps the callbacks it was created with: route them through a ref.
   const handlers = useRef({ onRangeChange, onEventClick, onSlotClick })
@@ -114,7 +120,7 @@ function CalendarBoardInner({
     calendars: calendarConfig,
     isDark: resolvedTheme === "dark",
     views: [createViewMonthGrid(), createViewWeek(), createViewDay(), createViewMonthAgenda()],
-    defaultView: "week",
+    defaultView,
     events: [],
     ...(selected === undefined ? {} : { selectedDate: selected }),
     callbacks: {
@@ -166,6 +172,25 @@ function CalendarBoardInner({
     observer.observe(root, { childList: true, subtree: true })
     return () => observer.disconnect()
   }, [t])
+
+  // The all-day strip is capped in height; flag it while it hides rows so CSS can draw a fade.
+  useEffect(() => {
+    const root = boardRef.current
+    if (root === null) return
+    const mark = () => {
+      for (const grid of root.querySelectorAll<HTMLElement>(".sx__date-grid")) {
+        grid.toggleAttribute("data-overflowing", grid.scrollHeight > grid.clientHeight + 1)
+      }
+    }
+    mark()
+    const observer = new MutationObserver(mark)
+    observer.observe(root, { childList: true, subtree: true })
+    window.addEventListener("resize", mark)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", mark)
+    }
+  }, [])
 
   return (
     <EventTargetContext.Provider value={eventTargetFor}>

@@ -2,13 +2,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useParams } from "@tanstack/react-router"
 import { MessagesSquare, Pin, Settings } from "lucide-react"
 import type { Message } from "@audit/domain/chat/schema"
 import type { ChannelId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@audit/ui/components/ui/tooltip.tsx"
 import { callApi } from "../../lib/api.ts"
 import { channelQuery, chatKeys, messageChangeKeys, messagesQuery } from "../../lib/chat.ts"
 import { sendTyping, usePresence, useRealtimeScopes } from "../../lib/realtime.ts"
@@ -31,15 +32,48 @@ const paragraphDoc = (text: string): RichDoc => ({
   })),
 })
 
-type Row = { readonly kind: "divider" } | { readonly kind: "message"; readonly message: Message }
+type Row =
+  | { readonly kind: "divider" }
+  | { readonly kind: "day"; readonly label: string }
+  | { readonly kind: "message"; readonly message: Message }
 
-/** Divider goes before the first message after `lastReadId`; with no read marker, at the top. */
-const buildRows = (messages: ReadonlyArray<Message>, lastReadId: string | null): Row[] => {
-  const rows: Row[] = messages.map((message) => ({ kind: "message", message }))
-  if (messages.length === 0) return rows
+interface DayLabels {
+  readonly today: string
+  readonly yesterday: string
+  readonly locale: string
+}
+
+/** Calendar-day label: Today, Yesterday, or the localized full date. */
+const dayLabel = (date: Date, now: Date, labels: DayLabels): string => {
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  if (date.toDateString() === now.toDateString()) return labels.today
+  if (date.toDateString() === yesterday.toDateString()) return labels.yesterday
+  return new Intl.DateTimeFormat(labels.locale, { dateStyle: "full" }).format(date)
+}
+
+/** Day separators at each calendar-day change; divider goes before the first message after `lastReadId`, or at the top with no read marker. */
+const buildRows = (
+  messages: ReadonlyArray<Message>,
+  lastReadId: string | null,
+  labels: DayLabels,
+): Row[] => {
+  if (messages.length === 0) return []
   const index = lastReadId === null ? -1 : messages.findIndex((m) => m.id === lastReadId)
-  if (lastReadId !== null && index === messages.length - 1) return rows
-  rows.splice(index + 1, 0, { kind: "divider" })
+  const dividerAt = lastReadId !== null && index === messages.length - 1 ? -1 : index + 1
+  const now = new Date()
+  const rows: Row[] = []
+  let previousDay: string | null = null
+  messages.forEach((message, position) => {
+    if (position === dividerAt) rows.push({ kind: "divider" })
+    const date = new Date(message.createdAt)
+    const day = date.toDateString()
+    if (day !== previousDay) {
+      rows.push({ kind: "day", label: dayLabel(date, now, labels) })
+      previousDay = day
+    }
+    rows.push({ kind: "message", message })
+  })
   return rows
 }
 
@@ -50,9 +84,10 @@ interface ChannelViewProps {
 
 /** A channel: header, timeline, typing indicator and composer. */
 export function ChannelView({ channelId, meId }: ChannelViewProps) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const activeThreadId = useParams({ strict: false, select: (params) => params.threadId })
   const scope = `channel:${channelId}`
   useRecordRecent(channelId)
   useRealtimeScopes([scope])
@@ -81,9 +116,17 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
     () => (messages.data?.pages ?? []).flatMap((page) => page.messages),
     [messages.data],
   )
+  const todayLabel = t`Today`
+  const yesterdayLabel = t`Yesterday`
+  const locale = i18n.locale
   const rows = useMemo(
-    () => buildRows(allMessages, anchor?.channelId === channelId ? anchor.lastRead : null),
-    [allMessages, anchor, channelId],
+    () =>
+      buildRows(allMessages, anchor?.channelId === channelId ? anchor.lastRead : null, {
+        today: todayLabel,
+        yesterday: yesterdayLabel,
+        locale,
+      }),
+    [allMessages, anchor, channelId, todayLabel, yesterdayLabel, locale],
   )
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -106,7 +149,11 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
     overscan: 8,
     getItemKey: (index) => {
       const row = rows[index]
-      return row === undefined ? index : row.kind === "divider" ? "divider" : row.message.id
+      return row === undefined
+        ? index
+        : row.kind === "message"
+          ? row.message.id
+          : `${row.kind}-${index}`
     },
   })
 
@@ -116,6 +163,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
     initialScrolled.current = true
     const dividerIndex = rows.findIndex((row) => row.kind === "divider")
     if (dividerIndex >= 0 && dividerIndex < rows.length - 1) {
+      // Stay at the divider: the follow-to-bottom effect must not override it.
+      atBottom.current = false
       virtualizer.scrollToIndex(dividerIndex, { align: "start" })
     } else {
       virtualizer.scrollToIndex(rows.length - 1, { align: "end" })
@@ -125,7 +174,8 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   // Keep the viewport still when older pages are prepended; follow new messages at the bottom.
   useLayoutEffect(() => {
     const el = scrollRef.current
-    if (el === null) return
+    // Wait for the initial position (it needs the read anchor) before following anything.
+    if (el === null || !initialScrolled.current) return
     if (preservePrepend.current !== null) {
       el.scrollTop += el.scrollHeight - preservePrepend.current
       preservePrepend.current = null
@@ -137,7 +187,9 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   const markRead = () => {
     const el = scrollRef.current
     const newest = allMessages[allMessages.length - 1]
+    // Before the initial position is set the list is unmeasured and reads as "at bottom".
     if (el === null || newest === undefined || anchor?.channelId !== channelId) return
+    if (!initialScrolled.current) return
     if (lastSent.current === newest.id) return
     if (document.visibilityState !== "visible") return
     if (el.scrollHeight - el.scrollTop - el.clientHeight > 80) return
@@ -196,9 +248,9 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
   const isMember = data.channel.isMember
 
   return (
-    <section className="flex h-full min-h-0 flex-col" aria-label={channelTitle(data.channel)}>
-      <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
-        <div className="min-w-0">
+    <section className="flex min-h-0 flex-1 flex-col" aria-label={channelTitle(data.channel)}>
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-lg font-semibold">{channelTitle(data.channel)}</h1>
           {data.channel.topic === null || data.channel.topic === "" ? null : (
             <p className="truncate text-sm text-muted-foreground">{data.channel.topic}</p>
@@ -211,19 +263,36 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
               setDraft((previous) => ({ key: (previous?.key ?? 0) + 1, body: paragraphDoc(text) }))
             }
           />
-          <Button variant="ghost" size="sm" onClick={() => setDialog("pins")}>
-            <Pin className="size-4" />
-            <Trans>Pinned</Trans>
-            <Badge variant="secondary">{data.pinCount}</Badge>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t`Channel settings`}
-            onClick={() => setDialog("settings")}
-          >
-            <Settings className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="max-xl:px-2"
+                onClick={() => setDialog("pins")}
+              >
+                <Pin className="size-4" aria-hidden />
+                <span className="max-xl:sr-only">
+                  <Trans>Pinned</Trans>
+                </span>
+                {data.pinCount > 0 ? <Badge variant="secondary">{data.pinCount}</Badge> : null}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t`Pinned messages`}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t`Channel settings`}
+                onClick={() => setDialog("settings")}
+              >
+                <Settings className="size-4" aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t`Channel settings`}</TooltipContent>
+          </Tooltip>
         </div>
       </header>
 
@@ -271,7 +340,13 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
                 className="absolute left-0 top-0 w-full"
                 style={{ transform: `translateY(${item.start}px)` }}
               >
-                {row.kind === "divider" ? (
+                {row.kind === "day" ? (
+                  <div className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-muted-foreground">
+                    <span className="h-px flex-1 bg-border" />
+                    {row.label}
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                ) : row.kind === "divider" ? (
                   <div className="flex items-center gap-2 px-4 py-1 text-xs font-medium text-link">
                     <span className="h-px flex-1 bg-primary/40" />
                     <Trans>New messages</Trans>
@@ -283,6 +358,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
                     channelId={channelId}
                     meId={meId}
                     canPin
+                    threadActive={row.message.id === activeThreadId}
                     onOpenThread={(messageId) =>
                       void navigate({
                         to: "/c/$channelId/t/$threadId",
@@ -301,7 +377,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
         ) : null}
       </div>
 
-      <div className="space-y-1 border-t p-3">
+      <div className="shrink-0 space-y-1 border-t p-3">
         <p className="h-4 text-xs text-muted-foreground" aria-live="polite">
           {typing.length === 0 ? null : typingLabel(typing.map((viewer) => viewer.name))}
         </p>

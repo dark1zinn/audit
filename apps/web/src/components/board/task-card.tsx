@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { useLingui } from "@lingui/react/macro"
+import { GripVertical } from "lucide-react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import type { Member } from "@audit/domain/identity/schema"
@@ -11,6 +12,7 @@ import { Checkbox } from "@audit/ui/components/ui/checkbox.tsx"
 import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
 import type { MoveColumn } from "../actions/types.ts"
 import { cardDomId } from "./board-model.ts"
+import { labelTextColor } from "./label-contrast.ts"
 import { usePriorityLabels } from "./hooks.ts"
 
 export const initials = (name: string) =>
@@ -34,6 +36,8 @@ interface TaskCardBodyProps extends CardHandlers {
   readonly selected: boolean
   /** Board columns for "Move to". Omit on the drag overlay to hide the actions button. */
   readonly columns?: ReadonlyArray<MoveColumn>
+  /** Drag grip, rendered only on sortable cards so the overlay stays inert. */
+  readonly dragHandle?: ReactNode
 }
 
 export function TaskCardBody({
@@ -42,6 +46,7 @@ export function TaskCardBody({
   members,
   selected,
   columns,
+  dragHandle,
   onToggle,
   onOpen,
 }: TaskCardBodyProps) {
@@ -57,6 +62,7 @@ export function TaskCardBody({
   return (
     <div className="group bg-card text-card-foreground relative flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-xs">
       <div className="flex items-center gap-2">
+        {dragHandle}
         <span
           className="relative z-10"
           role="presentation"
@@ -76,7 +82,7 @@ export function TaskCardBody({
           )}
           {columns === undefined ? null : (
             <span
-              className="relative z-10 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100"
+              className="relative z-10 opacity-50 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100"
               role="presentation"
               onClick={(event) => event.stopPropagation()}
               onKeyDown={(event) => event.stopPropagation()}
@@ -92,6 +98,7 @@ export function TaskCardBody({
       <button
         type="button"
         onClick={() => onOpen(card)}
+        data-card-title=""
         className="rounded-sm text-left font-medium break-words after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-ring"
       >
         {card.title}
@@ -104,8 +111,8 @@ export function TaskCardBody({
             return (
               <span
                 key={label.id}
-                className="rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
-                style={{ backgroundColor: label.color }}
+                className="rounded px-1.5 py-0.5 text-[11px] font-medium"
+                style={{ backgroundColor: label.color, color: labelTextColor(label.color) }}
               >
                 {label.name}
               </span>
@@ -151,10 +158,31 @@ interface SortableTaskCardProps extends TaskCardBodyProps {
 }
 
 export function SortableTaskCard({ columnId, reduced, onFocus, ...body }: SortableTaskCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { t } = useLingui()
+  const {
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: body.card.id,
     data: { type: "task", columnId },
   })
+  const dragHandle = (
+    <button
+      type="button"
+      ref={setActivatorNodeRef}
+      {...attributes}
+      {...listeners}
+      aria-label={t`Drag ${body.card.key}`}
+      className="text-muted-foreground hover:text-foreground focus-visible:outline-ring relative z-10 -ms-1 inline-flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm focus-visible:outline-2 active:cursor-grabbing [@media(pointer:coarse)]:size-11"
+    >
+      <GripVertical aria-hidden="true" className="size-4" />
+    </button>
+  )
 
   return (
     <EntityContextMenu target={{ kind: "task", task: body.card, columns: body.columns }}>
@@ -166,15 +194,9 @@ export function SortableTaskCard({ columnId, reduced, onFocus, ...body }: Sortab
           transform: CSS.Transform.toString(transform),
           transition: reduced ? undefined : transition,
         }}
-        className={
-          isDragging
-            ? "opacity-40"
-            : "rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
-        }
-        {...attributes}
-        {...listeners}
+        className={isDragging ? "opacity-40" : "rounded-lg"}
       >
-        <TaskCardBody {...body} />
+        <TaskCardBody {...body} dragHandle={dragHandle} />
       </div>
     </EntityContextMenu>
   )

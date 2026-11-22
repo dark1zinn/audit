@@ -29,7 +29,7 @@ import { ErrorMessage, LoadingRows } from "../components/feedback.tsx"
 import { useMe } from "../components/use-me.ts"
 import { boardViewQuery, labelsQuery, membersQuery, projectsQuery } from "../lib/queries.ts"
 import { usePresence, useRealtimeScopes } from "../lib/realtime.ts"
-import { BoardAiMenu } from "../components/board/board-ai-menu.tsx"
+import { TriageButton, TriageResultPanel, useTriage } from "../components/board/board-ai-menu.tsx"
 import { useAiPageContext } from "../components/ai/ai-store.ts"
 
 /** Filters plus `new=task`, a one-shot request to open the new-task entry in the first column. */
@@ -72,6 +72,7 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
   const navigate = Route.useNavigate()
   const { new: newRequest, ...query } = Route.useSearch()
   useAiPageContext(boardId)
+  const triage = useTriage(boardId)
   const me = useMe()
   const reduced = useReducedMotion()
   const scope = `project:${project.key}`
@@ -125,7 +126,11 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
     const board = view.data
     const focused = (): TaskCardModel | undefined =>
       board?.columns.flatMap((column) => column.tasks).find((task) => task.id === focusedId)
-    const focusTask = (id: string) => document.getElementById(cardDomId(id))?.focus()
+    const focusTask = (id: string) =>
+      document
+        .getElementById(cardDomId(id))
+        ?.querySelector<HTMLElement>("[data-card-title]")
+        ?.focus()
     const order = board === undefined ? [] : Object.values(lanesOf(board)).flat()
     const step = (delta: number) => {
       if (order.length === 0) return
@@ -174,31 +179,34 @@ function BoardScreen({ project, boardId }: BoardScreenProps) {
   const quickCard = quick?.card
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <FiltersBar
-          query={query}
-          labels={labels.data ?? []}
-          members={members.data ?? []}
-          onPatch={patchSearch}
-          onReset={() => navigate({ search: {}, replace: true })}
-        />
-        <ul aria-label={t`Also viewing`} className="flex -space-x-2">
-          {viewers.map((viewer) => (
-            <li key={viewer.userId} aria-label={t`${viewer.name} is viewing`}>
-              <Avatar className="size-7 border-2">
-                <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
-              </Avatar>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <BoardAiMenu boardId={boardId} />
-      <SavedFilters
-        projectId={project.id}
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <FiltersBar
         query={query}
-        onApply={(filter) => navigate({ search: filter, replace: true })}
+        labels={labels.data ?? []}
+        members={members.data ?? []}
+        onPatch={patchSearch}
+        onReset={() => navigate({ search: {}, replace: true })}
+        actions={
+          <>
+            <SavedFilters
+              projectId={project.id}
+              query={query}
+              onApply={(filter) => navigate({ search: filter, replace: true })}
+            />
+            <TriageButton triage={triage} />
+            <ul aria-label={t`Also viewing`} className="flex -space-x-2">
+              {viewers.map((viewer) => (
+                <li key={viewer.userId} aria-label={t`${viewer.name} is viewing`}>
+                  <Avatar className="size-7 border-2">
+                    <AvatarFallback>{initials(viewer.name)}</AvatarFallback>
+                  </Avatar>
+                </li>
+              ))}
+            </ul>
+          </>
+        }
       />
+      <TriageResultPanel triage={triage} />
       {visibleSelected.length > 0 ? (
         <BulkBar
           boardId={boardId}

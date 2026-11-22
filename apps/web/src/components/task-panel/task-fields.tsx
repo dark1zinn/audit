@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { Tag } from "lucide-react"
 import type { ProjectId } from "@audit/domain/ids"
 import type { Priority, TaskDetail, UpdateTaskInput } from "@audit/domain/tasks/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -16,7 +17,8 @@ import {
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
 import { callApi } from "../../lib/api.ts"
-import { ErrorMessage } from "../feedback.tsx"
+import { EmptyState, ErrorMessage } from "../feedback.tsx"
+import { fieldWidth } from "../form.tsx"
 import { labelsQuery, membersQuery } from "../../lib/queries.ts"
 import { fromDayString, toDayString } from "./dates.ts"
 
@@ -233,6 +235,7 @@ function LabelsField({
   const labels = useQuery(labelsQuery(projectId))
   const [name, setName] = useState("")
   const [color, setColor] = useState("#6366f1")
+  const [open, setOpen] = useState(false)
 
   const createLabel = useMutation({
     mutationFn: (input: { readonly name: string; readonly color: string }) =>
@@ -250,72 +253,112 @@ function LabelsField({
   })
 
   if (labels.isError) return <ErrorMessage error={labels.error} />
+  const assigned = (labels.data ?? []).filter((label) => task.labels.includes(label.id))
   return (
     <fieldset className="space-y-3" disabled={!canEdit || disabled}>
       <legend className="mb-2 text-sm font-medium">{t`Labels`}</legend>
-      <ScrollArea className="h-32 rounded-md border p-2">
-        <div className="space-y-2">
-          {(labels.data ?? []).map((label) => {
-            const checked = task.labels.includes(label.id)
-            return (
-              <div key={label.id} className="flex items-center gap-2">
-                <Checkbox
-                  id={`label-${label.id}`}
-                  checked={checked}
-                  onCheckedChange={(next) => {
-                    const labelIds =
-                      next === true
-                        ? [...task.labels, label.id]
-                        : task.labels.filter((id) => id !== label.id)
-                    onSave({ labels: labelIds })
-                  }}
-                />
+      <div className="flex flex-wrap items-center gap-2">
+        {assigned.length === 0 ? (
+          <EmptyState size="sm" icon={Tag} title={t`No labels yet.`} />
+        ) : (
+          <ul aria-label={t`Assigned labels`} className="flex flex-wrap gap-1.5">
+            {assigned.map((label) => (
+              <li
+                key={label.id}
+                className="flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs"
+              >
                 <span
                   aria-hidden="true"
-                  className="size-3 rounded-full"
+                  className="size-2.5 rounded-full"
                   style={{ backgroundColor: label.color }}
                 />
-                <Label htmlFor={`label-${label.id}`} className="font-normal">
-                  {label.name}
-                </Label>
-              </div>
-            )
-          })}
-        </div>
-      </ScrollArea>
-      {canEdit && (
-        <form
-          className="flex items-end gap-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            const trimmed = name.trim()
-            if (trimmed.length === 0) return
-            createLabel.mutate({ name: trimmed, color })
-          }}
-        >
-          <div className="grow space-y-1">
-            <Label htmlFor="new-label-name">{t`New label`}</Label>
-            <Input
-              id="new-label-name"
-              value={name}
-              maxLength={60}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-label-color">{t`Label color`}</Label>
-            <Input
-              id="new-label-color"
-              type="color"
-              className="h-9 w-12 p-1"
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
-            />
-          </div>
-          <Button type="submit" variant="outline" disabled={createLabel.isPending}>
-            {t`Create label`}
+                {label.name}
+              </li>
+            ))}
+          </ul>
+        )}
+        {canEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="ms-auto"
+            aria-expanded={open}
+            aria-controls="task-labels-editor"
+            onClick={() => setOpen((value) => !value)}
+          >
+            {t`Add label`}
           </Button>
-        </form>
+        )}
+      </div>
+      {open && (
+        <div id="task-labels-editor" className="space-y-3">
+          <ScrollArea className="h-32 rounded-md border p-2">
+            <div className="space-y-2">
+              {(labels.data ?? []).map((label) => {
+                const checked = task.labels.includes(label.id)
+                return (
+                  <div key={label.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`label-${label.id}`}
+                      checked={checked}
+                      onCheckedChange={(next) => {
+                        const labelIds =
+                          next === true
+                            ? [...task.labels, label.id]
+                            : task.labels.filter((id) => id !== label.id)
+                        onSave({ labels: labelIds })
+                      }}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="size-3 rounded-full"
+                      style={{ backgroundColor: label.color }}
+                    />
+                    <Label htmlFor={`label-${label.id}`} className="font-normal">
+                      {label.name}
+                    </Label>
+                  </div>
+                )
+              })}
+            </div>
+          </ScrollArea>
+          {canEdit && (
+            <form
+              className="flex flex-wrap items-end gap-2"
+              onSubmit={(event) => {
+                event.preventDefault()
+                const trimmed = name.trim()
+                if (trimmed.length === 0) return
+                createLabel.mutate({ name: trimmed, color })
+              }}
+            >
+              <div className="space-y-1">
+                <Label htmlFor="new-label-name">{t`New label`}</Label>
+                <Input
+                  id="new-label-name"
+                  className={fieldWidth.md}
+                  value={name}
+                  maxLength={60}
+                  onChange={(event) => setName(event.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="new-label-color">{t`Label color`}</Label>
+                <Input
+                  id="new-label-color"
+                  type="color"
+                  className="h-9 w-12 p-1"
+                  value={color}
+                  onChange={(event) => setColor(event.target.value)}
+                />
+              </div>
+              <Button type="submit" variant="outline" disabled={createLabel.isPending}>
+                {t`Create label`}
+              </Button>
+            </form>
+          )}
+        </div>
       )}
     </fieldset>
   )

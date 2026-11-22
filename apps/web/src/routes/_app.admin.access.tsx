@@ -17,6 +17,7 @@ import {
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { Label } from "@audit/ui/components/ui/label.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import {
   Select,
   SelectContent,
@@ -111,22 +112,25 @@ function AccessPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form className="flex flex-wrap items-end gap-3" onSubmit={onLookupItem}>
-              <div className="min-w-64 flex-1 space-y-2">
+            <form className="grid gap-3" onSubmit={onLookupItem}>
+              <div className="space-y-2">
                 <Label htmlFor="entityId">
                   <Trans>Item ID</Trans>
                 </Label>
                 <Input
                   id="entityId"
+                  className={fieldWidth.lg}
                   value={itemDraft}
                   onChange={(event) => setItemDraft(event.currentTarget.value)}
                   aria-invalid={itemInvalid}
                   aria-describedby={itemInvalid ? "entityId-error" : undefined}
                 />
               </div>
-              <Button type="submit" variant="outline">
-                <Trans>Look up</Trans>
-              </Button>
+              <div>
+                <Button type="submit" variant="outline">
+                  <Trans>Look up</Trans>
+                </Button>
+              </div>
             </form>
             {itemInvalid && (
               <p id="entityId-error" role="alert" className="text-sm text-destructive">
@@ -213,7 +217,7 @@ function AccessPage() {
                   <Trans>Person</Trans>
                 </Label>
                 <Select value={userId ?? ""} onValueChange={onPickPerson}>
-                  <SelectTrigger id="personId" className="w-full">
+                  <SelectTrigger id="personId" className={fieldWidth.lg}>
                     <SelectValue placeholder={t`Choose a person`} />
                   </SelectTrigger>
                   <SelectContent>

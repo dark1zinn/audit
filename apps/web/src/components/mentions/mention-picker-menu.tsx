@@ -11,6 +11,7 @@ import {
   type MentionTrigger,
   type MentionType,
 } from "./mention-picker.ts"
+import { usePopupPlacement } from "./popup-position.ts"
 
 type Tab = "all" | "people" | "teams" | "tasks" | "docs" | "threads" | "events"
 
@@ -168,6 +169,7 @@ export function useMentionPicker(options: MentionPickerOptions = {}): MentionPic
 export function MentionPickerMenu({ picker }: { readonly picker: MentionPickerState }) {
   const { t } = useLingui()
   const { trigger, tab, tabs, rows, active, loading, selectTab, select } = picker
+  const { ref, placement } = usePopupPlacement(trigger?.rect ?? null, rows.length)
 
   if (trigger === null) return null
 
@@ -192,11 +194,12 @@ export function MentionPickerMenu({ picker }: { readonly picker: MentionPickerSt
 
   return (
     <div
-      className="fixed z-50 w-80 rounded-md border bg-popover text-sm shadow-md"
+      ref={ref}
+      className="fixed z-50 flex w-80 flex-col overflow-hidden rounded-md border bg-popover text-sm shadow-md"
       style={
-        trigger.rect === null
+        placement === null
           ? undefined
-          : { top: trigger.rect.bottom + 4, left: trigger.rect.left }
+          : { top: placement.top, left: placement.left, maxHeight: placement.maxHeight }
       }
     >
       <div
@@ -220,7 +223,7 @@ export function MentionPickerMenu({ picker }: { readonly picker: MentionPickerSt
           </button>
         ))}
       </div>
-      <ul aria-label={t`Mention`} className="max-h-64 overflow-y-auto p-1">
+      <ul aria-label={t`Mention`} className="min-h-0 max-h-64 flex-1 overflow-y-auto p-1">
         {rows.map((row, position) => {
           const key = row.kind === "item" ? `${row.item.type}:${row.item.id}` : "create"
           const current = position === active

@@ -37,7 +37,7 @@ function ResetPasswordPage() {
     return (
       <AuthLayout title={t`Reset password`}>
         <p className="text-sm text-muted-foreground">
-          <Trans>This link is incomplete. Ask an admin for a new password-reset link.</Trans>
+          <Trans>This link is incomplete. Ask an admin for a new password‑reset link.</Trans>
         </p>
       </AuthLayout>
     )

@@ -51,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from "@audit/ui/components/ui/table.tsx"
+import { fieldWidth } from "../components/form.tsx"
 import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { callApi } from "../lib/api.ts"
 
@@ -226,7 +227,7 @@ function SettingsForm({
       </CardHeader>
       <CardContent>
         <form className="space-y-6" onSubmit={onSubmit}>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex max-w-2xl items-center justify-between gap-4 rounded-md border p-3">
             <Label htmlFor="aiEnabled">
               <Trans>AI enabled</Trans>
             </Label>
@@ -266,9 +267,9 @@ function SettingsForm({
             <legend className="text-sm font-medium">
               <Trans>Allowed roles</Trans>
             </legend>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-4 max-md:gap-y-0">
               {ROLES.map((role) => (
-                <div key={role} className="flex items-center gap-2">
+                <div key={role} className="flex items-center gap-2 max-md:min-h-11">
                   <Checkbox
                     id={`role-${role}`}
                     checked={draft.allowedRoles.includes(role)}
@@ -281,7 +282,10 @@ function SettingsForm({
                       }))
                     }
                   />
-                  <Label htmlFor={`role-${role}`} className="font-normal">
+                  <Label
+                    htmlFor={`role-${role}`}
+                    className="font-normal max-md:flex-1 max-md:self-stretch"
+                  >
                     {labels.role[role]}
                   </Label>
                 </div>
@@ -299,7 +303,7 @@ function SettingsForm({
               inputMode="numeric"
               min={0}
               step={1}
-              className="max-w-xs"
+              className={fieldWidth.xs}
               placeholder={t`No limit`}
               value={budget}
               onChange={(event) => setBudget(event.currentTarget.value)}
@@ -322,7 +326,7 @@ function SettingsForm({
               min={1}
               max={3650}
               step={1}
-              className="max-w-xs"
+              className={fieldWidth.xs}
               required
               value={retention}
               onChange={(event) => setRetention(event.currentTarget.value)}
@@ -338,9 +342,12 @@ function SettingsForm({
             <legend className="text-sm font-medium">
               <Trans>Features</Trans>
             </legend>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid max-w-2xl gap-3">
               {FEATURES.map((feature) => (
-                <div key={feature} className="flex items-center justify-between gap-4">
+                <div
+                  key={feature}
+                  className="flex items-center justify-between gap-4 rounded-md border p-3"
+                >
                   <Label htmlFor={`feature-${feature}`} className="font-normal">
                     {labels.feature[feature]}
                   </Label>
@@ -385,7 +392,7 @@ function ProviderSelect({
       value={value ?? NO_PROVIDER}
       onValueChange={(next) => onChange(next === NO_PROVIDER ? null : (next as AiProviderId))}
     >
-      <SelectTrigger id={id} className="w-full">
+      <SelectTrigger id={id} className={fieldWidth.sm}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -720,7 +727,7 @@ function ProviderForm({
           <p className="text-sm">{labels.kind[kind]}</p>
         ) : (
           <Select value={kind} onValueChange={(next) => setKind(next as AiProviderKind)}>
-            <SelectTrigger id="aiProviderKind" className="w-full">
+            <SelectTrigger id="aiProviderKind" className={fieldWidth.sm}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -739,6 +746,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderName"
+          className={fieldWidth.md}
           required
           maxLength={120}
           value={name}
@@ -751,6 +759,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderBaseUrl"
+          className={fieldWidth.lg}
           type="url"
           maxLength={500}
           placeholder={t`Provider default`}
@@ -769,6 +778,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderApiKey"
+          className={fieldWidth.md}
           type="password"
           autoComplete="off"
           maxLength={500}
@@ -790,6 +800,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderChatModel"
+          className={fieldWidth.md}
           required
           maxLength={200}
           value={chatModel}
@@ -802,6 +813,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderEmbeddingModel"
+          className={fieldWidth.md}
           maxLength={200}
           value={embeddingModel}
           onChange={(event) => setEmbeddingModel(event.currentTarget.value)}
@@ -813,6 +825,7 @@ function ProviderForm({
         </Label>
         <Input
           id="aiProviderDimensions"
+          className={fieldWidth.xs}
           type="number"
           inputMode="numeric"
           min={0}
@@ -867,7 +880,7 @@ function UsageCard() {
           <Input
             id="usageMonth"
             type="month"
-            className="max-w-xs"
+            className={fieldWidth.xs}
             value={month}
             onChange={(event) => setMonth(event.currentTarget.value)}
           />

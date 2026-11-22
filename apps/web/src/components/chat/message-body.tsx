@@ -68,9 +68,9 @@ const renderBlock = (node: JsonNode, key: string): ReactNode => {
       )
     case "heading":
       return (
-        <p key={key} className="font-semibold">
+        <h3 key={key} className="text-sm font-semibold">
           {renderInline(childrenOf(node), key)}
-        </p>
+        </h3>
       )
     case "blockquote":
       return (
