@@ -3,7 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useNavigate } from "@tanstack/react-router"
-import { Pin, Settings } from "lucide-react"
+import { MessagesSquare, Pin, Settings } from "lucide-react"
 import type { Message } from "@audit/domain/chat/schema"
 import type { ChannelId } from "@audit/domain/ids"
 import type { RichDoc } from "@audit/domain/tasks/schema"
@@ -12,7 +12,7 @@ import { Button } from "@audit/ui/components/ui/button.tsx"
 import { callApi } from "../../lib/api.ts"
 import { channelQuery, chatKeys, messageChangeKeys, messagesQuery } from "../../lib/chat.ts"
 import { sendTyping, usePresence, useRealtimeScopes } from "../../lib/realtime.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { Composer } from "./composer.tsx"
 import { MessageItem } from "./message-item.tsx"
 import { ChannelSettingsDialog, MessageToTaskDialog, PinsDialog } from "./dialogs.tsx"
@@ -228,7 +228,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
       </header>
 
       {data.adminRead ? (
-        <output className="border-b bg-amber-50 px-4 py-2 text-sm text-amber-900">
+        <output className="border-b bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           <Trans>You are reading this private channel as an administrator. Access is logged.</Trans>
         </output>
       ) : null}
@@ -272,7 +272,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
                 style={{ transform: `translateY(${item.start}px)` }}
               >
                 {row.kind === "divider" ? (
-                  <div className="flex items-center gap-2 px-4 py-1 text-xs font-medium text-primary">
+                  <div className="flex items-center gap-2 px-4 py-1 text-xs font-medium text-link">
                     <span className="h-px flex-1 bg-primary/40" />
                     <Trans>New messages</Trans>
                     <span className="h-px flex-1 bg-primary/40" />
@@ -297,9 +297,7 @@ export function ChannelView({ channelId, meId }: ChannelViewProps) {
           })}
         </div>
         {messages.isSuccess && allMessages.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-            <Trans>No messages yet. Say hello.</Trans>
-          </p>
+          <EmptyState icon={MessagesSquare} title={t`No messages yet. Say hello.`} />
         ) : null}
       </div>
 

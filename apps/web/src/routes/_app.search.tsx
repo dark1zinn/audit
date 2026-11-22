@@ -1,6 +1,8 @@
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
+import { t as tMacro } from "@lingui/core/macro"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { EntityContextMenu } from "../components/actions/entity-menu.tsx"
 import type { ProjectId, UserId } from "@audit/domain/ids"
 import type { SearchHit, SearchQuery } from "@audit/domain/search/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
@@ -14,7 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@audit/ui/components/ui/select.tsx"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { Search } from "lucide-react"
+import {
+  EmptyState,
+  ErrorMessage,
+  LoadingRows,
+  PageBody,
+  PageHeader,
+} from "../components/feedback.tsx"
 import { membersQuery, projectsQuery } from "../lib/queries.ts"
 import { searchResultsQuery, snippetParts } from "../lib/search.ts"
 
@@ -60,6 +69,7 @@ export const Route = createFileRoute("/_app/search")({
     mentionsMe: raw.mentionsMe === true || raw.mentionsMe === "true" ? true : undefined,
     cursor: text(raw.cursor),
   }),
+  staticData: { crumb: () => ({ label: tMacro`Search` }) },
   component: SearchPage,
 })
 
@@ -128,7 +138,7 @@ function SearchPage() {
   const dateFormat = new Intl.DateTimeFormat(i18n.locale, { dateStyle: "medium" })
 
   return (
-    <>
+    <PageBody width="wide">
       <PageHeader title={t`Search`} />
       <div className="grid gap-6 md:grid-cols-[16rem_1fr]">
         <form
@@ -237,34 +247,49 @@ function SearchPage() {
           {results.isPending && <LoadingRows />}
           {results.isError && <ErrorMessage error={results.error} />}
           {results.isSuccess && results.data.hits.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t`No results.`}</p>
+            <EmptyState icon={Search} title={t`No results.`} />
           )}
           {results.isSuccess && (
             <ol className="divide-y rounded-md border">
               {results.data.hits.map((hit) => (
-                <li key={`${hit.type}:${hit.entityId}`} className="space-y-1 p-3">
-                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span>{hitTypeLabels[hit.type] ?? hit.type}</span>
-                    <span>{dateFormat.format(hit.updatedAt)}</span>
-                  </div>
-                  <Link to={hit.url} className="font-medium hover:underline">
-                    {hit.title}
-                  </Link>
-                  <p className="text-sm text-muted-foreground">
-                    {snippetParts(hit.snippet).map((part, index) =>
-                      part.mark ? (
-                        <mark
-                          key={index}
-                          className="rounded-sm bg-yellow-200 px-0.5 text-foreground dark:bg-yellow-700"
-                        >
-                          {part.text}
-                        </mark>
-                      ) : (
-                        <span key={index}>{part.text}</span>
-                      ),
-                    )}
-                  </p>
-                </li>
+                <EntityContextMenu
+                  key={`${hit.type}:${hit.entityId}`}
+                  target={{
+                    kind: "entity",
+                    ref: {
+                      id: hit.entityId,
+                      type: hit.type,
+                      title: hit.title,
+                      restricted: false,
+                      deleted: false,
+                    },
+                    href: hit.url,
+                  }}
+                >
+                  <li className="space-y-1 p-3">
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span>{hitTypeLabels[hit.type] ?? hit.type}</span>
+                      <span>{dateFormat.format(hit.updatedAt)}</span>
+                    </div>
+                    <Link to={hit.url} className="font-medium hover:underline">
+                      {hit.title}
+                    </Link>
+                    <p className="text-sm text-muted-foreground">
+                      {snippetParts(hit.snippet).map((part, index) =>
+                        part.mark ? (
+                          <mark
+                            key={index}
+                            className="rounded-sm bg-yellow-200 px-0.5 text-foreground dark:bg-yellow-700"
+                          >
+                            {part.text}
+                          </mark>
+                        ) : (
+                          <span key={index}>{part.text}</span>
+                        ),
+                      )}
+                    </p>
+                  </li>
+                </EntityContextMenu>
               ))}
             </ol>
           )}
@@ -281,6 +306,6 @@ function SearchPage() {
           )}
         </section>
       </div>
-    </>
+    </PageBody>
   )
 }

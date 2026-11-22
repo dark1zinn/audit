@@ -4,7 +4,7 @@
  * backlinks into an entity. Invisible entities are masked (`restricted`, untitled); soft-deleted
  * ones are `deleted` to callers who could see them before deletion, `restricted` to the rest.
  */
-import { entities, references } from "@audit/db/schema"
+import { entities, events, messages, projects, references, tasks } from "@audit/db/schema"
 import { actorUserId, CurrentActor } from "@audit/domain/actor"
 import type { BacklinkGroup, Backlink, EntityRef } from "@audit/domain/docs/schema"
 import type { ReferenceKind } from "@audit/domain/entity"
@@ -146,10 +146,51 @@ export const resolveEntities = (ids: ReadonlyArray<EntityId>) =>
             )
             .pipe(Effect.orDie)
     const formerlyVisibleIds = new Set(formerlySeen.map((row) => row.id))
+    const routeRows =
+      visibleIds.size === 0
+        ? []
+        : yield* db
+            .select({
+              id: entities.id,
+              projectKey: projects.key,
+              number: tasks.number,
+              channelId: messages.channelId,
+              startsAt: events.startsAt,
+            })
+            .from(entities)
+            .leftJoin(
+              projects,
+              eq(
+                projects.id,
+                sql`coalesce(${entities.projectId}, case when ${entities.type} = 'project' then ${entities.id} end)`,
+              ),
+            )
+            .leftJoin(tasks, eq(tasks.id, entities.id))
+            .leftJoin(messages, eq(messages.id, entities.id))
+            .leftJoin(events, eq(events.id, entities.id))
+            .where(inArray(entities.id, [...visibleIds] as EntityId[]))
+            .pipe(Effect.orDie)
+    const routeById = new Map(routeRows.map((row) => [row.id, row]))
     for (const row of rows) {
       const id = row.id as EntityId
       if (visibleIds.has(row.id)) {
-        out[id] = { id, type: row.type, title: row.title, restricted: false, deleted: false }
+        const route = routeById.get(row.id)
+        const key =
+          route?.projectKey != null && route.number != null
+            ? `${route.projectKey}-${route.number}`
+            : undefined
+        out[id] = {
+          id,
+          type: row.type,
+          title: row.title,
+          ...(key === undefined ? {} : { key }),
+          ...(route?.projectKey == null ? {} : { projectKey: route.projectKey }),
+          ...(route?.number == null ? {} : { number: route.number }),
+          ...(route?.startsAt == null ? {} : { startsAt: route.startsAt.toISOString() }),
+          ...(route?.channelId == null ? {} : { channelId: route.channelId as EntityId }),
+          restricted: false,
+          deleted: false,
+        }
       } else if (formerlyVisibleIds.has(row.id)) {
         out[id] = { id, type: row.type, restricted: false, deleted: true }
       } else {

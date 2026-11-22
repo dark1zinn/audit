@@ -1,18 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import type { CalendarSummary } from "@audit/domain/calendar/schema"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Checkbox } from "@audit/ui/components/ui/checkbox.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@audit/ui/components/ui/dropdown-menu.tsx"
 import { toast } from "sonner"
-import { callApi } from "../../lib/api.ts"
+import { useCalendarMutations } from "../actions/calendar-actions.ts"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { EntityTarget } from "../actions/types.ts"
 import { ErrorMessage } from "../feedback.tsx"
 
 /** Calendar sidebar: visibility, colour, per-calendar actions and the task overlay toggle. */
@@ -93,51 +88,35 @@ function CalendarRow({
   readonly onImport: (calendar: CalendarSummary) => void
 }) {
   const { t } = useLingui()
-  const queryClient = useQueryClient()
-  const recolour = useMutation({
-    mutationFn: (color: string) =>
-      callApi((api) =>
-        api.calendar.updateCalendar({
-          params: { calendarId: calendar.id },
-          payload: { color, version: calendar.version },
-        }),
-      ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["calendars"] }),
-  })
+  const mutations = useCalendarMutations()
 
+  const target: EntityTarget = {
+    kind: "calendar",
+    calendar,
+    onEdit: () => onEdit(calendar),
+    onImport: () => onImport(calendar),
+  }
   return (
     <li className="grid gap-1">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          aria-label={label}
-          checked={visible}
-          onCheckedChange={(checked) => onVisibleChange(calendar.id, checked === true)}
-        />
-        <Input
-          type="color"
-          aria-label={t`Colour of ${calendar.name}`}
-          className="h-7 w-8 shrink-0 p-0.5"
-          value={calendar.color}
-          onChange={(event) => recolour.mutate(event.currentTarget.value)}
-        />
-        <span className="min-w-0 flex-1 truncate text-sm">{calendar.name}</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" aria-label={t`Actions for ${calendar.name}`}>
-              …
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => onEdit(calendar)}>
-              <Trans>Settings</Trans>
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onImport(calendar)}>
-              <Trans>Import .ics</Trans>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      {recolour.error !== null && <ErrorMessage error={recolour.error} />}
+      <EntityContextMenu target={target}>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            aria-label={label}
+            checked={visible}
+            onCheckedChange={(checked) => onVisibleChange(calendar.id, checked === true)}
+          />
+          <Input
+            type="color"
+            aria-label={t`Colour of ${calendar.name}`}
+            className="h-7 w-8 shrink-0 p-0.5"
+            value={calendar.color}
+            onChange={(event) => mutations.recolour(calendar, event.currentTarget.value)}
+          />
+          <span className="min-w-0 flex-1 truncate text-sm">{calendar.name}</span>
+          <EntityActionsButton target={target} label={t`Actions for ${calendar.name}`} />
+        </div>
+      </EntityContextMenu>
+      {mutations.error !== null && <ErrorMessage error={mutations.error} />}
     </li>
   )
 }
@@ -146,10 +125,7 @@ function CalendarRow({
 function IcsFeedPanel() {
   const { t } = useLingui()
   const [url, setUrl] = useState<string | null>(null)
-  const generate = useMutation({
-    mutationFn: () => callApi((api) => api.calendar.regenerateIcalFeed()),
-    onSuccess: (result) => setUrl(result.url),
-  })
+  const feed = useCalendarMutations()
 
   const copy = async () => {
     if (url === null) return
@@ -182,12 +158,12 @@ function IcsFeedPanel() {
       <Button
         size="sm"
         variant="outline"
-        disabled={generate.isPending}
-        onClick={() => generate.mutate()}
+        disabled={feed.pending}
+        onClick={() => feed.regenerateFeed(setUrl)}
       >
         {url === null ? <Trans>Generate link</Trans> : <Trans>Regenerate link</Trans>}
       </Button>
-      {generate.error !== null && <ErrorMessage error={generate.error} />}
+      {feed.error !== null && <ErrorMessage error={feed.error} />}
     </div>
   )
 }

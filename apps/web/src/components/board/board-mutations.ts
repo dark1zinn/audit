@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import type { BoardId, ColumnId, LabelId, TaskId, UserId } from "@audit/domain/ids"
-import type { BoardView, TaskCard } from "@audit/domain/tasks/schema"
+import type { BoardView, Priority, TaskCard } from "@audit/domain/tasks/schema"
 import { callApi } from "../../lib/api.ts"
 import { errorKind } from "../../lib/errors.ts"
 import { optimisticMove, placeCard, type MoveRequest } from "./board-model.ts"
@@ -29,6 +29,7 @@ export interface UpdateCardInput {
   readonly version: number
   readonly assignees?: ReadonlyArray<UserId>
   readonly labels?: ReadonlyArray<LabelId>
+  readonly priority?: Priority
 }
 
 export const useMoveTask = (boardId: BoardId) => {
@@ -91,6 +92,7 @@ export const useUpdateCard = (boardId: BoardId) => {
             version: input.version,
             ...(input.assignees === undefined ? {} : { assignees: [...input.assignees] }),
             ...(input.labels === undefined ? {} : { labels: [...input.labels] }),
+            ...(input.priority === undefined ? {} : { priority: input.priority }),
           },
         }),
       ),

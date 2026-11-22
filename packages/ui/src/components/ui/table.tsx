@@ -5,7 +5,13 @@ import { cn } from "cn"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    // Scrollable region must be keyboard reachable (axe scrollable-region-focusable).
+    <div
+      data-slot="table-container"
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      className="relative w-full overflow-x-auto rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}

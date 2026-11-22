@@ -1,13 +1,14 @@
 import { useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
+import { ListChecks } from "lucide-react"
 import { useState } from "react"
 import type { TaskCard, TaskDetail } from "@audit/domain/tasks/schema"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
 import { callApi } from "../../lib/api.ts"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { invalidateTask, subtasksQuery } from "./queries.ts"
 
 /** The trailing number of a human key such as `OPS-42`. */
@@ -53,7 +54,7 @@ export function Subtasks({
       {subtasks.isPending && <LoadingRows />}
       {subtasks.isError && <ErrorMessage error={subtasks.error} />}
       {subtasks.data !== undefined && subtasks.data.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t`No subtasks yet.`}</p>
+        <EmptyState size="sm" icon={ListChecks} title={t`No subtasks yet.`} />
       )}
       {subtasks.data !== undefined && subtasks.data.length > 0 && (
         <ul className="divide-y rounded-md border">

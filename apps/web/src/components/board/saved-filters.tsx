@@ -93,7 +93,7 @@ export function SavedFilters({ projectId, query, onApply }: SavedFiltersProps) {
           if (filter !== undefined) onApply(filter.filter)
         }}
       >
-        <SelectTrigger aria-label={t`Saved views`} className="w-48">
+        <SelectTrigger aria-label={t`Saved views`} className="min-w-48 max-w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

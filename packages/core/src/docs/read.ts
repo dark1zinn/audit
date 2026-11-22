@@ -28,6 +28,7 @@ export interface DocRow {
   readonly updatedAt: Date
   readonly version: number
   readonly createdAt: Date
+  readonly createdBy: UserId | null
 }
 
 /** Select of the joined doc row, filtered to live docs and ordered by position. */
@@ -51,6 +52,7 @@ export const selectDocs = (where: SQL | undefined) =>
         updatedAt: entities.updatedAt,
         version: entities.version,
         createdAt: entities.createdAt,
+        createdBy: entities.createdBy,
       })
       .from(docs)
       .innerJoin(entities, eq(entities.id, docs.id))
@@ -73,6 +75,7 @@ export const selectDocs = (where: SQL | undefined) =>
       updatedAt: row.updatedAt,
       version: row.version,
       createdAt: row.createdAt,
+      createdBy: row.createdBy as UserId | null,
     }))
   })
 
@@ -99,6 +102,7 @@ export const toNode = (row: DocRow): DocNode => ({
   lastEditedAt: row.lastEditedAt,
   updatedAt: row.updatedAt,
   version: row.version,
+  createdBy: row.createdBy,
 })
 
 /**

@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -36,6 +37,7 @@ import { callApi } from "../lib/api.ts"
 import { invitesQuery, keys } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/invites")({
+  staticData: { crumb: () => ({ label: tMacro`Invites` }) },
   component: InvitesPage,
 })
 

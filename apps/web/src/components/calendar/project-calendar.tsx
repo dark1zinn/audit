@@ -8,11 +8,17 @@ export function ProjectCalendar({
   timezone,
   userId,
   filter,
+  eventParam,
+  dateParam,
+  onEventParamDone,
 }: {
   readonly projectId: ProjectId
   readonly timezone: string
   readonly userId: string
   readonly filter: ListTasksQuery
+  readonly eventParam?: string | undefined
+  readonly dateParam?: string | undefined
+  readonly onEventParamDone?: (() => void) | undefined
 }) {
   return (
     <CalendarWorkspace
@@ -20,6 +26,9 @@ export function ProjectCalendar({
       timezone={timezone}
       userId={userId}
       filter={filter}
+      eventParam={eventParam}
+      dateParam={dateParam}
+      onEventParamDone={onEventParamDone}
     />
   )
 }

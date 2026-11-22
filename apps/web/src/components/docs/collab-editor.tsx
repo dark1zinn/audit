@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query"
 import * as Y from "yjs"
 import type { Editor, JSONContent, Range } from "@tiptap/core"
 import { CHANGES_NOT_SAVED } from "@audit/domain/collab"
-import type { DocId, TaskId } from "@audit/domain/ids"
+import type { DocId, EntityId, TaskId } from "@audit/domain/ids"
 import type { ResourceRole } from "@audit/domain/roles"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Input } from "@audit/ui/components/ui/input.tsx"
@@ -28,6 +28,7 @@ import { anchorFor, CommentHighlight, type AnchorRange } from "./comments-anchor
 import { findTemplate } from "@audit/editor/templates"
 import { MentionShortcuts } from "../mentions/mention-shortcuts.ts"
 import { MentionPickerMenu, useMentionPicker } from "../mentions/mention-picker-menu.tsx"
+import { MentionPicker, WikilinkPicker } from "../mentions/mention-picker.ts"
 
 /** Hocuspocus endpoint on the page's own origin; the session cookie authenticates it. */
 const collabUrl = () => {
@@ -83,6 +84,7 @@ const useLiveDoc = (
 
 interface DocEditorProps {
   readonly docId: DocId
+  readonly parentId: EntityId
   readonly projectId: string | null
   readonly role: ResourceRole
   readonly user: CollabUser
@@ -94,6 +96,12 @@ interface DocEditorProps {
   readonly template?: string | undefined
   /** Lets the surrounding page act on the live editor (AI insert, selection reads). */
   readonly editorRef?: { current: Editor | null } | undefined
+  /** Reports the live co-editors (awareness states) so the page can show presence. */
+  readonly onPresence?: ((users: ReadonlyArray<CollabUser>) => void) | undefined
+  /** Reports the live editor once created, or `null` when it is torn down. */
+  readonly onEditor?: ((editor: Editor | null) => void) | undefined
+  /** Reading mode: the editor is read-only and uses the reading typography. */
+  readonly reading?: boolean | undefined
 }
 
 /** The live editor. Mounted only after its provider exists so the editor never starts empty. */
@@ -138,8 +146,8 @@ const LiveEditor = (
   const pendingFile = useRef<{ range: Range; accept: "image" | "file" } | null>(null)
   const internalEditorRef = useRef<Editor | null>(null)
   const editorRef = props.editorRef ?? internalEditorRef
-  const { provider, ydoc, docId, role, user } = props
-  const writable = canWrite(role) && scope !== "readonly"
+  const { provider, ydoc, docId, role, user, onEditor, onPresence } = props
+  const writable = canWrite(role) && scope !== "readonly" && props.reading !== true
 
   useEffect(() => {
     const onAuth = ({ scope: next }: { scope: "read-write" | "readonly" }) => setScope(next)
@@ -281,12 +289,23 @@ const LiveEditor = (
     },
   ]
 
-  const picker = useMentionPicker()
+  const picker = useMentionPicker({ picker: MentionPicker })
+  const wikilink = useMentionPicker({
+    picker: WikilinkPicker,
+    types: ["doc", "task"],
+    onCreateDoc: async (title) => {
+      const doc = await callApi((api) =>
+        api.docs.create({ payload: { parentId: props.parentId, title } }),
+      )
+      return { id: doc.id as EntityId, type: "doc", label: title }
+    },
+  })
   const editor = useEditor(
     {
       extensions: [
         ...collabExtensions(ydoc, provider, user),
         picker.extension,
+        wikilink.extension,
         MentionShortcuts,
         SlashCommand.configure({
           onState: setSlash,
@@ -296,7 +315,8 @@ const LiveEditor = (
       editable: writable,
       editorProps: {
         attributes: {
-          class: "prose prose-sm max-w-3xl min-h-[60vh] focus:outline-none dark:prose-invert",
+          class:
+            "prose prose-sm max-w-[72ch] mx-auto min-h-[60vh] focus:outline-none dark:prose-invert",
           "aria-label": t`Document content`,
           role: "textbox",
           "aria-multiline": "true",
@@ -330,8 +350,41 @@ const LiveEditor = (
         editorRef.current = created
       },
     },
-    [ydoc, provider, writable],
+    [ydoc, provider],
   )
+
+  useEffect(() => {
+    onEditor?.(editor)
+    return () => onEditor?.(null)
+  }, [editor, onEditor])
+
+  useEffect(() => {
+    const awareness = provider.awareness
+    const report = onPresence
+    if (awareness === null || report === undefined) return
+    const publish = () => {
+      const users: CollabUser[] = []
+      for (const state of awareness.getStates().values()) {
+        const raw: unknown = state.user
+        if (
+          typeof raw === "object" &&
+          raw !== null &&
+          "name" in raw &&
+          "color" in raw &&
+          typeof raw.name === "string" &&
+          typeof raw.color === "string"
+        ) {
+          users.push({ name: raw.name, color: raw.color })
+        }
+      }
+      report(users)
+    }
+    publish()
+    awareness.on("change", publish)
+    return () => {
+      awareness.off("change", publish)
+    }
+  }, [provider, onPresence])
   useEffect(() => {
     if (editor) Object.assign(editor.storage.slashCommand, { items })
   })
@@ -411,6 +464,7 @@ const LiveEditor = (
       <EditorContent editor={editor} />
       {slash !== null && <SlashMenu state={slash} />}
       <MentionPickerMenu picker={picker} />
+      <MentionPickerMenu picker={wikilink} />
       {selectionState !== null && !selectionState.empty && props.onSelectionComment && (
         <Button
           size="sm"

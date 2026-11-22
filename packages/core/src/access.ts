@@ -5,6 +5,9 @@
  * Containers (projects, boards, channels, calendars) have their effective roles materialised in
  * `container_access`. Every entity carries `entities.access_path`, its chain up to that boundary,
  * kept current by triggers, so both checks are a key lookup plus an array overlap.
+ *
+ * Owners and admins manage all project content and every doc: `adminManaged` is evaluated at query
+ * time, so it needs no materialised rows and takes effect as soon as a role changes.
  */
 import { type SQL, sql } from "drizzle-orm"
 import type { ContainerType } from "@audit/domain/entity"
@@ -56,6 +59,18 @@ const grantedNodes = (userId: SQL) => sql`(
   ) g
 )`
 
+/**
+ * True when the user is a workspace owner or admin and the entity under `alias` is project content
+ * (a project, or anything carrying `project_id`) or a doc, restricted or not. DMs, non-project
+ * channels and personal calendars carry no `project_id` and are not docs, so they stay private.
+ */
+const adminManaged = (userId: SQL, alias: string) => sql`(
+  exists (select 1 from workspace_members adm_m
+    where adm_m.user_id = ${userId} and adm_m.role in ('owner', 'admin'))
+  and (${sql.raw(alias)}.type = 'project' or ${sql.raw(alias)}.project_id is not null
+    or ${sql.raw(alias)}.type = 'doc')
+)`
+
 /** The user's role on one entity, or no row when they have none. */
 export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
   with chain as (
@@ -64,6 +79,8 @@ export const roleOnEntity = (userId: UserId, entityId: EntityId) => sql`
   roles as (
     select 'viewer' as role from chain c
     where exists (select 1 from entities d where d.id = any(c.path) and d.type in (${directoryTypes}))
+    union all
+    select 'manager' from entities adm_e where adm_e.id = ${entityId} and ${adminManaged(sql`${userId}`, "adm_e")}
     union all
     select ca.role from chain c
     join container_access ca on ca.container_id = any(c.path) and ca.user_id = ${userId}
@@ -93,6 +110,7 @@ export const visibleTo = (
     select 1 from entities vis_e
     where vis_e.id = ${idColumn} and ${options.includeDeleted === true ? sql`true` : sql`vis_e.deleted_at is null`}
       and (vis_e.access_path && ${grantedNodes(sql`${userId}`)}
+        or ${adminManaged(sql`${userId}`, "vis_e")}
         or exists (
           select 1 from entities vis_d
           where vis_d.id = any(vis_e.access_path) and vis_d.type in (${directoryTypes})))

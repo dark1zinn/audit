@@ -48,7 +48,9 @@ import {
   type RecurrenceState,
 } from "../../lib/calendar.ts"
 import { membersQuery, teamsQuery } from "../../lib/queries.ts"
+import { EntityActionsButton } from "../actions/entity-menu.tsx"
 import { ErrorMessage } from "../feedback.tsx"
+import { useEventMutations } from "../actions/event-actions.ts"
 import { RichEditor } from "../task-panel/rich-editor.tsx"
 import { ConfirmDialog, ScopeDialog } from "./confirm-dialogs.tsx"
 import { RecurrenceFields } from "./recurrence-fields.tsx"
@@ -296,35 +298,7 @@ function EventForm({
     },
   })
 
-  const remove = useMutation({
-    mutationFn: (scope: EventScope) => {
-      if (occurrence === null) throw new Error("No occurrence to delete")
-      return callApi((api) =>
-        api.calendar.deleteEvent({
-          params: { eventId: occurrence.eventId },
-          payload: {
-            scope,
-            occurrenceStart: occurrence.occurrenceStart,
-            version: occurrence.version,
-          },
-        }),
-      )
-    },
-    onSuccess: async () => {
-      await refresh()
-      onDone()
-    },
-  })
-
-  const rsvp = useMutation({
-    mutationFn: (response: ResponseStatus) => {
-      if (occurrence === null) throw new Error("No occurrence to answer")
-      return callApi((api) =>
-        api.calendar.rsvp({ params: { eventId: occurrence.eventId }, payload: { response } }),
-      )
-    },
-    onSuccess: refresh,
-  })
+  const events = useEventMutations()
 
   const mine = occurrence?.attendees.find(
     (attendee) => attendee.principalType === "user" && attendee.principalId === userId,
@@ -396,18 +370,32 @@ function EventForm({
     }
   }
 
-  const pending = save.isPending || remove.isPending || rsvp.isPending
-  const mutationError = save.error ?? remove.error ?? rsvp.error
+  const pending = save.isPending || events.pending
+  const mutationError = save.error ?? events.error
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>
-          {occurrence === null ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
-        </DialogTitle>
-        <DialogDescription>
-          {recurring ? <Trans>Part of a repeating series.</Trans> : <Trans>One-time event.</Trans>}
-        </DialogDescription>
+        <div className="flex items-start justify-between gap-2">
+          <div className="grid min-w-0 gap-1.5">
+            <DialogTitle>
+              {occurrence === null ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
+            </DialogTitle>
+            <DialogDescription>
+              {recurring ? (
+                <Trans>Part of a repeating series.</Trans>
+              ) : (
+                <Trans>One-time event.</Trans>
+              )}
+            </DialogDescription>
+          </div>
+          {occurrence !== null && (
+            <EntityActionsButton
+              target={{ kind: "event", event: occurrence }}
+              label={t`Event actions`}
+            />
+          )}
+        </div>
       </DialogHeader>
 
       <form id="event-form" className="grid gap-4" onSubmit={onSubmit}>
@@ -612,7 +600,9 @@ function EventForm({
               size="sm"
               value={mine.response}
               onValueChange={(value) => {
-                if (value !== "") rsvp.mutate(value as ResponseStatus)
+                if (value !== "" && occurrence !== null) {
+                  events.rsvp(occurrence, value as ResponseStatus)
+                }
               }}
               aria-label={t`Your response`}
             >
@@ -699,8 +689,8 @@ function EventForm({
           action="delete"
           recurring
           pending={pending}
-          error={remove.error}
-          onChoose={(scope) => remove.mutate(scope)}
+          error={events.error}
+          onChoose={(scope) => events.remove(occurrence, scope, onDone)}
           onOpenChange={(open) => {
             if (!open) setScopeAction(null)
           }}
@@ -712,8 +702,10 @@ function EventForm({
         description={t`This action cannot be undone.`}
         confirmLabel={t`Delete`}
         pending={pending}
-        error={remove.error}
-        onConfirm={() => remove.mutate("all")}
+        error={events.error}
+        onConfirm={() => {
+          if (occurrence !== null) events.remove(occurrence, "all", onDone)
+        }}
         onOpenChange={setConfirmingDelete}
       />
     </>

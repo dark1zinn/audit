@@ -1,8 +1,10 @@
-import { Trans } from "@lingui/react/macro"
+import { useLingui } from "@lingui/react/macro"
+import { Link2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import type { EntityId } from "@audit/domain/ids"
-import { ErrorMessage, LoadingRows } from "../feedback.tsx"
+import { docHref } from "../../lib/entity-links.ts"
+import { EmptyState, ErrorMessage, LoadingRows } from "../feedback.tsx"
 import { backlinksQuery } from "./queries.ts"
 
 interface BacklinksPanelProps {
@@ -13,16 +15,13 @@ interface BacklinksPanelProps {
 
 /** Docs and tasks that link to this entity, grouped by source type. */
 export const BacklinksPanel = ({ entityId, projectKey }: BacklinksPanelProps) => {
+  const { t } = useLingui()
   const backlinks = useQuery(backlinksQuery(entityId))
   if (backlinks.isPending) return <LoadingRows />
   if (backlinks.isError) return <ErrorMessage error={backlinks.error} />
   const groups = backlinks.data
   if (groups.every((group) => group.items.length === 0)) {
-    return (
-      <p className="pt-3 text-sm text-muted-foreground">
-        <Trans>Nothing links here yet.</Trans>
-      </p>
-    )
+    return <EmptyState size="sm" icon={Link2} title={t`Nothing links here yet.`} />
   }
   return (
     <div className="space-y-4 pt-3">
@@ -36,19 +35,10 @@ export const BacklinksPanel = ({ entityId, projectKey }: BacklinksPanelProps) =>
                 <li key={`${item.sourceId}-${item.kind}`} className="rounded-md border p-2 text-sm">
                   {item.sourceType !== "doc" ? (
                     <span className="font-medium">{item.sourceTitle}</span>
-                  ) : projectKey === null ? (
-                    <Link
-                      to="/docs/$docId"
-                      params={{ docId: item.sourceId }}
-                      className="font-medium text-primary underline"
-                    >
-                      {item.sourceTitle}
-                    </Link>
                   ) : (
                     <Link
-                      to="/p/$key/docs/$docId"
-                      params={{ key: projectKey, docId: item.sourceId }}
-                      className="font-medium text-primary underline"
+                      to={docHref(item.sourceId, projectKey)}
+                      className="font-medium text-link underline"
                     >
                       {item.sourceTitle}
                     </Link>

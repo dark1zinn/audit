@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -19,6 +20,7 @@ import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.ts
 import { callApi } from "../lib/api.ts"
 
 export const Route = createFileRoute("/_app/admin/audit")({
+  staticData: { crumb: () => ({ label: tMacro`Audit log` }) },
   component: AuditPage,
 })
 

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import type { DocId } from "@audit/domain/ids"
 import { WithProject } from "../components/list/with-project.tsx"
-import { DocsPage } from "../components/docs/docs-page.tsx"
+import { DocsWorkspace } from "../components/docs/docs-page.tsx"
 import { docSearch } from "../components/docs/doc-search.ts"
 
 export const Route = createFileRoute("/_app/p/$key/docs/$docId")({
@@ -11,15 +11,18 @@ export const Route = createFileRoute("/_app/p/$key/docs/$docId")({
 
 function ProjectDocPage() {
   const { key, docId } = Route.useParams()
-  const { template } = Route.useSearch()
+  const { template, split } = Route.useSearch()
+  const navigate = Route.useNavigate()
   return (
     <WithProject projectKey={key}>
       {(project) => (
-        <DocsPage
+        <DocsWorkspace
           projectId={project.id}
           projectKey={key}
           docId={docId as DocId}
           template={template}
+          split={split as DocId | undefined}
+          onSplitChange={(next) => void navigate({ search: (prev) => ({ ...prev, split: next }) })}
         />
       )}
     </WithProject>

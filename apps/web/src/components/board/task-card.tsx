@@ -8,6 +8,8 @@ import type { TaskCard as TaskCardModel } from "@audit/domain/tasks/schema"
 import { Avatar, AvatarFallback } from "@audit/ui/components/ui/avatar.tsx"
 import { Badge } from "@audit/ui/components/ui/badge.tsx"
 import { Checkbox } from "@audit/ui/components/ui/checkbox.tsx"
+import { EntityActionsButton, EntityContextMenu } from "../actions/entity-menu.tsx"
+import type { MoveColumn } from "../actions/types.ts"
 import { cardDomId } from "./board-model.ts"
 import { usePriorityLabels } from "./hooks.ts"
 
@@ -30,6 +32,8 @@ interface TaskCardBodyProps extends CardHandlers {
   readonly labels: ReadonlyMap<string, Label>
   readonly members: ReadonlyMap<string, Member>
   readonly selected: boolean
+  /** Board columns for "Move to". Omit on the drag overlay to hide the actions button. */
+  readonly columns?: ReadonlyArray<MoveColumn>
 }
 
 export function TaskCardBody({
@@ -37,6 +41,7 @@ export function TaskCardBody({
   labels,
   members,
   selected,
+  columns,
   onToggle,
   onOpen,
 }: TaskCardBodyProps) {
@@ -50,7 +55,7 @@ export function TaskCardBody({
     card.columnCategory !== "canceled"
 
   return (
-    <div className="bg-card text-card-foreground relative flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-xs">
+    <div className="group bg-card text-card-foreground relative flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-xs">
       <div className="flex items-center gap-2">
         <span
           className="relative z-10"
@@ -65,11 +70,24 @@ export function TaskCardBody({
           />
         </span>
         <span className="text-muted-foreground font-mono text-xs">{card.key}</span>
-        {card.priority === "none" ? null : (
-          <Badge variant="outline" className="ml-auto">
-            {priorityLabels[card.priority]}
-          </Badge>
-        )}
+        <span className="ms-auto flex items-center gap-1">
+          {card.priority === "none" ? null : (
+            <Badge variant="outline">{priorityLabels[card.priority]}</Badge>
+          )}
+          {columns === undefined ? null : (
+            <span
+              className="relative z-10 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100"
+              role="presentation"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <EntityActionsButton
+                target={{ kind: "task", task: card, columns }}
+                label={t`Actions for ${card.key}`}
+              />
+            </span>
+          )}
+        </span>
       </div>
       <button
         type="button"
@@ -139,23 +157,25 @@ export function SortableTaskCard({ columnId, reduced, onFocus, ...body }: Sortab
   })
 
   return (
-    <div
-      ref={setNodeRef}
-      id={cardDomId(body.card.id)}
-      onFocus={() => onFocus(body.card.id)}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: reduced ? undefined : transition,
-      }}
-      className={
-        isDragging
-          ? "opacity-40"
-          : "rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
-      }
-      {...attributes}
-      {...listeners}
-    >
-      <TaskCardBody {...body} />
-    </div>
+    <EntityContextMenu target={{ kind: "task", task: body.card, columns: body.columns }}>
+      <div
+        ref={setNodeRef}
+        id={cardDomId(body.card.id)}
+        onFocus={() => onFocus(body.card.id)}
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition: reduced ? undefined : transition,
+        }}
+        className={
+          isDragging
+            ? "opacity-40"
+            : "rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
+        }
+        {...attributes}
+        {...listeners}
+      >
+        <TaskCardBody {...body} />
+      </div>
+    </EntityContextMenu>
   )
 }

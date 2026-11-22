@@ -21,7 +21,9 @@
     "cn": "0.5.2",
     "lucide-react": "1.76.0",
     "radix-ui": "1.8.1",
-    "sonner": "2.0.8"
+    "react-resizable-panels": "4.24.1",
+    "sonner": "2.0.8",
+    "vaul": "1.1.2"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

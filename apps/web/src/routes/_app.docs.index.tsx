@@ -1,5 +1,6 @@
+import type { DocId } from "@audit/domain/ids"
 import { createFileRoute } from "@tanstack/react-router"
-import { DocsPage } from "../components/docs/docs-page.tsx"
+import { DocsWorkspace } from "../components/docs/docs-page.tsx"
 import { docSearch } from "../components/docs/doc-search.ts"
 
 export const Route = createFileRoute("/_app/docs/")({
@@ -8,6 +9,16 @@ export const Route = createFileRoute("/_app/docs/")({
 })
 
 function WorkspaceDocsIndex() {
-  const { new: newRequest } = Route.useSearch()
-  return <DocsPage projectId={null} projectKey={null} docId={null} newRequest={newRequest} />
+  const { new: newRequest, split } = Route.useSearch()
+  const navigate = Route.useNavigate()
+  return (
+    <DocsWorkspace
+      projectId={null}
+      projectKey={null}
+      docId={null}
+      split={split as DocId | undefined}
+      onSplitChange={(next) => void navigate({ search: (prev) => ({ ...prev, split: next }) })}
+      newRequest={newRequest}
+    />
+  )
 }

@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -19,6 +20,7 @@ import { callApi } from "../lib/api.ts"
 import { adminEmailQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/admin/email")({
+  staticData: { crumb: () => ({ label: tMacro`Email` }) },
   component: EmailPage,
 })
 

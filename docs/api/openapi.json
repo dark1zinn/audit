@@ -11565,6 +11565,18 @@
                       "updatedAt": {
                         "type": "string"
                       },
+                      "createdBy": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                            "format": "uuid"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "version": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -11584,6 +11596,7 @@
                       "verifiedAt",
                       "lastEditedAt",
                       "updatedAt",
+                      "createdBy",
                       "version"
                     ],
                     "additionalProperties": false
@@ -11735,6 +11748,18 @@
                       "updatedAt": {
                         "type": "string"
                       },
+                      "createdBy": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                            "format": "uuid"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "version": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -11754,6 +11779,7 @@
                       "verifiedAt",
                       "lastEditedAt",
                       "updatedAt",
+                      "createdBy",
                       "version"
                     ],
                     "additionalProperties": false
@@ -11914,6 +11940,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -11937,6 +11975,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version",
                     "myRole"
                   ],
@@ -12086,6 +12125,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -12105,6 +12156,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -12301,6 +12353,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -12320,6 +12384,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -12508,6 +12573,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -12527,6 +12604,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -12711,6 +12789,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -12730,6 +12820,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -12919,6 +13010,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -12938,6 +13041,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -13211,6 +13315,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -13230,6 +13346,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -13411,6 +13528,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -13430,6 +13559,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -13627,6 +13757,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -13646,6 +13788,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -14384,6 +14527,18 @@
                     "updatedAt": {
                       "type": "string"
                     },
+                    "createdBy": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "version": {
                       "type": "integer",
                       "minimum": -9007199254740991,
@@ -14403,6 +14558,7 @@
                     "verifiedAt",
                     "lastEditedAt",
                     "updatedAt",
+                    "createdBy",
                     "version"
                   ],
                   "additionalProperties": false
@@ -15198,6 +15354,19 @@
                       },
                       "key": {
                         "type": "string"
+                      },
+                      "projectKey": {
+                        "type": "string"
+                      },
+                      "number": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "channelId": {
+                        "type": "string",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|[fF]{8}-[fF]{4}-[fF]{4}-[fF]{4}-[fF]{12})$",
+                        "format": "uuid"
                       },
                       "restricted": {
                         "type": "boolean"

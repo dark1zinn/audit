@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useEffect, useState } from "react"
+import { useEffect, type ReactNode } from "react"
 import {
   Dialog,
   DialogContent,
@@ -7,15 +7,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@audit/ui/components/ui/dialog.tsx"
-
-const Key = ({ children }: { readonly children: string }) => (
-  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">{children}</kbd>
-)
+import { Kbd, KbdGroup } from "@audit/ui/components/ui/kbd.tsx"
+import { modKey } from "../lib/platform.ts"
+import {
+  setShortcutsHelpOpen,
+  toggleShortcutsHelp,
+  useShortcutsHelpOpen,
+} from "./shortcuts-store.ts"
 
 /** Global `?` dialog listing shortcuts. Ignored while typing or inside other dialogs/menus. */
 export function ShortcutsHelp() {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
+  const open = useShortcutsHelpOpen()
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -29,15 +32,15 @@ export function ShortcutsHelp() {
           target.closest('[role="dialog"], [role="listbox"], [role="menu"]') !== null)
       if (editable) return
       event.preventDefault()
-      setOpen((current) => !current)
+      toggleShortcutsHelp()
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={setShortcutsHelpOpen}>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             <Trans>Keyboard shortcuts</Trans>
@@ -46,57 +49,77 @@ export function ShortcutsHelp() {
             <Trans>Single-key shortcuts work when focus is not in a text field.</Trans>
           </DialogDescription>
         </DialogHeader>
-        <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-          <dt>
-            <Key>{t`Ctrl+K`}</Key>
-          </dt>
-          <dd>
-            <Trans>Open the command palette</Trans>
-          </dd>
-          <dt>
-            <Key>?</Key>
-          </dt>
-          <dd>
-            <Trans>Show this list</Trans>
-          </dd>
-          <dt>
-            <Key>j</Key> / <Key>k</Key>
-          </dt>
-          <dd>
-            <Trans>Move between rows, cards, or inbox items</Trans>
-          </dd>
-          <dt>
-            <Key>e</Key>
-          </dt>
-          <dd>
-            <Trans>Open the selected task; archive the selected inbox item</Trans>
-          </dd>
-          <dt>
-            <Key>r</Key>
-          </dt>
-          <dd>
-            <Trans>Mark the selected inbox item read or unread</Trans>
-          </dd>
-          <dt>
-            <Key>c</Key>
-          </dt>
-          <dd>
-            <Trans>Quick-add a card in the board column</Trans>
-          </dd>
-          <dt>
-            <Key>a</Key> <Key>l</Key> <Key>m</Key>
-          </dt>
-          <dd>
-            <Trans>Assign, label, or move the focused card</Trans>
-          </dd>
-          <dt>
-            <Key>x</Key>
-          </dt>
-          <dd>
-            <Trans>Select or deselect the focused card</Trans>
-          </dd>
-        </dl>
+        <div className="grid gap-5 text-sm">
+          <ShortcutGroup heading={t`General`}>
+            <ShortcutRow keys={[`${modKey()}+K`]} label={t`Open the command palette`} />
+            <ShortcutRow keys={["?"]} label={t`Show this list`} />
+            <ShortcutRow keys={[`${modKey()}+\\`]} label={t`Collapse or expand the sidebar`} />
+            <ShortcutRow keys={["Shift+F10"]} label={t`Open actions for the focused item`} />
+          </ShortcutGroup>
+          <ShortcutGroup heading={t`Lists`}>
+            <ShortcutRow keys={["j", "k"]} label={t`Move between rows, cards, or inbox items`} />
+            <ShortcutRow
+              keys={["e"]}
+              label={t`Open the selected task; archive the selected inbox item`}
+            />
+            <ShortcutRow keys={["r"]} label={t`Mark the selected inbox item read or unread`} />
+          </ShortcutGroup>
+          <ShortcutGroup heading={t`Board`}>
+            <ShortcutRow keys={["c"]} label={t`Quick-add a card in the board column`} />
+            <ShortcutRow
+              keys={["a", "l", "m"]}
+              label={t`Assign, label, or move the focused card`}
+            />
+            <ShortcutRow keys={["x"]} label={t`Select or deselect the focused card`} />
+          </ShortcutGroup>
+          <ShortcutGroup heading={t`Docs`}>
+            <ShortcutRow keys={[`${modKey()}+E`]} label={t`Switch between reading and editing`} />
+            <ShortcutRow keys={[`${modKey()}+.`]} label={t`Focus mode`} />
+            <ShortcutRow keys={["[["]} label={t`Link to another doc or task`} />
+            <ShortcutRow keys={["@"]} label={t`Mention a person`} />
+            <ShortcutRow keys={["/"]} label={t`Open editor commands`} />
+            <ShortcutRow keys={[`${modKey()}+Alt+W`]} label={t`Close the active tab`} />
+            <ShortcutRow keys={["Ctrl+Tab"]} label={t`Next tab`} />
+            <ShortcutRow keys={["Shift+Enter"]} label={t`Open the focused doc to the side`} />
+          </ShortcutGroup>
+        </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function ShortcutGroup({
+  heading,
+  children,
+}: {
+  readonly heading: string
+  readonly children: ReactNode
+}) {
+  return (
+    <section className="grid gap-2">
+      <h3 className="text-xs font-medium uppercase text-muted-foreground">{heading}</h3>
+      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">{children}</dl>
+    </section>
+  )
+}
+
+function ShortcutRow({
+  keys,
+  label,
+}: {
+  readonly keys: ReadonlyArray<string>
+  readonly label: string
+}) {
+  return (
+    <>
+      <dt>
+        <KbdGroup>
+          {keys.map((key) => (
+            <Kbd key={key}>{key}</Kbd>
+          ))}
+        </KbdGroup>
+      </dt>
+      <dd>{label}</dd>
+    </>
   )
 }

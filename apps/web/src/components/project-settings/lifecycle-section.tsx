@@ -1,5 +1,4 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { useState, type FormEvent } from "react"
 import type { ProjectDetail } from "@audit/domain/projects/schema"
@@ -11,49 +10,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@audit/ui/components/ui/card.tsx"
-import { callApi } from "../../lib/api.ts"
-import { keys } from "../../lib/queries.ts"
-import { ErrorMessage } from "../feedback.tsx"
+import { useProjectActions } from "../actions/project-actions.ts"
 import { TextField } from "../form.tsx"
-import { invalidateProject } from "./invalidate.ts"
 
 export function LifecycleSection({ project }: { readonly project: ProjectDetail }) {
   const { t } = useLingui()
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [confirmKey, setConfirmKey] = useState("")
   const archived = project.status === "archived"
-
-  const toggleArchive = useMutation({
-    mutationFn: () =>
-      callApi((api) =>
-        archived
-          ? api.projects.unarchive({ params: { projectId: project.id } })
-          : api.projects.archive({ params: { projectId: project.id } }),
-      ),
-    onSuccess: () => invalidateProject(queryClient, project.id),
-  })
-
-  const remove = useMutation({
-    mutationFn: () =>
-      callApi((api) =>
-        api.projects.delete({
-          params: { projectId: project.id },
-          payload: { confirm: project.key },
-        }),
-      ),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: keys.projects }),
-        queryClient.invalidateQueries({ queryKey: keys.adminProjects }),
-      ])
-      await navigate({ to: "/" })
+  const actions = useProjectActions({
+    kind: "project",
+    project,
+    onDeleted: () => {
+      void navigate({ to: "/" })
     },
-  })
+  }).flat()
+  const toggleArchive = actions.find((action) => action.id === "archive")
+  const removeProject = actions.find((action) => action.id === "delete")
 
   const onDelete = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (confirmKey === project.key) remove.mutate()
+    if (confirmKey === project.key) removeProject?.run?.()
   }
 
   return (
@@ -70,12 +47,7 @@ export function LifecycleSection({ project }: { readonly project: ProjectDetail 
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {toggleArchive.error !== null && <ErrorMessage error={toggleArchive.error} />}
-          <Button
-            variant="outline"
-            disabled={toggleArchive.isPending}
-            onClick={() => toggleArchive.mutate()}
-          >
+          <Button variant="outline" onClick={() => toggleArchive?.run?.()}>
             {archived ? <Trans>Unarchive project</Trans> : <Trans>Archive project</Trans>}
           </Button>
         </CardContent>
@@ -101,13 +73,8 @@ export function LifecycleSection({ project }: { readonly project: ProjectDetail 
               value={confirmKey}
               onChange={(event) => setConfirmKey(event.target.value)}
             />
-            {remove.error !== null && <ErrorMessage error={remove.error} />}
             <div>
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={confirmKey !== project.key || remove.isPending}
-              >
+              <Button type="submit" variant="destructive" disabled={confirmKey !== project.key}>
                 <Trans>Delete project</Trans>
               </Button>
             </div>

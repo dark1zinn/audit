@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -12,6 +13,7 @@ import { ErrorMessage, LoadingRows } from "../components/feedback.tsx"
 import { projectQuery, projectsQuery } from "../lib/queries.ts"
 
 export const Route = createFileRoute("/_app/p/$key/settings")({
+  staticData: { crumb: () => ({ label: tMacro`Settings` }) },
   component: ProjectSettingsPage,
 })
 

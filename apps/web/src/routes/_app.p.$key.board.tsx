@@ -1,3 +1,4 @@
+import { t as tMacro } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react/macro"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -38,6 +39,7 @@ type BoardRouteSearch = ListTasksQuery & { readonly new?: "task" }
 const withoutNewRequest = ({ new: _request, ...rest }: BoardRouteSearch): ListTasksQuery => rest
 
 export const Route = createFileRoute("/_app/p/$key/board")({
+  staticData: { crumb: () => ({ label: tMacro`Board` }) },
   validateSearch: (search: Record<string, unknown>): BoardRouteSearch => ({
     ...validateBoardSearch(search),
     ...(search["new"] === "task" ? { new: "task" as const } : {}),

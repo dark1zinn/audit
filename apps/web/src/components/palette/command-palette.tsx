@@ -1,9 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import type { Locale } from "@audit/domain/identity/schema"
 import {
   CommandDialog,
   CommandEmpty,
@@ -15,19 +13,18 @@ import {
   Command,
 } from "@audit/ui/components/ui/command.tsx"
 import { useTheme, type ThemeMode } from "@audit/ui/theme.tsx"
+import { useSidebar } from "@audit/ui/components/ui/sidebar.tsx"
+import { isWorkspaceAdmin } from "@audit/domain/roles"
+import { modKey } from "../../lib/platform.ts"
 import { useMe } from "../use-me.ts"
-import { callApi } from "../../lib/api.ts"
-import { keys, projectsQuery } from "../../lib/queries.ts"
+import { LOCALE_NAMES, LOCALES, useChangeLocale } from "../../lib/locale.ts"
+import { projectsQuery } from "../../lib/queries.ts"
 import { quickFindQuery } from "../../lib/search.ts"
-
-const LOCALES: ReadonlyArray<Locale> = ["en", "es", "pt-BR"]
-
-/** Language names are shown in their own language, so they are not translated. */
-const LOCALE_NAMES: Record<Locale, string> = {
-  en: "English",
-  "pt-BR": "Português (Brasil)",
-  es: "Español",
-}
+import {
+  setCommandPaletteOpen,
+  toggleCommandPalette,
+  useCommandPaletteOpen,
+} from "./palette-store.ts"
 
 const THEMES: ReadonlyArray<ThemeMode> = ["light", "dark", "system"]
 
@@ -36,38 +33,27 @@ const projectKeyFromPath = (pathname: string): string | undefined =>
   /^\/p\/([^/]+)/.exec(pathname)?.[1]
 
 /**
- * Global command palette, opened with Ctrl/⌘K. Quick find lists recent items when the query is
- * empty and matching items otherwise; actions navigate or change preferences.
+ * Global command palette, opened with Ctrl/⌘K or `openCommandPalette()`. Quick find lists recent
+ * items when the query is empty and matching items otherwise; actions navigate or change preferences.
  */
 export function CommandPalette() {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
+  const open = useCommandPaletteOpen()
   const [query, setQuery] = useState("")
   const navigate = useNavigate()
   const router = useRouter()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const me = useMe()
-  const queryClient = useQueryClient()
   const { setTheme } = useTheme()
   const projects = useQuery(projectsQuery)
   const hits = useQuery({ ...quickFindQuery(query.trim()), enabled: open })
-
-  const changeLocale = useMutation({
-    mutationFn: (locale: Locale) =>
-      callApi((api) =>
-        api.me.updateProfile({
-          payload: { displayName: me.displayName, title: me.title, timezone: me.timezone, locale },
-        }),
-      ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.session }),
-    onError: () => toast.error(t`Could not change language`),
-  })
+  const changeLocale = useChangeLocale(me)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault()
-        setOpen((value) => !value)
+        toggleCommandPalette()
       }
     }
     window.addEventListener("keydown", onKeyDown)
@@ -75,7 +61,7 @@ export function CommandPalette() {
   }, [])
 
   const onOpenChange = (next: boolean) => {
-    setOpen(next)
+    setCommandPaletteOpen(next)
     if (!next) setQuery("")
   }
 
@@ -93,6 +79,19 @@ export function CommandPalette() {
   }
   const emptyQuery = query.trim() === ""
 
+  const admin = isWorkspaceAdmin(me.role)
+  const { toggleSidebar } = useSidebar()
+  const navItems: ReadonlyArray<{ to: string; label: string; admin?: boolean }> = [
+    { to: "/", label: t`Home` },
+    { to: "/inbox", label: t`Inbox` },
+    { to: "/my-tasks", label: t`My tasks` },
+    { to: "/chat", label: t`Chat` },
+    { to: "/docs", label: t`Docs` },
+    { to: "/calendar", label: t`Calendar` },
+    { to: "/projects", label: t`Projects` },
+    { to: "/settings/profile", label: t`Settings` },
+    { to: "/admin", label: t`Admin console`, admin: true },
+  ]
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange} title={t`Command palette`}>
       <Command shouldFilter={false}>
@@ -113,6 +112,19 @@ export function CommandPalette() {
                 <span className="truncate">{hit.title}</span>
               </CommandItem>
             ))}
+          </CommandGroup>
+          <CommandGroup heading={t`Navigate`}>
+            {navItems
+              .filter((item) => item.admin !== true || admin)
+              .map((item) => (
+                <CommandItem
+                  key={item.to}
+                  value={`nav-${item.to}`}
+                  onSelect={() => choose(() => void navigate({ to: item.to }))}
+                >
+                  {item.label}
+                </CommandItem>
+              ))}
           </CommandGroup>
           <CommandGroup heading={t`Actions`}>
             <CommandItem
@@ -146,6 +158,14 @@ export function CommandPalette() {
               {t`New event`}
             </CommandItem>
             <CommandItem
+              value="action-new-project"
+              onSelect={() =>
+                choose(() => void navigate({ to: "/projects", search: { new: "1" } }))
+              }
+            >
+              {t`New project`}
+            </CommandItem>
+            <CommandItem
               value="action-my-tasks"
               onSelect={() => choose(() => void navigate({ to: "/my-tasks" }))}
             >
@@ -156,6 +176,13 @@ export function CommandPalette() {
               onSelect={() => choose(() => void navigate({ to: "/inbox" }))}
             >
               {t`Inbox`}
+            </CommandItem>
+            <CommandItem
+              value="action-toggle-sidebar"
+              onSelect={() => choose(() => toggleSidebar())}
+            >
+              {t`Toggle sidebar`}
+              <CommandShortcut>{modKey()}+\</CommandShortcut>
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading={t`Switch theme`}>

@@ -4,7 +4,8 @@ import { createFileRoute } from "@tanstack/react-router"
 import type { ChannelId } from "@audit/domain/ids"
 import { Button } from "@audit/ui/components/ui/button.tsx"
 import { Card, CardContent } from "@audit/ui/components/ui/card.tsx"
-import { ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
+import { MessageSquare } from "lucide-react"
+import { EmptyState, ErrorMessage, LoadingRows, PageHeader } from "../components/feedback.tsx"
 import { adminChannelQuery, adminMessagesQuery } from "../lib/chat.ts"
 
 export const Route = createFileRoute("/_app/admin/channels/$channelId")({
@@ -50,11 +51,7 @@ function AdminChannelPage() {
               <Trans>Load older messages</Trans>
             </Button>
           )}
-          {messages.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              <Trans>No messages yet.</Trans>
-            </p>
-          )}
+          {messages.length === 0 && <EmptyState icon={MessageSquare} title={t`No messages yet.`} />}
           <ol className="space-y-3">
             {messages.map((message) => (
               <li key={message.id}>

@@ -16,14 +16,16 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppChatRouteImport } from './routes/_app._chat'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppMyTasksRouteImport } from './routes/_app.my-tasks'
-import { Route as AppSavedRouteImport } from './routes/_app.saved'
 import { Route as AppSearchRouteImport } from './routes/_app.search'
-import { Route as AppThreadsRouteImport } from './routes/_app.threads'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
+import { Route as AppChatSavedRouteImport } from './routes/_app._chat.saved'
+import { Route as AppChatThreadsRouteImport } from './routes/_app._chat.threads'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppAdminAccessRouteImport } from './routes/_app.admin.access'
 import { Route as AppAdminAiRouteImport } from './routes/_app.admin.ai'
@@ -39,24 +41,26 @@ import { Route as AppAdminSecurityRouteImport } from './routes/_app.admin.securi
 import { Route as AppAdminStorageRouteImport } from './routes/_app.admin.storage'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app.admin.teams'
 import { Route as AppAdminWorkspaceRouteImport } from './routes/_app.admin.workspace'
-import { Route as AppCChannelIdRouteImport } from './routes/_app.c.$channelId'
-import { Route as AppDmUserIdRouteImport } from './routes/_app.dm.$userId'
 import { Route as AppDocsIndexRouteImport } from './routes/_app.docs.index'
 import { Route as AppDocsDocIdRouteImport } from './routes/_app.docs.$docId'
 import { Route as AppPKeyRouteImport } from './routes/_app.p.$key'
+import { Route as AppProjectsIndexRouteImport } from './routes/_app.projects.index'
 import { Route as AppSettingsNotificationsRouteImport } from './routes/_app.settings.notifications'
 import { Route as AppSettingsPrivacyRouteImport } from './routes/_app.settings.privacy'
 import { Route as AppSettingsProfileRouteImport } from './routes/_app.settings.profile'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app.settings.security'
+import { Route as AppChatCChannelIdRouteImport } from './routes/_app._chat.c.$channelId'
+import { Route as AppChatChatIndexRouteImport } from './routes/_app._chat.chat.index'
+import { Route as AppChatDmUserIdRouteImport } from './routes/_app._chat.dm.$userId'
 import { Route as AppAdminChannelsChannelIdRouteImport } from './routes/_app.admin.channels.$channelId'
 import { Route as AppPKeyBoardRouteImport } from './routes/_app.p.$key.board'
 import { Route as AppPKeyCalendarRouteImport } from './routes/_app.p.$key.calendar'
 import { Route as AppPKeyListRouteImport } from './routes/_app.p.$key.list'
 import { Route as AppPKeySettingsRouteImport } from './routes/_app.p.$key.settings'
-import { Route as AppCChannelIdTThreadIdRouteImport } from './routes/_app.c.$channelId.t.$threadId'
 import { Route as AppPKeyDocsIndexRouteImport } from './routes/_app.p.$key.docs.index'
 import { Route as AppPKeyDocsDocIdRouteImport } from './routes/_app.p.$key.docs.$docId'
 import { Route as AppPKeyTNumberRouteImport } from './routes/_app.p.$key.t.$number'
+import { Route as AppChatCChannelIdTThreadIdRouteImport } from './routes/_app._chat.c.$channelId.t.$threadId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -92,6 +96,10 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/_chat',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -112,25 +120,30 @@ const AppMyTasksRoute = AppMyTasksRouteImport.update({
   path: '/my-tasks',
   getParentRoute: () => AppRoute,
 } as any)
-const AppSavedRoute = AppSavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSearchRoute = AppSearchRouteImport.update({
   id: '/search',
   path: '/search',
   getParentRoute: () => AppRoute,
 } as any)
-const AppThreadsRoute = AppThreadsRouteImport.update({
-  id: '/threads',
-  path: '/threads',
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
 const JoinTokenRoute = JoinTokenRouteImport.update({
   id: '/join/$token',
   path: '/join/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppChatSavedRoute = AppChatSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => AppChatRoute,
+} as any)
+const AppChatThreadsRoute = AppChatThreadsRouteImport.update({
+  id: '/threads',
+  path: '/threads',
+  getParentRoute: () => AppChatRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
@@ -207,16 +220,6 @@ const AppAdminWorkspaceRoute = AppAdminWorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppCChannelIdRoute = AppCChannelIdRouteImport.update({
-  id: '/c/$channelId',
-  path: '/c/$channelId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDmUserIdRoute = AppDmUserIdRouteImport.update({
-  id: '/dm/$userId',
-  path: '/dm/$userId',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppDocsIndexRoute = AppDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -232,26 +235,46 @@ const AppPKeyRoute = AppPKeyRouteImport.update({
   path: '/p/$key',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsNotificationsRoute =
   AppSettingsNotificationsRouteImport.update({
-    id: '/settings/notifications',
-    path: '/settings/notifications',
-    getParentRoute: () => AppRoute,
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AppSettingsRoute,
   } as any)
 const AppSettingsPrivacyRoute = AppSettingsPrivacyRouteImport.update({
-  id: '/settings/privacy',
-  path: '/settings/privacy',
-  getParentRoute: () => AppRoute,
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppSettingsRoute,
 } as any)
 const AppSettingsProfileRoute = AppSettingsProfileRouteImport.update({
-  id: '/settings/profile',
-  path: '/settings/profile',
-  getParentRoute: () => AppRoute,
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppSettingsRoute,
 } as any)
 const AppSettingsSecurityRoute = AppSettingsSecurityRouteImport.update({
-  id: '/settings/security',
-  path: '/settings/security',
-  getParentRoute: () => AppRoute,
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppChatCChannelIdRoute = AppChatCChannelIdRouteImport.update({
+  id: '/c/$channelId',
+  path: '/c/$channelId',
+  getParentRoute: () => AppChatRoute,
+} as any)
+const AppChatChatIndexRoute = AppChatChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => AppChatRoute,
+} as any)
+const AppChatDmUserIdRoute = AppChatDmUserIdRouteImport.update({
+  id: '/dm/$userId',
+  path: '/dm/$userId',
+  getParentRoute: () => AppChatRoute,
 } as any)
 const AppAdminChannelsChannelIdRoute =
   AppAdminChannelsChannelIdRouteImport.update({
@@ -279,11 +302,6 @@ const AppPKeySettingsRoute = AppPKeySettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPKeyRoute,
 } as any)
-const AppCChannelIdTThreadIdRoute = AppCChannelIdTThreadIdRouteImport.update({
-  id: '/t/$threadId',
-  path: '/t/$threadId',
-  getParentRoute: () => AppCChannelIdRoute,
-} as any)
 const AppPKeyDocsIndexRoute = AppPKeyDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -299,6 +317,12 @@ const AppPKeyTNumberRoute = AppPKeyTNumberRouteImport.update({
   path: '/t/$number',
   getParentRoute: () => AppPKeyRoute,
 } as any)
+const AppChatCChannelIdTThreadIdRoute =
+  AppChatCChannelIdTThreadIdRouteImport.update({
+    id: '/t/$threadId',
+    path: '/t/$threadId',
+    getParentRoute: () => AppChatCChannelIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -311,10 +335,11 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
-  '/saved': typeof AppSavedRoute
   '/search': typeof AppSearchRoute
-  '/threads': typeof AppThreadsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/join/$token': typeof JoinTokenRoute
+  '/saved': typeof AppChatSavedRoute
+  '/threads': typeof AppChatThreadsRoute
   '/admin/access': typeof AppAdminAccessRoute
   '/admin/ai': typeof AppAdminAiRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -329,8 +354,6 @@ export interface FileRoutesByFullPath {
   '/admin/storage': typeof AppAdminStorageRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
-  '/c/$channelId': typeof AppCChannelIdRouteWithChildren
-  '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/notifications': typeof AppSettingsNotificationsRoute
@@ -339,15 +362,19 @@ export interface FileRoutesByFullPath {
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin/': typeof AppAdminIndexRoute
   '/docs/': typeof AppDocsIndexRoute
+  '/projects/': typeof AppProjectsIndexRoute
+  '/c/$channelId': typeof AppChatCChannelIdRouteWithChildren
+  '/dm/$userId': typeof AppChatDmUserIdRoute
   '/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
-  '/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
+  '/chat/': typeof AppChatChatIndexRoute
   '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/p/$key/docs/': typeof AppPKeyDocsIndexRoute
+  '/c/$channelId/t/$threadId': typeof AppChatCChannelIdTThreadIdRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
@@ -355,14 +382,15 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
+  '/': typeof AppIndexRoute
   '/calendar': typeof AppCalendarRoute
   '/inbox': typeof AppInboxRoute
   '/my-tasks': typeof AppMyTasksRoute
-  '/saved': typeof AppSavedRoute
   '/search': typeof AppSearchRoute
-  '/threads': typeof AppThreadsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/join/$token': typeof JoinTokenRoute
-  '/': typeof AppIndexRoute
+  '/saved': typeof AppChatSavedRoute
+  '/threads': typeof AppChatThreadsRoute
   '/admin/access': typeof AppAdminAccessRoute
   '/admin/ai': typeof AppAdminAiRoute
   '/admin/audit': typeof AppAdminAuditRoute
@@ -377,8 +405,6 @@ export interface FileRoutesByTo {
   '/admin/storage': typeof AppAdminStorageRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/workspace': typeof AppAdminWorkspaceRoute
-  '/c/$channelId': typeof AppCChannelIdRouteWithChildren
-  '/dm/$userId': typeof AppDmUserIdRoute
   '/docs/$docId': typeof AppDocsDocIdRoute
   '/p/$key': typeof AppPKeyRouteWithChildren
   '/settings/notifications': typeof AppSettingsNotificationsRoute
@@ -387,15 +413,19 @@ export interface FileRoutesByTo {
   '/settings/security': typeof AppSettingsSecurityRoute
   '/admin': typeof AppAdminIndexRoute
   '/docs': typeof AppDocsIndexRoute
+  '/projects': typeof AppProjectsIndexRoute
+  '/c/$channelId': typeof AppChatCChannelIdRouteWithChildren
+  '/dm/$userId': typeof AppChatDmUserIdRoute
   '/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/p/$key/board': typeof AppPKeyBoardRoute
   '/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/p/$key/list': typeof AppPKeyListRoute
   '/p/$key/settings': typeof AppPKeySettingsRoute
-  '/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
+  '/chat': typeof AppChatChatIndexRoute
   '/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/p/$key/docs': typeof AppPKeyDocsIndexRoute
+  '/c/$channelId/t/$threadId': typeof AppChatCChannelIdTThreadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -405,15 +435,17 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
+  '/_app/_chat': typeof AppChatRouteWithChildren
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/my-tasks': typeof AppMyTasksRoute
-  '/_app/saved': typeof AppSavedRoute
   '/_app/search': typeof AppSearchRoute
-  '/_app/threads': typeof AppThreadsRoute
+  '/_app/settings': typeof AppSettingsRouteWithChildren
   '/join/$token': typeof JoinTokenRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/_chat/saved': typeof AppChatSavedRoute
+  '/_app/_chat/threads': typeof AppChatThreadsRoute
   '/_app/admin/access': typeof AppAdminAccessRoute
   '/_app/admin/ai': typeof AppAdminAiRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
@@ -428,8 +460,6 @@ export interface FileRoutesById {
   '/_app/admin/storage': typeof AppAdminStorageRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/workspace': typeof AppAdminWorkspaceRoute
-  '/_app/c/$channelId': typeof AppCChannelIdRouteWithChildren
-  '/_app/dm/$userId': typeof AppDmUserIdRoute
   '/_app/docs/$docId': typeof AppDocsDocIdRoute
   '/_app/p/$key': typeof AppPKeyRouteWithChildren
   '/_app/settings/notifications': typeof AppSettingsNotificationsRoute
@@ -438,15 +468,19 @@ export interface FileRoutesById {
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/docs/': typeof AppDocsIndexRoute
+  '/_app/projects/': typeof AppProjectsIndexRoute
+  '/_app/_chat/c/$channelId': typeof AppChatCChannelIdRouteWithChildren
+  '/_app/_chat/dm/$userId': typeof AppChatDmUserIdRoute
   '/_app/admin/channels/$channelId': typeof AppAdminChannelsChannelIdRoute
   '/_app/p/$key/board': typeof AppPKeyBoardRoute
   '/_app/p/$key/calendar': typeof AppPKeyCalendarRoute
   '/_app/p/$key/list': typeof AppPKeyListRoute
   '/_app/p/$key/settings': typeof AppPKeySettingsRoute
-  '/_app/c/$channelId/t/$threadId': typeof AppCChannelIdTThreadIdRoute
+  '/_app/_chat/chat/': typeof AppChatChatIndexRoute
   '/_app/p/$key/docs/$docId': typeof AppPKeyDocsDocIdRoute
   '/_app/p/$key/t/$number': typeof AppPKeyTNumberRoute
   '/_app/p/$key/docs/': typeof AppPKeyDocsIndexRoute
+  '/_app/_chat/c/$channelId/t/$threadId': typeof AppChatCChannelIdTThreadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -461,10 +495,11 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/inbox'
     | '/my-tasks'
-    | '/saved'
     | '/search'
-    | '/threads'
+    | '/settings'
     | '/join/$token'
+    | '/saved'
+    | '/threads'
     | '/admin/access'
     | '/admin/ai'
     | '/admin/audit'
@@ -479,8 +514,6 @@ export interface FileRouteTypes {
     | '/admin/storage'
     | '/admin/teams'
     | '/admin/workspace'
-    | '/c/$channelId'
-    | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/notifications'
@@ -489,15 +522,19 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/admin/'
     | '/docs/'
+    | '/projects/'
+    | '/c/$channelId'
+    | '/dm/$userId'
     | '/admin/channels/$channelId'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
-    | '/c/$channelId/t/$threadId'
+    | '/chat/'
     | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
     | '/p/$key/docs/'
+    | '/c/$channelId/t/$threadId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -505,14 +542,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/signup'
+    | '/'
     | '/calendar'
     | '/inbox'
     | '/my-tasks'
-    | '/saved'
     | '/search'
-    | '/threads'
+    | '/settings'
     | '/join/$token'
-    | '/'
+    | '/saved'
+    | '/threads'
     | '/admin/access'
     | '/admin/ai'
     | '/admin/audit'
@@ -527,8 +565,6 @@ export interface FileRouteTypes {
     | '/admin/storage'
     | '/admin/teams'
     | '/admin/workspace'
-    | '/c/$channelId'
-    | '/dm/$userId'
     | '/docs/$docId'
     | '/p/$key'
     | '/settings/notifications'
@@ -537,15 +573,19 @@ export interface FileRouteTypes {
     | '/settings/security'
     | '/admin'
     | '/docs'
+    | '/projects'
+    | '/c/$channelId'
+    | '/dm/$userId'
     | '/admin/channels/$channelId'
     | '/p/$key/board'
     | '/p/$key/calendar'
     | '/p/$key/list'
     | '/p/$key/settings'
-    | '/c/$channelId/t/$threadId'
+    | '/chat'
     | '/p/$key/docs/$docId'
     | '/p/$key/t/$number'
     | '/p/$key/docs'
+    | '/c/$channelId/t/$threadId'
   id:
     | '__root__'
     | '/_app'
@@ -554,15 +594,17 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/signup'
+    | '/_app/_chat'
     | '/_app/admin'
     | '/_app/calendar'
     | '/_app/inbox'
     | '/_app/my-tasks'
-    | '/_app/saved'
     | '/_app/search'
-    | '/_app/threads'
+    | '/_app/settings'
     | '/join/$token'
     | '/_app/'
+    | '/_app/_chat/saved'
+    | '/_app/_chat/threads'
     | '/_app/admin/access'
     | '/_app/admin/ai'
     | '/_app/admin/audit'
@@ -577,8 +619,6 @@ export interface FileRouteTypes {
     | '/_app/admin/storage'
     | '/_app/admin/teams'
     | '/_app/admin/workspace'
-    | '/_app/c/$channelId'
-    | '/_app/dm/$userId'
     | '/_app/docs/$docId'
     | '/_app/p/$key'
     | '/_app/settings/notifications'
@@ -587,15 +627,19 @@ export interface FileRouteTypes {
     | '/_app/settings/security'
     | '/_app/admin/'
     | '/_app/docs/'
+    | '/_app/projects/'
+    | '/_app/_chat/c/$channelId'
+    | '/_app/_chat/dm/$userId'
     | '/_app/admin/channels/$channelId'
     | '/_app/p/$key/board'
     | '/_app/p/$key/calendar'
     | '/_app/p/$key/list'
     | '/_app/p/$key/settings'
-    | '/_app/c/$channelId/t/$threadId'
+    | '/_app/_chat/chat/'
     | '/_app/p/$key/docs/$docId'
     | '/_app/p/$key/t/$number'
     | '/_app/p/$key/docs/'
+    | '/_app/_chat/c/$channelId/t/$threadId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -659,6 +703,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_chat': {
+      id: '/_app/_chat'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppChatRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/admin': {
       id: '/_app/admin'
       path: '/admin'
@@ -687,13 +738,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMyTasksRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/saved': {
-      id: '/_app/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof AppSavedRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/search': {
       id: '/_app/search'
       path: '/search'
@@ -701,11 +745,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSearchRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/threads': {
-      id: '/_app/threads'
-      path: '/threads'
-      fullPath: '/threads'
-      preLoaderRoute: typeof AppThreadsRouteImport
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/join/$token': {
@@ -714,6 +758,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/join/$token'
       preLoaderRoute: typeof JoinTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/_chat/saved': {
+      id: '/_app/_chat/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof AppChatSavedRouteImport
+      parentRoute: typeof AppChatRoute
+    }
+    '/_app/_chat/threads': {
+      id: '/_app/_chat/threads'
+      path: '/threads'
+      fullPath: '/threads'
+      preLoaderRoute: typeof AppChatThreadsRouteImport
+      parentRoute: typeof AppChatRoute
     }
     '/_app/admin/': {
       id: '/_app/admin/'
@@ -820,20 +878,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminWorkspaceRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/c/$channelId': {
-      id: '/_app/c/$channelId'
-      path: '/c/$channelId'
-      fullPath: '/c/$channelId'
-      preLoaderRoute: typeof AppCChannelIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dm/$userId': {
-      id: '/_app/dm/$userId'
-      path: '/dm/$userId'
-      fullPath: '/dm/$userId'
-      preLoaderRoute: typeof AppDmUserIdRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/docs/': {
       id: '/_app/docs/'
       path: '/docs'
@@ -855,33 +899,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPKeyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/': {
+      id: '/_app/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof AppProjectsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/notifications': {
       id: '/_app/settings/notifications'
-      path: '/settings/notifications'
+      path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AppSettingsNotificationsRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppSettingsRoute
     }
     '/_app/settings/privacy': {
       id: '/_app/settings/privacy'
-      path: '/settings/privacy'
+      path: '/privacy'
       fullPath: '/settings/privacy'
       preLoaderRoute: typeof AppSettingsPrivacyRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppSettingsRoute
     }
     '/_app/settings/profile': {
       id: '/_app/settings/profile'
-      path: '/settings/profile'
+      path: '/profile'
       fullPath: '/settings/profile'
       preLoaderRoute: typeof AppSettingsProfileRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppSettingsRoute
     }
     '/_app/settings/security': {
       id: '/_app/settings/security'
-      path: '/settings/security'
+      path: '/security'
       fullPath: '/settings/security'
       preLoaderRoute: typeof AppSettingsSecurityRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/_chat/c/$channelId': {
+      id: '/_app/_chat/c/$channelId'
+      path: '/c/$channelId'
+      fullPath: '/c/$channelId'
+      preLoaderRoute: typeof AppChatCChannelIdRouteImport
+      parentRoute: typeof AppChatRoute
+    }
+    '/_app/_chat/chat/': {
+      id: '/_app/_chat/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof AppChatChatIndexRouteImport
+      parentRoute: typeof AppChatRoute
+    }
+    '/_app/_chat/dm/$userId': {
+      id: '/_app/_chat/dm/$userId'
+      path: '/dm/$userId'
+      fullPath: '/dm/$userId'
+      preLoaderRoute: typeof AppChatDmUserIdRouteImport
+      parentRoute: typeof AppChatRoute
     }
     '/_app/admin/channels/$channelId': {
       id: '/_app/admin/channels/$channelId'
@@ -918,13 +990,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPKeySettingsRouteImport
       parentRoute: typeof AppPKeyRoute
     }
-    '/_app/c/$channelId/t/$threadId': {
-      id: '/_app/c/$channelId/t/$threadId'
-      path: '/t/$threadId'
-      fullPath: '/c/$channelId/t/$threadId'
-      preLoaderRoute: typeof AppCChannelIdTThreadIdRouteImport
-      parentRoute: typeof AppCChannelIdRoute
-    }
     '/_app/p/$key/docs/': {
       id: '/_app/p/$key/docs/'
       path: '/docs'
@@ -946,8 +1011,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPKeyTNumberRouteImport
       parentRoute: typeof AppPKeyRoute
     }
+    '/_app/_chat/c/$channelId/t/$threadId': {
+      id: '/_app/_chat/c/$channelId/t/$threadId'
+      path: '/t/$threadId'
+      fullPath: '/c/$channelId/t/$threadId'
+      preLoaderRoute: typeof AppChatCChannelIdTThreadIdRouteImport
+      parentRoute: typeof AppChatCChannelIdRoute
+    }
   }
 }
+
+interface AppChatCChannelIdRouteChildren {
+  AppChatCChannelIdTThreadIdRoute: typeof AppChatCChannelIdTThreadIdRoute
+}
+
+const AppChatCChannelIdRouteChildren: AppChatCChannelIdRouteChildren = {
+  AppChatCChannelIdTThreadIdRoute: AppChatCChannelIdTThreadIdRoute,
+}
+
+const AppChatCChannelIdRouteWithChildren =
+  AppChatCChannelIdRoute._addFileChildren(AppChatCChannelIdRouteChildren)
+
+interface AppChatRouteChildren {
+  AppChatSavedRoute: typeof AppChatSavedRoute
+  AppChatThreadsRoute: typeof AppChatThreadsRoute
+  AppChatCChannelIdRoute: typeof AppChatCChannelIdRouteWithChildren
+  AppChatDmUserIdRoute: typeof AppChatDmUserIdRoute
+  AppChatChatIndexRoute: typeof AppChatChatIndexRoute
+}
+
+const AppChatRouteChildren: AppChatRouteChildren = {
+  AppChatSavedRoute: AppChatSavedRoute,
+  AppChatThreadsRoute: AppChatThreadsRoute,
+  AppChatCChannelIdRoute: AppChatCChannelIdRouteWithChildren,
+  AppChatDmUserIdRoute: AppChatDmUserIdRoute,
+  AppChatChatIndexRoute: AppChatChatIndexRoute,
+}
+
+const AppChatRouteWithChildren =
+  AppChatRoute._addFileChildren(AppChatRouteChildren)
 
 interface AppAdminRouteChildren {
   AppAdminAccessRoute: typeof AppAdminAccessRoute
@@ -991,16 +1093,22 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
-interface AppCChannelIdRouteChildren {
-  AppCChannelIdTThreadIdRoute: typeof AppCChannelIdTThreadIdRoute
+interface AppSettingsRouteChildren {
+  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
+  AppSettingsPrivacyRoute: typeof AppSettingsPrivacyRoute
+  AppSettingsProfileRoute: typeof AppSettingsProfileRoute
+  AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
 }
 
-const AppCChannelIdRouteChildren: AppCChannelIdRouteChildren = {
-  AppCChannelIdTThreadIdRoute: AppCChannelIdTThreadIdRoute,
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
+  AppSettingsPrivacyRoute: AppSettingsPrivacyRoute,
+  AppSettingsProfileRoute: AppSettingsProfileRoute,
+  AppSettingsSecurityRoute: AppSettingsSecurityRoute,
 }
 
-const AppCChannelIdRouteWithChildren = AppCChannelIdRoute._addFileChildren(
-  AppCChannelIdRouteChildren,
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
 )
 
 interface AppPKeyRouteChildren {
@@ -1027,43 +1135,33 @@ const AppPKeyRouteWithChildren =
   AppPKeyRoute._addFileChildren(AppPKeyRouteChildren)
 
 interface AppRouteChildren {
+  AppChatRoute: typeof AppChatRouteWithChildren
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppCalendarRoute: typeof AppCalendarRoute
   AppInboxRoute: typeof AppInboxRoute
   AppMyTasksRoute: typeof AppMyTasksRoute
-  AppSavedRoute: typeof AppSavedRoute
   AppSearchRoute: typeof AppSearchRoute
-  AppThreadsRoute: typeof AppThreadsRoute
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
-  AppCChannelIdRoute: typeof AppCChannelIdRouteWithChildren
-  AppDmUserIdRoute: typeof AppDmUserIdRoute
   AppDocsDocIdRoute: typeof AppDocsDocIdRoute
   AppPKeyRoute: typeof AppPKeyRouteWithChildren
-  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
-  AppSettingsPrivacyRoute: typeof AppSettingsPrivacyRoute
-  AppSettingsProfileRoute: typeof AppSettingsProfileRoute
-  AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
   AppDocsIndexRoute: typeof AppDocsIndexRoute
+  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppChatRoute: AppChatRouteWithChildren,
   AppAdminRoute: AppAdminRouteWithChildren,
   AppCalendarRoute: AppCalendarRoute,
   AppInboxRoute: AppInboxRoute,
   AppMyTasksRoute: AppMyTasksRoute,
-  AppSavedRoute: AppSavedRoute,
   AppSearchRoute: AppSearchRoute,
-  AppThreadsRoute: AppThreadsRoute,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
-  AppCChannelIdRoute: AppCChannelIdRouteWithChildren,
-  AppDmUserIdRoute: AppDmUserIdRoute,
   AppDocsDocIdRoute: AppDocsDocIdRoute,
   AppPKeyRoute: AppPKeyRouteWithChildren,
-  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
-  AppSettingsPrivacyRoute: AppSettingsPrivacyRoute,
-  AppSettingsProfileRoute: AppSettingsProfileRoute,
-  AppSettingsSecurityRoute: AppSettingsSecurityRoute,
   AppDocsIndexRoute: AppDocsIndexRoute,
+  AppProjectsIndexRoute: AppProjectsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
